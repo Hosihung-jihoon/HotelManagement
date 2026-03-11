@@ -45,3 +45,5 @@ desktop.ini
 # ============================
 *.log
 *.tmp
+*.pdf
+*.md.resolved
