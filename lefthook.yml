@@ -5,4 +5,5 @@ pre-push:
         node -e "const fs=require('fs'); if(!fs.existsSync('.gitignore')){console.error('🚫 LỖI: Lệnh Push bị HUỶ BỎ! Lý do: Không tìm thấy file .gitignore ở thư mục gốc.'); process.exit(1)}"
     check-dotnet-build:
       root: "backend/"
-      run: dotnet build --no-restore
+      run: >
+        dotnet build --no-restore || (echo "🚫 LỖI: Lệnh Push bị HUỶ BỎ! Lý do: Code Backend (C#) đang bị lỗi (Build Failed). Vui lòng sửa lỗi trước khi push." && exit 1)
