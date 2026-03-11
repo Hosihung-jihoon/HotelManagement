@@ -1,0 +1,336 @@
+# 📋 Phân Chia Công Việc – Dự Án Website Quản Lý Khách Sạn
+
+> **Nhóm 7 (6 thành viên)** | Tech Stack: ReactJS + .NET 8 Web API + SQL Server | Monorepo GitHub
+
+---
+
+## 👥 Phân Loại Thành Viên
+
+| Ký hiệu | Vai trò | Kỹ năng | Số lượng |
+|----------|---------|---------|----------|
+| **👑 L** | Leader (Bạn) | Cao | 1 |
+| **🔷 M1, M2** | Thành viên trung bình | Trung bình | 2 |
+| **🔹 J1, J2, J3** | Thành viên yếu | Yếu | 3 |
+
+---
+
+## 🏗️ Tổng Quan Modules (theo Database Schema)
+
+```mermaid
+graph TB
+    subgraph "Core Modules"
+        A["🔐 Authentication & Authorization<br/>Users, Roles, Permissions, Role_Permissions"]
+        B["🏨 Room Management<br/>Rooms, Room_Types, Amenities,<br/>RoomType_Amenities, Room_Images"]
+        C["📅 Booking Management<br/>Bookings, Booking_Details, Vouchers"]
+        D["💰 Invoice & Payment<br/>Invoices, Payments"]
+    end
+    subgraph "Supporting Modules"
+        E["🍽️ Service Management<br/>Services, Service_Categories,<br/>Order_Services, Order_Service_Details"]
+        F["📦 Inventory & Damages<br/>Room_Inventory, Loss_And_Damages"]
+        G["📰 Content Management<br/>Articles, Article_Categories, Attractions"]
+        H["⭐ Reviews & Membership<br/>Reviews, Memberships"]
+    end
+    subgraph "Cross-cutting"
+        I["📊 Dashboard & Reports<br/>Audit_Logs + Thống kê"]
+        J["⚙️ Setup Project<br/>Base Architecture & Config"]
+    end
+```
+
+---
+
+## 📌 Phân Chia Chi Tiết Theo Từng Người
+
+---
+
+### 👑 Leader (L) — Bạn
+
+**Vai trò chính:** Kiến trúc sư hệ thống, code review, xử lý phần khó nhất, hỗ trợ team.
+
+| # | Công việc | Layer | Mô tả |
+|---|-----------|-------|--------|
+| 1 | **Setup dự án Monorepo** | Infra | Tạo cấu trúc thư mục, `.gitignore`, `README.md`, branching strategy |
+| 2 | **Kiến trúc Backend** | BE | Tạo solution .NET 8, cấu hình `Program.cs`, `DbContext`, `appsettings.json`, Swagger |
+| 3 | **Kiến trúc Frontend** | FE | Tạo project React, cấu trúc folder, routing, Axios config, interceptors |
+| 4 | **Authentication & Authorization** | Full-stack | JWT Login/Register, Role-based access, Middleware, Protected Routes |
+| 5 | **Dashboard & Thống kê** | Full-stack | Trang Dashboard admin: doanh thu, phòng trống, booking mới, biểu đồ |
+| 6 | **Code Review & Merge PR** | DevOps | Review code tất cả thành viên, resolve conflict, quản lý branch |
+| 7 | **Hỗ trợ kỹ thuật** | Support | Debug & hướng dẫn khi team gặp khó khăn |
+
+**Tables liên quan:** `Users`, `Roles`, `Permissions`, `Role_Permissions`, `Audit_Logs`
+
+---
+
+### 🔷 M1 — Thành viên trung bình 1
+
+**Phụ trách:** Module Đặt Phòng (Booking) + Voucher
+
+| # | Công việc | Layer | Tables liên quan |
+|---|-----------|-------|-----------------|
+| 1 | **API Bookings** | BE | `Bookings`, `Booking_Details` |
+| 2 | **API Vouchers** | BE | `Vouchers` |
+| 3 | **Trang Đặt phòng (Khách)** | FE | Form đặt phòng, chọn ngày, áp voucher |
+| 4 | **Trang Quản lý Booking (Admin)** | FE | Danh sách, lọc theo status, xem chi tiết |
+| 5 | **Trang Quản lý Voucher (Admin)** | FE | CRUD voucher |
+| 6 | **Xử lý logic nghiệp vụ** | BE | Check-in, Check-out, cập nhật trạng thái phòng |
+
+> **Chi tiết API cần xây dựng:**
+> - `GET/POST/PUT/DELETE /api/Bookings`
+> - `GET /api/Bookings/{id}/details`
+> - `PUT /api/Bookings/{id}/checkin` | `PUT /api/Bookings/{id}/checkout`
+> - `GET/POST/PUT/DELETE /api/Vouchers`
+> - `POST /api/Vouchers/validate` (kiểm tra voucher hợp lệ)
+
+---
+
+### 🔷 M2 — Thành viên trung bình 2
+
+**Phụ trách:** Module Hóa đơn & Thanh toán + Dịch vụ đặt thêm
+
+| # | Công việc | Layer | Tables liên quan |
+|---|-----------|-------|-----------------|
+| 1 | **API Invoices** | BE | `Invoices` |
+| 2 | **API Payments** | BE | `Payments` |
+| 3 | **API Order Services** | BE | `Order_Services`, `Order_Service_Details` |
+| 4 | **Trang Hóa đơn (Admin)** | FE | Danh sách hóa đơn, in hóa đơn, tổng hợp |
+| 5 | **Trang Thanh toán** | FE | Form thanh toán, hiển thị chi tiết giá |
+| 6 | **Trang Đặt dịch vụ (Khách)** | FE | Chọn dịch vụ cho booking, xem tổng tiền |
+
+> **Chi tiết API cần xây dựng:**
+> - `GET/POST/PUT /api/Invoices`
+> - `GET /api/Invoices/{id}/details` (kèm booking, services, damages)
+> - `POST /api/Payments`
+> - `GET/POST /api/OrderServices`
+> - `GET /api/OrderServices/{id}/details`
+
+---
+
+### 🔹 J1 — Thành viên yếu 1
+
+**Phụ trách:** Module Quản lý Phòng (CRUD cơ bản)
+
+| # | Công việc | Layer | Tables liên quan |
+|---|-----------|-------|-----------------|
+| 1 | **API Room Types** | BE | `Room_Types` |
+| 2 | **API Rooms** | BE | `Rooms` |
+| 3 | **API Room Images** | BE | `Room_Images` |
+| 4 | **Trang danh sách Loại phòng (Admin)** | FE | Bảng CRUD loại phòng |
+| 5 | **Trang danh sách Phòng (Admin)** | FE | Bảng CRUD phòng, filter theo tầng/trạng thái |
+| 6 | **Trang xem Phòng (Khách)** | FE | Gallery ảnh phòng, thông tin, giá |
+
+> **Chi tiết API cần xây dựng:**
+> - `GET/POST/PUT/DELETE /api/RoomTypes`
+> - `GET/POST/PUT/DELETE /api/Rooms`
+> - `GET/POST/DELETE /api/RoomImages`
+> - `GET /api/Rooms/available?checkIn=...&checkOut=...`
+
+> [!TIP]
+> Leader sẽ tạo sẵn template CRUD (Controller → Service → Repository) để J1 làm theo mẫu.
+
+---
+
+### 🔹 J2 — Thành viên yếu 2
+
+**Phụ trách:** Module Dịch vụ + Tiện nghi + Membership
+
+| # | Công việc | Layer | Tables liên quan |
+|---|-----------|-------|-----------------|
+| 1 | **API Services** | BE | `Services`, `Service_Categories` |
+| 2 | **API Amenities** | BE | `Amenities`, `RoomType_Amenities` |
+| 3 | **API Memberships** | BE | `Memberships` |
+| 4 | **Trang Quản lý Dịch vụ (Admin)** | FE | CRUD dịch vụ, danh mục |
+| 5 | **Trang Tiện nghi (Admin)** | FE | CRUD tiện nghi, gán vào loại phòng |
+| 6 | **Trang Membership (Admin)** | FE | CRUD hạng thành viên |
+
+> **Chi tiết API cần xây dựng:**
+> - `GET/POST/PUT/DELETE /api/Services`
+> - `GET/POST/PUT/DELETE /api/ServiceCategories`
+> - `GET/POST/PUT/DELETE /api/Amenities`
+> - `POST/DELETE /api/RoomTypeAmenities`
+> - `GET/POST/PUT/DELETE /api/Memberships`
+
+> [!TIP]
+> Đây là các bảng CRUD đơn giản, phù hợp cho thành viên mới bắt đầu làm quen API và React.
+
+---
+
+### 🔹 J3 — Thành viên yếu 3
+
+**Phụ trách:** Module Nội dung (Articles, Attractions) + Reviews + Kiểm kê
+
+| # | Công việc | Layer | Tables liên quan |
+|---|-----------|-------|-----------------|
+| 1 | **API Articles** | BE | `Articles`, `Article_Categories` |
+| 2 | **API Attractions** | BE | `Attractions` |
+| 3 | **API Reviews** | BE | `Reviews` |
+| 4 | **API Room Inventory** | BE | `Room_Inventory`, `Loss_And_Damages` |
+| 5 | **Trang Bài viết (Khách + Admin)** | FE | Hiển thị bài viết, quản lý bài viết |
+| 6 | **Trang Đánh giá (Khách)** | FE | Form đánh giá, hiển thị sao |
+| 7 | **Trang Điểm tham quan** | FE | Danh sách địa điểm, khoảng cách |
+
+> **Chi tiết API cần xây dựng:**
+> - `GET/POST/PUT/DELETE /api/Articles`
+> - `GET/POST/PUT/DELETE /api/ArticleCategories`
+> - `GET/POST/PUT/DELETE /api/Attractions`
+> - `GET/POST /api/Reviews`
+> - `GET/POST/PUT/DELETE /api/RoomInventory`
+> - `GET/POST /api/LossAndDamages`
+
+> [!TIP]
+> Leader có thể tạo sẵn component bảng dữ liệu (DataTable) để J3 tái sử dụng.
+
+---
+
+## ⏰ Timeline Đề Xuất (6 Tuần)
+
+```mermaid
+gantt
+    title Timeline Dự Án Quản Lý Khách Sạn
+    dateFormat  YYYY-MM-DD
+    
+    section Tuần 1 - Setup
+    Setup Monorepo & Architecture (L)       :t1, 2026-03-10, 3d
+    Setup Database & Seed Data (L)          :t2, after t1, 2d
+    Phân nhánh Git & Hướng dẫn team (L)     :t3, after t1, 2d
+
+    section Tuần 2 - Backend Core
+    Auth API (L)                            :t4, 2026-03-17, 5d
+    Booking API (M1)                        :t5, 2026-03-17, 5d
+    Invoice API (M2)                        :t6, 2026-03-17, 5d
+    Room CRUD API (J1)                      :t7, 2026-03-17, 5d
+    Service CRUD API (J2)                   :t8, 2026-03-17, 5d
+    Article CRUD API (J3)                   :t9, 2026-03-17, 5d
+
+    section Tuần 3 - Backend Advanced
+    Dashboard API (L)                       :t10, 2026-03-24, 5d
+    Booking Logic (M1)                      :t11, 2026-03-24, 5d
+    Payment API (M2)                        :t12, 2026-03-24, 5d
+    Room Images API (J1)                    :t13, 2026-03-24, 5d
+    Amenity API (J2)                        :t14, 2026-03-24, 5d
+    Review & Inventory API (J3)             :t15, 2026-03-24, 5d
+
+    section Tuần 4 - Frontend
+    Dashboard UI (L)                        :t16, 2026-03-31, 5d
+    Booking Pages (M1)                      :t17, 2026-03-31, 5d
+    Invoice Pages (M2)                      :t18, 2026-03-31, 5d
+    Room Pages (J1)                         :t19, 2026-03-31, 5d
+    Service Pages (J2)                      :t20, 2026-03-31, 5d
+    Article Pages (J3)                      :t21, 2026-03-31, 5d
+
+    section Tuần 5 - Integration
+    Tích hợp & Fix bugs toàn team           :t22, 2026-04-07, 5d
+
+    section Tuần 6 - Testing & Deploy
+    Test API (Swagger/Postman)              :t23, 2026-04-14, 3d
+    Fix bugs cuối & Deploy                  :t24, after t23, 2d
+```
+
+---
+
+## 📂 Cấu Trúc Monorepo Đề Xuất
+
+```
+hotel-management/
+├── 📁 frontend/                    # ReactJS (VS Code)
+│   ├── src/
+│   │   ├── api/                    # Axios services
+│   │   ├── components/             # Shared components
+│   │   ├── pages/
+│   │   │   ├── auth/               # 👑 L   – Login, Register
+│   │   │   ├── dashboard/          # 👑 L   – Dashboard thống kê
+│   │   │   ├── bookings/           # 🔷 M1  – Đặt phòng
+│   │   │   ├── vouchers/           # 🔷 M1  – Quản lý voucher
+│   │   │   ├── invoices/           # 🔷 M2  – Hóa đơn
+│   │   │   ├── payments/           # 🔷 M2  – Thanh toán
+│   │   │   ├── order-services/     # 🔷 M2  – Đặt dịch vụ
+│   │   │   ├── rooms/              # 🔹 J1  – Quản lý phòng
+│   │   │   ├── room-types/         # 🔹 J1  – Loại phòng
+│   │   │   ├── services/           # 🔹 J2  – Dịch vụ
+│   │   │   ├── amenities/          # 🔹 J2  – Tiện nghi
+│   │   │   ├── memberships/        # 🔹 J2  – Membership
+│   │   │   ├── articles/           # 🔹 J3  – Bài viết
+│   │   │   ├── attractions/        # 🔹 J3  – Điểm tham quan
+│   │   │   ├── reviews/            # 🔹 J3  – Đánh giá
+│   │   │   └── inventory/          # 🔹 J3  – Kiểm kê
+│   │   ├── hooks/
+│   │   ├── context/
+│   │   └── utils/
+│   └── package.json
+│
+├── 📁 backend/                     # .NET 8 Web API (VS 2022)
+│   ├── Controllers/
+│   │   ├── AuthController.cs           # 👑 L
+│   │   ├── DashboardController.cs      # 👑 L
+│   │   ├── BookingsController.cs       # 🔷 M1
+│   │   ├── VouchersController.cs       # 🔷 M1
+│   │   ├── InvoicesController.cs       # 🔷 M2
+│   │   ├── PaymentsController.cs       # 🔷 M2
+│   │   ├── OrderServicesController.cs  # 🔷 M2
+│   │   ├── RoomsController.cs          # 🔹 J1
+│   │   ├── RoomTypesController.cs      # 🔹 J1
+│   │   ├── ServicesController.cs       # 🔹 J2
+│   │   ├── AmenitiesController.cs      # 🔹 J2
+│   │   ├── MembershipsController.cs    # 🔹 J2
+│   │   ├── ArticlesController.cs       # 🔹 J3
+│   │   ├── AttractionsController.cs    # 🔹 J3
+│   │   ├── ReviewsController.cs        # 🔹 J3
+│   │   └── RoomInventoryController.cs  # 🔹 J3
+│   ├── Models/
+│   ├── DTOs/
+│   ├── Services/
+│   ├── Data/
+│   └── HotelManagement.sln
+│
+├── 📁 database/
+│   └── HotelManagement.sql
+│
+├── .gitignore
+└── README.md
+```
+
+---
+
+## 🌿 Quy Tắc Git Branching
+
+| Nhánh | Quy tắc đặt tên | Ví dụ |
+|-------|-----------------|-------|
+| **Main** | `main` | Chỉ merge khi đã test xong |
+| **Develop** | `develop` | Nhánh tích hợp chung |
+| **Feature** | `feature/<module>/<mô-tả>` | `feature/booking/create-api` |
+| **Individual** | Mỗi người tạo từ `develop` | `feature/rooms/crud-api` |
+
+**Quy trình:**
+1. Pull `develop` mới nhất
+2. Tạo nhánh `feature/` từ `develop`
+3. Code → Commit → Push → Tạo Pull Request
+4. Leader review → Approve → Merge vào `develop`
+
+---
+
+## 📊 Tổng Kết Khối Lượng Công Việc
+
+| Thành viên | BE APIs | FE Pages | Bảng DB phụ trách | Độ khó |
+|------------|---------|----------|-------------------|--------|
+| **👑 L** | 5+ APIs (Auth, Dashboard) | 3 pages | 5 bảng | ⭐⭐⭐⭐⭐ |
+| **🔷 M1** | 6 APIs | 3 pages | 3 bảng | ⭐⭐⭐⭐ |
+| **🔷 M2** | 5 APIs | 3 pages | 4 bảng | ⭐⭐⭐⭐ |
+| **🔹 J1** | 4 APIs | 3 pages | 3 bảng | ⭐⭐⭐ |
+| **🔹 J2** | 5 APIs | 3 pages | 4 bảng | ⭐⭐ |
+| **🔹 J3** | 6 APIs | 4 pages | 5 bảng | ⭐⭐ |
+
+> [!IMPORTANT]
+> **Nguyên tắc phân chia:**
+> - **Leader (L):** Làm phần kiến trúc + module phức tạp nhất (Auth, Dashboard) + hỗ trợ team
+> - **Trung bình (M1, M2):** Module có logic nghiệp vụ (Booking, Invoice, Payment)
+> - **Yếu (J1, J2, J3):** Module CRUD đơn giản, nhiều bảng nhưng ít logic phức tạp
+> - Tất cả đều làm cả **Backend lẫn Frontend** để rèn luyện fullstack
+
+---
+
+## 🛡️ Trách Nhiệm Bổ Sung Của Leader
+
+- [ ] Tạo template CRUD (Controller + Service + Repository) cho J1, J2, J3 copy theo
+- [ ] Tạo component React dùng chung: `DataTable`, `FormModal`, `SearchBar`, `Sidebar`
+- [ ] Viết tài liệu API convention (naming, response format, error handling)
+- [ ] Setup Swagger UI đẹp để team test API
+- [ ] Hướng dẫn dùng Postman Collection chung (chia sẻ qua workspace)
+- [ ] Daily standup 15 phút mỗi ngày để cập nhật tiến độ
