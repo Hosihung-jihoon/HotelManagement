@@ -1,68 +1,57 @@
-# 🚀 Hướng Dẫn Bắt Đầu Cho Thành Viên
+# 🚀 Getting Started - Hướng Dẫn Bắt Đầu Cho Thành Viên
 
-> Tài liệu này hướng dẫn từng bước sau khi clone repo để có thể bắt đầu code.
-
----
-
-## 📋 Yêu Cầu Cài Đặt
-
-Đảm bảo máy bạn đã cài đủ các phần mềm sau:
-
-| Phần mềm | Link tải | Ghi chú |
-|----------|---------|---------|
-| **Visual Studio 2022** | [Download](https://visualstudio.microsoft.com/) | Chọn workload **ASP.NET and web development** |
-| **Visual Studio Code** | [Download](https://code.visualstudio.com/) | Dùng cho Frontend (ReactJS) |
-| **SQL Server** | [Download](https://www.microsoft.com/en-us/sql-server/sql-server-downloads) | Bản Developer (miễn phí) |
-| **SSMS** | [Download](https://learn.microsoft.com/en-us/sql/ssms/download-sql-server-management-studio-ssms) | Quản lý database |
-| **Node.js** | [Download](https://nodejs.org/) | Phiên bản LTS (≥ 18.x) |
-| **.NET 8 SDK** | [Download](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) | Kiểm tra: `dotnet --version` |
-| **Git** | [Download](https://git-scm.com/) | Kiểm tra: `git --version` |
+> Sau khi clone repo về máy, hãy thực hiện các bước dưới đây **theo đúng thứ tự**.
 
 ---
 
-## 🔽 Bước 1: Clone Repo
+## 📋 Yêu Cầu Cài Đặt (Prerequisites)
 
-```bash
-git clone https://github.com/Hosihung-jihoon/HotelManagement.git
-```
+Đảm bảo máy đã cài sẵn:
 
-Sau khi clone xong, chuyển sang nhánh `develop`:
-
-```bash
-git checkout develop
-git pull origin develop
-```
-
----
-
-## 🗄️ Bước 2: Tạo Database
-
-1. Mở **SSMS**, kết nối vào SQL Server local.
-2. Tạo database mới tên: `HotelManagementDB`
-   ```sql
-   CREATE DATABASE HotelManagementDB;
-   ```
-3. Mở file `database/HotelManagement.sql` trong SSMS.
-4. **Chạy toàn bộ file SQL** → dữ liệu mẫu sẽ được tạo sẵn.
-5. Kiểm tra: mở rộng database → Tables → xem đủ **22 bảng** là OK.
+| Phần mềm | Phiên bản | Dùng cho |
+|----------|-----------|---------|
+| **Visual Studio 2022** | Community trở lên | Backend (.NET) |
+| **VS Code** | Mới nhất | Frontend (React) |
+| **.NET 8 SDK** | 8.0+ | Chạy Backend API |
+| **Node.js** | 18+ | Chạy Frontend React |
+| **SQL Server** | 2019+ | Database |
+| **SSMS** | Mới nhất | Quản lý Database |
+| **Git** | Mới nhất | Quản lý code |
+| **Postman** (tuỳ chọn) | Mới nhất | Test API |
 
 ---
 
-## ⚙️ Bước 3: Chạy Backend (.NET 8)
+## 🗄️ Bước 1: Tạo Database
 
-### 3.1. Cấu hình Connection String
+1. Mở **SSMS**, kết nối đến SQL Server local.
+2. Nhấn **New Query**, mở file `database/HotelManagement.sql`.
+3. **Chạy toàn bộ script** (nhấn F5) → Database `HotelManagementDB` sẽ được tạo kèm dữ liệu mẫu.
+4. Kiểm tra: Trong Object Explorer → Databases → `HotelManagementDB` → Tables → phải có **22 bảng**.
 
-Mở file `backend/HotelManagement.API/appsettings.json`, **sửa `Server=`** cho đúng tên SQL Server trên máy bạn:
+> ⚠️ **Ghi nhớ tên SQL Server instance** của bạn (VD: `localhost`, `localhost\SQLEXPRESS`, `.\MSSQLSERVER01`). Bước sau sẽ cần.
+
+---
+
+## ⚙️ Bước 2: Cấu Hình & Chạy Backend
+
+### 2.1. Cập nhật Connection String
+
+Mở file `backend/HotelManagement.API/appsettings.json`, tìm dòng `ConnectionStrings` và **sửa tên Server** cho khớp máy bạn:
 
 ```json
 "ConnectionStrings": {
-  "DefaultConnection": "Server=TÊN_MÁY\\TÊN_INSTANCE;Database=HotelManagementDB;Trusted_Connection=True;TrustServerCertificate=True;"
+  "DefaultConnection": "Server=TÊN_SERVER_CỦA_BẠN;Database=HotelManagementDB;Trusted_Connection=True;TrustServerCertificate=True;"
 }
 ```
 
-> **Cách tìm tên Server:** Mở SSMS → tên Server hiện ở ô kết nối (ví dụ: `DESKTOP-ABC\SQLEXPRESS`, `localhost\MSSQLSERVER01`).
+**Ví dụ phổ biến:**
+- `Server=localhost` (mặc định)
+- `Server=localhost\\SQLEXPRESS` (SQL Express)
+- `Server=.\\MSSQLSERVER01` (Named Instance)
 
-### 3.2. Restore packages & Chạy
+> ⚠️ **KHÔNG commit file này** nếu chỉ thay đổi tên Server cá nhân. File này đã có trong `.gitignore` phần dev.
+
+### 2.2. Restore packages & Chạy
 
 ```bash
 cd backend/HotelManagement.API
@@ -70,16 +59,17 @@ dotnet restore
 dotnet run
 ```
 
-### 3.3. Kiểm tra
+### 2.3. Kiểm tra
 
-- Mở trình duyệt → vào `http://localhost:xxxx/swagger`
-- Nếu thấy **Swagger UI** hiện danh sách API → ✅ Backend OK!
-- Thử bấm **GET /api/RoomTypes** → **Try it out** → **Execute** → phải trả về dữ liệu.
+- Mở trình duyệt: `http://localhost:5059/swagger`
+- Nếu thấy **Swagger UI** với API `RoomTypes` → ✅ Backend OK!
+- Thử **GET** `/api/RoomTypes` → phải trả về 10 loại phòng mẫu.
 
+> 💡 Nếu port khác 5059, xem terminal output dòng `Now listening on: http://localhost:XXXX`.
 
 ---
 
-## 🎨 Bước 4: Chạy Frontend (ReactJS)
+## 🎨 Bước 3: Cấu Hình & Chạy Frontend
 
 ```bash
 cd frontend
@@ -87,117 +77,98 @@ npm install
 npm run dev
 ```
 
-- Mở trình duyệt → vào `http://localhost:5173`
-- Nếu thấy **giao diện có Sidebar + Header** → ✅ Frontend OK!
-- Bấm vào menu **Loại Phòng** → nếu hiện bảng dữ liệu → Frontend kết nối Backend thành công.
+- Mở trình duyệt: `http://localhost:5173`
+- Nếu thấy **Sidebar + Header + trang Dashboard** → ✅ Frontend OK!
+- Click menu **"Loại Phòng"** → thấy bảng dữ liệu (cần Backend đang chạy).
 
-> ⚠️ **Backend phải đang chạy** thì Frontend mới lấy được dữ liệu.
+> 💡 Nếu trang Loại Phòng báo lỗi, kiểm tra Backend đã chạy ở cổng 5059 chưa. Nếu port Backend khác, sửa `baseURL` trong file `frontend/src/api/axiosClient.js`.
 
 ---
 
-## 🌿 Bước 5: Tạo Nhánh Và Bắt Đầu Code
+## 📂 Bước 4: Hiểu Cấu Trúc Dự Án
 
-Xem chi tiết quy trình Git tại file [GIT_GUIDELINE.md](./GIT_GUIDELINE.md).
+```
+📁 backend/HotelManagement.API/
+├── Controllers/     ← API endpoints (mỗi người 1-2 file)
+├── Models/          ← Entity classes (đã tạo sẵn, KHÔNG SỬA)
+├── DTOs/            ← Request/Response objects
+├── Data/            ← DbContext (đã tạo sẵn, KHÔNG SỬA)
+├── Repositories/    ← Truy vấn database
+├── Services/        ← Business logic
+└── Program.cs       ← Đăng ký DI (thêm service mới vào đây)
+
+📁 frontend/src/
+├── api/             ← Axios client (dùng chung)
+├── components/      ← Components dùng chung (Layout,...)
+├── pages/           ← Mỗi module 1 folder (mỗi người 1-3 folder)
+├── hooks/           ← Custom hooks
+├── context/         ← React Context (state toàn cục)
+└── App.jsx          ← Routing (thêm Route mới vào đây)
+```
+
+---
+
+## 🧑‍💻 Bước 5: Bắt Đầu Code Theo Module Của Bạn
+
+### Backend — Copy theo mẫu RoomType:
+
+1. **Tạo Repository** — copy `Repositories/IRoomTypeRepository.cs` → đổi tên entity
+2. **Tạo Repository Impl** — copy `Repositories/RoomTypeRepository.cs`
+3. **Tạo DTOs** — copy `DTOs/RoomTypeDTOs.cs` → đổi fields theo bảng của bạn
+4. **Tạo Service** — copy `Services/IRoomTypeService.cs` + `RoomTypeService.cs`
+5. **Tạo Controller** — copy `Controllers/RoomTypesController.cs`
+6. **Đăng ký DI** — thêm 2 dòng vào `Program.cs`:
+   ```csharp
+   builder.Services.AddScoped<ITenRepository, TenRepository>();
+   builder.Services.AddScoped<ITenService, TenService>();
+   ```
+
+### Frontend — Copy theo mẫu RoomTypesPage:
+
+1. Copy folder `pages/RoomTypes/` → `pages/TenModuleCuaBan/`
+2. Đổi API endpoint trong `axiosClient.get('/TenController')`
+3. Đổi tên columns trong bảng cho khớp
+4. Thêm Route vào `App.jsx`
+
+---
+
+## 🌿 Bước 6: Quy Trình Git (Quan Trọng!)
+
+> Chi tiết đầy đủ xem file `GIT_GUIDELINE.md`
 
 **Tóm tắt nhanh:**
 
 ```bash
-# 1. Đảm bảo đang ở develop và đã pull mới nhất
+# 1. Luôn cập nhật develop trước
 git checkout develop
 git pull origin develop
 
-# 2. Tạo nhánh riêng (thay tên-bạn và tên-tính-năng)
-git checkout -b ten-ban/feat/ten-tinh-nang
-# Ví dụ: an/feat/rooms-crud-api
+# 2. Tạo nhánh riêng
+git checkout -b ten-ban/feat/mo-ta-ngan
+# VD: an/feat/api-rooms
 
 # 3. Code xong → commit
 git add .
 git commit -m "feat: mo ta ngan gon"
 
-# 4. Push và tạo Pull Request
-git push origin ten-ban/feat/ten-tinh-nang
-# Lên GitHub → tạo PR vào develop → tag Leader review
+# 4. Push & tạo Pull Request
+git push origin ten-ban/feat/mo-ta-ngan
+# → Vào GitHub tạo PR vào develop → Tag Leader review
 ```
 
 ---
 
-## 📖 Bước 6: Cách Tạo API Mới (Copy Từ Mẫu)
+## ❓ Gặp Lỗi Thường Gặp?
 
-Tham khảo mẫu **RoomTypes** đã có sẵn, các bạn làm theo 6 bước:
-
-### Backend (mở bằng Visual Studio 2022):
-
-| Bước | File cần tạo | Copy từ |
-|------|-------------|---------|
-| 1 | `Models/` | Đã có sẵn (22 models), **KHÔNG cần tạo thêm** |
-| 2 | `Repositories/IXxxRepository.cs` | Copy từ `IRoomTypeRepository.cs` |
-| 3 | `Repositories/XxxRepository.cs` | Copy từ `RoomTypeRepository.cs` |
-| 4 | `DTOs/XxxDTOs.cs` | Copy từ `RoomTypeDTOs.cs` |
-| 5 | `Services/IXxxService.cs` + `XxxService.cs` | Copy từ `IRoomTypeService.cs` + `RoomTypeService.cs` |
-| 6 | `Controllers/XxxController.cs` | Copy từ `RoomTypesController.cs` |
-
-> **Sau khi tạo xong**, mở file `Program.cs` và đăng ký DI:
-> ```csharp
-> builder.Services.AddScoped<IXxxRepository, XxxRepository>();
-> builder.Services.AddScoped<IXxxService, XxxService>();
-> ```
-
-### Frontend (mở bằng VS Code):
-
-| Bước | Thao tác |
-|------|---------|
-| 1 | Copy folder `src/pages/RoomTypes/` → `src/pages/TenModule/` |
-| 2 | Đổi tên component, API endpoint trong file mới |
-| 3 | Mở `src/App.jsx` → thêm Route mới  |
+| Lỗi | Nguyên nhân | Cách sửa |
+|-----|------------|---------|
+| `Cannot connect to database` | Sai tên Server | Sửa `appsettings.json` |
+| `Port already in use` | Đang chạy app khác trên cùng port | Tắt app cũ hoặc đổi port |
+| `npm ERR!` | Chưa install packages | Chạy `npm install` trong folder `frontend/` |
+| `dotnet: command not found` | Chưa cài .NET SDK | Cài [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) |
+| `CORS error` trên frontend | Backend chưa chạy hoặc sai port | Kiểm tra Backend + sửa `baseURL` trong `axiosClient.js` |
+| `Conflict khi merge` | 2 người sửa cùng file | Xem phần Conflict trong `GIT_GUIDELINE.md` |
 
 ---
 
-## 🏗️ Cấu Trúc Thư Mục
-
-```
-web_hotelmanagement_t7/
-├── backend/                        ← Mở bằng Visual Studio 2022
-│   ├── HotelManagement.sln
-│   └── HotelManagement.API/
-│       ├── Controllers/            ← API endpoints
-│       ├── Models/                 ← Entity đã có sẵn (KHÔNG SỬA)
-│       ├── DTOs/                   ← Request/Response models
-│       ├── Repositories/           ← Truy vấn database
-│       ├── Services/               ← Business logic
-│       ├── Data/HotelDbContext.cs   ← Đã có sẵn (KHÔNG SỬA)
-│       ├── Program.cs              ← Đăng ký DI ở đây
-│       └── appsettings.json        ← Connection string
-│
-├── frontend/                       ← Mở bằng VS Code
-│   └── src/
-│       ├── api/axiosClient.js      ← Đã cấu hình (KHÔNG SỬA)
-│       ├── components/Layout/      ← Sidebar + Header (KHÔNG SỬA)
-│       ├── pages/                  ← Thêm trang mới ở đây
-│       └── App.jsx                 ← Thêm Route mới ở đây
-│
-├── database/HotelManagement.sql    ← Script tạo DB
-├── GIT_GUIDELINE.md                ← Quy trình Git
-└── GETTING_STARTED.md              ← File này
-```
-
-> **Ghi chú:** Các file ghi "KHÔNG SỬA" là file dùng chung. Nếu cần sửa, hãy thông báo Leader trước.
-
----
-
-## ❓ FAQ — Lỗi Thường Gặp
-
-### Backend không chạy được?
-- **Lỗi connection string**: Kiểm tra lại tên Server trong `appsettings.json`.
-- **Lỗi thiếu package**: Chạy `dotnet restore` trong folder `backend/HotelManagement.API`.
-- **Port bị trùng**: Tắt app khác đang dùng cùng port, hoặc đổi port trong `Properties/launchSettings.json`.
-
-### Frontend không hiện dữ liệu?
-- Kiểm tra **Backend đang chạy** (terminal phải đang mở).
-- Kiểm tra port backend trong `frontend/src/api/axiosClient.js` ← `baseURL` phải trùng với port backend.
-
-### Git bị conflict?
-- Xem hướng dẫn ở mục **Xử lý Xung đột** trong [GIT_GUIDELINE.md](./GIT_GUIDELINE.md).
-
----
-
-**Chúc team code vui! Nếu gặp lỗi, hãy nhắn Leader ngay.** 🚀
+**Nếu vẫn gặp vấn đề, hãy hỏi ngay trên nhóm chat để Leader hỗ trợ.** 💪
