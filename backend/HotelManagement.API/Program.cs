@@ -16,12 +16,16 @@ builder.Services.AddDbContext<HotelDbContext>(options =>
 // ========== Repositories (DI) ==========
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IRoomTypeRepository, RoomTypeRepository>();
+builder.Services.AddScoped<IArticleCategoryRepository, ArticleCategoryRepository>();
+builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
 
 // ========== Services (DI) ==========
 builder.Services.AddScoped<IRoomTypeService, RoomTypeService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
+builder.Services.AddScoped<IArticleCategoryService, ArticleCategoryService>();
+builder.Services.AddScoped<IArticleService, ArticleService>();
 
 // ========== JWT Authentication ==========
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
