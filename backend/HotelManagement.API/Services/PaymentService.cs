@@ -1,6 +1,7 @@
 using HotelManagement.API.DTOs;
 using HotelManagement.API.Models;
 using HotelManagement.API.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace HotelManagement.API.Services;
 
@@ -73,7 +74,15 @@ public class PaymentService : IPaymentService
             PaymentDate = dto.PaymentDate ?? DateTime.Now
         };
 
-        var created = await _repository.CreateAsync(entity);
+        Payment created;
+        try
+        {
+            created = await _repository.CreateAsync(entity);
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new ArgumentException("Dữ liệu không hợp lệ. Vui lòng kiểm tra lại InvoiceId nhận được từ request.", ex);
+        }
 
         return new PaymentDto
         {
@@ -97,7 +106,14 @@ public class PaymentService : IPaymentService
         entity.TransactionCode = dto.TransactionCode;
         entity.PaymentDate = dto.PaymentDate;
 
-        await _repository.UpdateAsync(entity);
+        try
+        {
+            await _repository.UpdateAsync(entity);
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new ArgumentException("Dữ liệu không hợp lệ. Vui lòng kiểm tra lại InvoiceId nhận được từ request.", ex);
+        }
         return true;
     }
 

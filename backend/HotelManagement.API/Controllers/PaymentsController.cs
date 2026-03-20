@@ -58,8 +58,15 @@ public class PaymentsController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<PaymentDto>> Create([FromBody] CreatePaymentDto dto)
     {
-        var result = await _service.CreateAsync(dto);
-        return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+        try
+        {
+            var result = await _service.CreateAsync(dto);
+            return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     /// <summary>
@@ -68,11 +75,18 @@ public class PaymentsController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdatePaymentDto dto)
     {
-        var success = await _service.UpdateAsync(id, dto);
-        if (!success)
-            return NotFound(new { message = $"Không tìm thấy thanh toán với ID = {id}" });
+        try
+        {
+            var success = await _service.UpdateAsync(id, dto);
+            if (!success)
+                return NotFound(new { message = $"Không tìm thấy thanh toán với ID = {id}" });
 
-        return NoContent();
+            return NoContent();
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     /// <summary>

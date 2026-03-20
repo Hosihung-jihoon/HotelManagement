@@ -45,8 +45,15 @@ public class InvoicesController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<InvoiceDto>> Create([FromBody] CreateInvoiceDto dto)
     {
-        var result = await _service.CreateAsync(dto);
-        return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+        try
+        {
+            var result = await _service.CreateAsync(dto);
+            return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     /// <summary>
@@ -55,11 +62,18 @@ public class InvoicesController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateInvoiceDto dto)
     {
-        var success = await _service.UpdateAsync(id, dto);
-        if (!success)
-            return NotFound(new { message = $"Không tìm thấy hóa đơn với ID = {id}" });
+        try
+        {
+            var success = await _service.UpdateAsync(id, dto);
+            if (!success)
+                return NotFound(new { message = $"Không tìm thấy hóa đơn với ID = {id}" });
 
-        return NoContent();
+            return NoContent();
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     /// <summary>
