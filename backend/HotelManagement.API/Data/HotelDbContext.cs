@@ -39,6 +39,13 @@ public class HotelDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
+        // ===== Global Query Filters (Soft Delete) =====
+        modelBuilder.Entity<Amenity>()
+            .HasQueryFilter(a => !a.IsDeleted);
+
+        modelBuilder.Entity<Membership>()
+            .HasQueryFilter(m => !m.IsDeleted);
+
         // ===== Composite Keys =====
         modelBuilder.Entity<RolePermission>()
             .HasKey(rp => new { rp.RoleId, rp.PermissionId });
