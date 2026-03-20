@@ -26,4 +26,12 @@ public class ArticleRepository : GenericRepository<Article>, IArticleRepository
             .Include(a => a.Author)
             .FirstOrDefaultAsync(a => a.Id == id);
     }
+
+    public async Task<Article?> GetBySlugWithDetailsAsync(string slug)
+    {
+        return await _dbSet
+            .Include(a => a.Category)
+            .Include(a => a.Author)
+            .FirstOrDefaultAsync(a => a.Slug == slug);
+    }
 }

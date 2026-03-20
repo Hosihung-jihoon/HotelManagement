@@ -51,6 +51,26 @@ public class ArticleService : IArticleService
         };
     }
 
+    public async Task<ArticleDetailDto?> GetBySlugAsync(string slug)
+    {
+        var entity = await _repository.GetBySlugWithDetailsAsync(slug);
+        if (entity == null) return null;
+
+        return new ArticleDetailDto
+        {
+            Id = entity.Id,
+            CategoryId = entity.CategoryId,
+            AuthorId = entity.AuthorId,
+            Title = entity.Title,
+            Slug = entity.Slug,
+            Content = entity.Content,
+            ThumbnailUrl = entity.ThumbnailUrl,
+            PublishedAt = entity.PublishedAt,
+            CategoryName = entity.Category?.Name,
+            AuthorName = entity.Author?.FullName
+        };
+    }
+
     public async Task<ArticleDto> CreateAsync(CreateArticleDto dto)
     {
         var entity = new Article

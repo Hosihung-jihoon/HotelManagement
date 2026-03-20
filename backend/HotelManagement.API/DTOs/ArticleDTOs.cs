@@ -1,3 +1,7 @@
+using Microsoft.AspNetCore.Http;
+
+using Microsoft.AspNetCore.Http;
+
 namespace HotelManagement.API.DTOs;
 
 // ========== Response DTOs ==========
@@ -42,6 +46,7 @@ public class CreateArticleDto
     public string Title { get; set; } = string.Empty;
     public string? Slug { get; set; }
     public string? Content { get; set; }
+    public IFormFile? ThumbnailFile { get; set; }
     public string? ThumbnailUrl { get; set; }
     public DateTime? PublishedAt { get; set; }
 }
@@ -53,6 +58,7 @@ public class UpdateArticleDto
     public string Title { get; set; } = string.Empty;
     public string? Slug { get; set; }
     public string? Content { get; set; }
+    public IFormFile? ThumbnailFile { get; set; }
     public string? ThumbnailUrl { get; set; }
     public DateTime? PublishedAt { get; set; }
 }
