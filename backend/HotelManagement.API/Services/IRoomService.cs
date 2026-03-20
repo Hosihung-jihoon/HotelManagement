@@ -13,4 +13,7 @@ public interface IRoomService
     Task<(RoomDto? result, string? error)> CreateAsync(CreateRoomDto dto);
     Task<(bool success, string? error)> UpdateAsync(int id, UpdateRoomDto dto);
     Task<bool> DeleteAsync(int id);
+    
+    Task<(List<RoomDto> created, string? error)> BulkCreateAsync(BulkCreateRoomDto dto);
+    Task<(bool success, string? error)> UpdateStatusAsync(UpdateBlockRoomStatusDto dto);
 }

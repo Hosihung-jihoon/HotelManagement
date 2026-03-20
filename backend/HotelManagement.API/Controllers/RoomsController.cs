@@ -84,4 +84,34 @@ public class RoomsController : ControllerBase
 
         return NoContent();
     }
+
+    /// <summary>
+    /// Tạo nhanh phòng theo tầng
+    /// </summary>
+    [HttpPost("bulk-create")]
+    public async Task<ActionResult<IEnumerable<RoomDto>>> BulkCreate([FromBody] BulkCreateRoomDto dto)
+    {
+        var (created, error) = await _service.BulkCreateAsync(dto);
+        if (error != null)
+            return BadRequest(new { message = error });
+            
+        return Ok(created);
+    }
+
+    /// <summary>
+    /// Cập nhật trạng thái phòng
+    /// </summary>
+    [HttpPatch("patch-status")]
+    public async Task<IActionResult> PatchStatus([FromBody] UpdateBlockRoomStatusDto dto)
+    {
+        var (success, error) = await _service.UpdateStatusAsync(dto);
+
+        if (error != null)
+            return Conflict(new { message = error });
+
+        if (!success)
+            return NotFound(new { message = $"Không tìm thấy phòng với ID = {dto.RoomId}" });
+
+        return NoContent();
+    }
 }

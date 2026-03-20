@@ -7,7 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // ========== DbContext ==========
 builder.Services.AddDbContext<HotelDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseInMemoryDatabase("HotelManagementDB"));
 
 // ========== Repositories (DI) ==========
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
@@ -17,6 +17,8 @@ builder.Services.AddScoped<IRoomRepository, RoomRepository>();
 // ========== Services (DI) ==========
 builder.Services.AddScoped<IRoomTypeService, RoomTypeService>();
 builder.Services.AddScoped<IRoomService, RoomService>();
+builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
+
 
 // ========== Controllers ==========
 builder.Services.AddControllers();

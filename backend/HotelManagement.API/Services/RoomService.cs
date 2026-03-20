@@ -104,4 +104,56 @@ public class RoomService : IRoomService
         await _repository.DeleteAsync(id);
         return true;
     }
+
+    public async Task<(List<RoomDto> created, string? error)> BulkCreateAsync(BulkCreateRoomDto dto)
+    {
+        var createdRooms = new List<RoomDto>();
+        string prefix = string.IsNullOrEmpty(dto.Prefix) ? dto.Floor.ToString() : dto.Prefix;
+        int baseIndex = 1;
+
+        for (int i = 0; i < dto.NumberOfRooms; i++)
+        {
+            string roomNumber = string.Empty;
+            while (true)
+            {
+                roomNumber = $"{prefix}{(baseIndex < 10 ? "0" : "")}{baseIndex}";
+                if (!await _repository.RoomNumberExistsAsync(roomNumber))
+                {
+                    break;
+                }
+                baseIndex++;
+            }
+
+            var entity = new Room
+            {
+                RoomNumber = roomNumber,
+                Floor = dto.Floor,
+                Status = "Available",
+                RoomTypeId = dto.RoomTypeId
+            };
+
+            var created = await _repository.CreateAsync(entity);
+            createdRooms.Add(new RoomDto
+            {
+                Id = created.Id,
+                RoomNumber = created.RoomNumber,
+                Floor = created.Floor,
+                Status = created.Status,
+                RoomTypeId = created.RoomTypeId
+            });
+            baseIndex++;
+        }
+
+        return (createdRooms, null);
+    }
+
+    public async Task<(bool success, string? error)> UpdateStatusAsync(UpdateBlockRoomStatusDto dto)
+    {
+        var entity = await _repository.GetByIdAsync(dto.RoomId);
+        if (entity == null) return (false, null);
+
+        entity.Status = dto.Status;
+        await _repository.UpdateAsync(entity);
+        return (true, null);
+    }
 }

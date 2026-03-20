@@ -55,3 +55,23 @@ public class UpdateRoomDto
     public string? Status { get; set; }
     public int? RoomTypeId { get; set; }
 }
+
+/// <summary>
+/// DTO để tạo nhanh phòng
+/// </summary>
+public class BulkCreateRoomDto
+{
+    public int Floor { get; set; }
+    public int RoomTypeId { get; set; }
+    public int NumberOfRooms { get; set; }
+    public string? Prefix { get; set; }
+}
+
+/// <summary>
+/// DTO để cập nhật trạng thái phòng
+/// </summary>
+public class UpdateBlockRoomStatusDto
+{
+    public int RoomId { get; set; }
+    public string Status { get; set; } = string.Empty;
+}

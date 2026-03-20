@@ -78,4 +78,28 @@ public class RoomTypesController : ControllerBase
 
         return NoContent();
     }
+
+    /// <summary>
+    /// Upload images for RoomType
+    /// </summary>
+    [HttpPost("post-images")]
+    public async Task<ActionResult<List<RoomImageDto>>> PostImages([FromForm] UploadRoomTypeImagesDto dto)
+    {
+        var result = await _service.UploadImagesAsync(dto);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Set primary image for RoomType
+    /// </summary>
+    [HttpPatch("set-primary")]
+    public async Task<IActionResult> SetPrimaryImage([FromBody] SetPrimaryImageDto dto)
+    {
+        var (success, error) = await _service.SetPrimaryImageAsync(dto);
+        if (!success)
+        {
+            return BadRequest(new { message = error });
+        }
+        return Ok(new { message = "Đã đặt làm ảnh chính." });
+    }
 }
