@@ -2,10 +2,9 @@ using HotelManagement.API.DTOs;
 using HotelManagement.API.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace HotelManagement.API.Controllers;
-
+namespace HotelManagement.API.Controllers{
 /// <summary>
- </summary>
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 public class InvoicesController : ControllerBase
@@ -27,9 +26,9 @@ public class InvoicesController : ControllerBase
         return Ok(result);
     }
 
-     <summary>
-   
-     </summary>
+    /// <summary>
+    ///
+    /// </summary>
     [HttpGet("{id}")]
     public async Task<ActionResult<InvoiceDetailDto>> GetById(int id)
     {
@@ -40,9 +39,9 @@ public class InvoicesController : ControllerBase
         return Ok(result);
     }
 
-     <summary>
-    
-     </summary>
+    /// <summary>
+    ///
+    /// </summary>
     [HttpPost]
     public async Task<ActionResult<InvoiceDto>> Create([FromBody] CreateInvoiceDto dto)
     {
@@ -50,9 +49,9 @@ public class InvoicesController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
 
-     <summary>
-    
-     </summary>
+    /// <summary>
+    ///
+    /// </summary>
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateInvoiceDto dto)
     {
@@ -63,9 +62,9 @@ public class InvoicesController : ControllerBase
         return NoContent();
     }
 
-     <summary>
- 
-     </summary>
+    /// <summary>
+    ///
+    /// </summary>
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
@@ -76,3 +75,6 @@ public class InvoicesController : ControllerBase
         return NoContent();
     }
 }
+
+}
+

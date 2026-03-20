@@ -17,9 +17,9 @@ public class InvoiceDto
     public string? Status { get; set; }
 }
 
- <summary>
-
- </summary>
+/// <summary>
+///
+/// </summary>
 public class InvoiceDetailDto
 {
     public int Id { get; set; }
@@ -35,9 +35,9 @@ public class InvoiceDetailDto
 
 
 
- <summary>
-
- </summary>
+/// <summary>
+///
+/// </summary>
 public class CreateInvoiceDto
 {
     public int? BookingId { get; set; }
@@ -49,9 +49,9 @@ public class CreateInvoiceDto
     public string? Status { get; set; }
 }
 
- <summary>
-
- </summary>
+/// <summary>
+///
+/// </summary>
 public class UpdateInvoiceDto
 {
     public int? BookingId { get; set; }
