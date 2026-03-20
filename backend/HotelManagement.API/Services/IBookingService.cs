@@ -9,4 +9,6 @@ public interface IBookingService
     Task<BookingDto> CreateAsync(CreateBookingDto dto);
     Task<bool> UpdateAsync(int id, UpdateBookingDto dto);
     Task<bool> DeleteAsync(int id);
+    Task<IEnumerable<RoomAvailabilityResponseDto>> SearchAvailableRoomsAsync(BookingSearchRequestDto request);
+    Task<BookingDto> CreateAdvancedAsync(CreateAdvancedBookingDto dto);
 }

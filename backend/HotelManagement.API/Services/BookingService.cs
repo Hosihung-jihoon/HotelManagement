@@ -98,4 +98,62 @@ public class BookingService : IBookingService
         await _repository.DeleteAsync(id);
         return true;
     }
+
+    public async Task<IEnumerable<RoomAvailabilityResponseDto>> SearchAvailableRoomsAsync(BookingSearchRequestDto request)
+    {
+        var availableRooms = await _repository.FindAvailableRoomsAsync(
+            request.CheckInDate, 
+            request.CheckOutDate, 
+            request.CapacityAdults, 
+            request.CapacityChildren);
+
+        return availableRooms.Select(r => new RoomAvailabilityResponseDto
+        {
+            RoomId = r.Id,
+            RoomNumber = r.RoomNumber,
+            RoomTypeId = r.RoomType?.Id ?? 0,
+            RoomTypeName = r.RoomType?.Name ?? string.Empty,
+            PricePerNight = r.RoomType?.BasePrice ?? 0,
+            CapacityAdults = r.RoomType?.CapacityAdults ?? 0,
+            CapacityChildren = r.RoomType?.CapacityChildren ?? 0
+        });
+    }
+
+    public async Task<BookingDto> CreateAdvancedAsync(CreateAdvancedBookingDto dto)
+    {
+        string newBookingCode = "BKG" + DateTime.Now.ToString("yyyyMMddHHmmss");
+
+        var booking = new Booking
+        {
+            UserId = dto.UserId,
+            GuestName = dto.GuestName,
+            GuestPhone = dto.GuestPhone,
+            GuestEmail = dto.GuestEmail,
+            VoucherId = dto.VoucherId,
+            BookingCode = newBookingCode,
+            Status = "Pending"
+        };
+
+        var details = dto.Details.Select(d => new BookingDetail
+        {
+            RoomId = d.RoomId,
+            CheckInDate = d.CheckInDate,
+            CheckOutDate = d.CheckOutDate,
+            PricePerNight = d.PricePerNight
+        }).ToList();
+
+        var created = await _repository.CreateWithLockAsync(booking, details);
+
+        return new BookingDto
+        {
+            Id = created.Id,
+            UserId = created.UserId,
+            GuestName = created.GuestName,
+            GuestPhone = created.GuestPhone,
+            GuestEmail = created.GuestEmail,
+            BookingCode = created.BookingCode,
+            VoucherId = created.VoucherId,
+            Status = created.Status
+        };
+    }
 }

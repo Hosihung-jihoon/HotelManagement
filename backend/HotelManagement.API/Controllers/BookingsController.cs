@@ -58,4 +58,28 @@ public class BookingsController : ControllerBase
 
         return NoContent();
     }
+
+    [HttpPost("search")]
+    public async Task<ActionResult<IEnumerable<RoomAvailabilityResponseDto>>> SearchAvailableRooms([FromBody] BookingSearchRequestDto request)
+    {
+        if (request.CheckInDate >= request.CheckOutDate)
+            return BadRequest(new { message = "Ngay CheckOut phải lớn hơn CheckIn" });
+
+        var result = await _service.SearchAvailableRoomsAsync(request);
+        return Ok(result);
+    }
+
+    [HttpPost("advanced-create")]
+    public async Task<ActionResult<BookingDto>> CreateAdvanced([FromBody] CreateAdvancedBookingDto dto)
+    {
+        try
+        {
+            var result = await _service.CreateAdvancedAsync(dto);
+            return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
 }
