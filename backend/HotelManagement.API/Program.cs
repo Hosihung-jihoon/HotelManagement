@@ -18,6 +18,8 @@ builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepositor
 builder.Services.AddScoped<IRoomTypeRepository, RoomTypeRepository>();
 builder.Services.AddScoped<IServiceCategoryRepository, ServiceCategoryRepository>();
 builder.Services.AddScoped<IServiceRepository, ServiceRepository>();
+builder.Services.AddScoped<IAmenityRepository, AmenityRepository>();
+builder.Services.AddScoped<IMembershipRepository, MembershipRepository>();
 
 // ========== Services (DI) ==========
 builder.Services.AddScoped<IRoomTypeService, RoomTypeService>();
@@ -26,6 +28,8 @@ builder.Services.AddScoped<IServiceService, ServiceService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
+builder.Services.AddScoped<IAmenityService, AmenityService>();
+builder.Services.AddScoped<IMembershipService, MembershipService>();
 
 // ========== JWT Authentication ==========
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
