@@ -61,3 +61,18 @@ public class UpdateRoomTypeDto
     public int CapacityChildren { get; set; }
     public string? Description { get; set; }
 }
+
+/// <summary>
+/// DTO để upload images
+/// </summary>
+public class UploadRoomTypeImagesDto
+{
+    public int RoomTypeId { get; set; }
+    public List<Microsoft.AspNetCore.Http.IFormFile> Images { get; set; } = new();
+}
+
+public class SetPrimaryImageDto
+{
+    public int RoomTypeId { get; set; }
+    public int ImageId { get; set; }
+}
