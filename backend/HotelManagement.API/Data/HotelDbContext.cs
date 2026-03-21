@@ -39,6 +39,13 @@ public class HotelDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
+        // ===== Global Query Filters (Soft Delete) =====
+        modelBuilder.Entity<Amenity>()
+            .HasQueryFilter(a => !a.IsDeleted);
+
+        modelBuilder.Entity<Membership>()
+            .HasQueryFilter(m => !m.IsDeleted);
+
         // ===== Composite Keys =====
         modelBuilder.Entity<RolePermission>()
             .HasKey(rp => new { rp.RoleId, rp.PermissionId });
@@ -66,5 +73,47 @@ public class HotelDbContext : DbContext
         // ===== Check Constraints =====
         modelBuilder.Entity<Review>()
             .ToTable(t => t.HasCheckConstraint("CK_Reviews_Rating", "[rating] >= 1 AND [rating] <= 5"));
+
+        // ===== Seed Data: Roles =====
+        modelBuilder.Entity<Role>().HasData(
+            new Role { Id = 1, Name = "Admin", Description = "Quản trị viên hệ thống" },
+            new Role { Id = 2, Name = "Receptionist", Description = "Nhân viên lễ tân" },
+            new Role { Id = 3, Name = "Housekeeping", Description = "Nhân viên dọn phòng" },
+            new Role { Id = 4, Name = "Guest", Description = "Khách hàng" }
+        );
+
+        // ===== Seed Data: Permissions =====
+        modelBuilder.Entity<Permission>().HasData(
+            new Permission { Id = 1, Name = "manage_users" },
+            new Permission { Id = 2, Name = "manage_roles" },
+            new Permission { Id = 3, Name = "manage_rooms" },
+            new Permission { Id = 4, Name = "manage_bookings" },
+            new Permission { Id = 5, Name = "manage_services" },
+            new Permission { Id = 6, Name = "view_reports" },
+            new Permission { Id = 7, Name = "manage_housekeeping" },
+            new Permission { Id = 8, Name = "view_own_bookings" }
+        );
+
+        // ===== Seed Data: Role-Permissions =====
+        modelBuilder.Entity<RolePermission>().HasData(
+            // Admin - tất cả quyền
+            new RolePermission { RoleId = 1, PermissionId = 1 },
+            new RolePermission { RoleId = 1, PermissionId = 2 },
+            new RolePermission { RoleId = 1, PermissionId = 3 },
+            new RolePermission { RoleId = 1, PermissionId = 4 },
+            new RolePermission { RoleId = 1, PermissionId = 5 },
+            new RolePermission { RoleId = 1, PermissionId = 6 },
+            new RolePermission { RoleId = 1, PermissionId = 7 },
+            new RolePermission { RoleId = 1, PermissionId = 8 },
+            // Receptionist
+            new RolePermission { RoleId = 2, PermissionId = 3 },
+            new RolePermission { RoleId = 2, PermissionId = 4 },
+            new RolePermission { RoleId = 2, PermissionId = 5 },
+            new RolePermission { RoleId = 2, PermissionId = 6 },
+            // Housekeeping
+            new RolePermission { RoleId = 3, PermissionId = 7 },
+            // Guest
+            new RolePermission { RoleId = 4, PermissionId = 8 }
+        );
     }
 }

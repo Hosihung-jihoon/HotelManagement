@@ -11,4 +11,9 @@ public interface IRoomTypeRepository : IGenericRepository<RoomType>
 {
     Task<RoomType?> GetByIdWithDetailsAsync(int id);
     Task<IEnumerable<RoomType>> GetAllWithImagesAsync();
+    
+    Task<RoomImage> AddImageAsync(RoomImage image);
+    Task<RoomImage?> GetImageByIdAsync(int imageId);
+    Task<List<RoomImage>> GetImagesByRoomTypeIdAsync(int roomTypeId);
+    Task UpdateImageAsync(RoomImage image);
 }

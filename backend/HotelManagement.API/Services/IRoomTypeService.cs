@@ -13,4 +13,6 @@ public interface IRoomTypeService
     Task<RoomTypeDto> CreateAsync(CreateRoomTypeDto dto);
     Task<bool> UpdateAsync(int id, UpdateRoomTypeDto dto);
     Task<bool> DeleteAsync(int id);
+    Task<List<RoomImageDto>> UploadImagesAsync(UploadRoomTypeImagesDto dto);
+    Task<(bool success, string? error)> SetPrimaryImageAsync(SetPrimaryImageDto dto);
 }
