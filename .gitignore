@@ -12,6 +12,10 @@ obj/
 packages/
 *.nupkg
 
+# Configurations containing secrets
+appsettings.json
+appsettings.*.json
+
 # ============================
 # Node / React
 # ============================
@@ -47,3 +51,4 @@ desktop.ini
 *.tmp
 *.pdf
 *.md.resolved
+.antigravityrules
