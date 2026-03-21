@@ -11,10 +11,12 @@ namespace HotelManagement.API.Services;
 public class PaymentService : IPaymentService
 {
     private readonly IPaymentRepository _repository;
+    private readonly HotelDbContext _context;
 
-    public PaymentService(IPaymentRepository repository)
+    public PaymentService(IPaymentRepository repository, HotelDbContext context)
     {
         _repository = repository;
+        _context = context;
     }
 
     public async Task<IEnumerable<PaymentDto>> GetAllAsync()
@@ -78,6 +80,29 @@ public class PaymentService : IPaymentService
         try
         {
             created = await _repository.CreateAsync(entity);
+
+            // Update Invoice Status
+            if (dto.InvoiceId.HasValue)
+            {
+                var invoice = await _context.Invoices.Include(i => i.Payments).FirstOrDefaultAsync(i => i.Id == dto.InvoiceId.Value);
+                if (invoice != null)
+                {
+                    var totalPaid = invoice.Payments.Sum(p => p.AmountPaid);
+                    if (totalPaid >= invoice.FinalTotal)
+                    {
+                        invoice.Status = "Paid";
+                    }
+                    else if (totalPaid > 0)
+                    {
+                        invoice.Status = "Partial";
+                    }
+                    else
+                    {
+                        invoice.Status = "Unpaid";
+                    }
+                    await _context.SaveChangesAsync();
+                }
+            }
         }
         catch (DbUpdateException ex)
         {
