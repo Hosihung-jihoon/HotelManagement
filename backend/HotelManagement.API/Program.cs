@@ -11,7 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // ========== DbContext ==========
 builder.Services.AddDbContext<HotelDbContext>(options =>
-    options.UseInMemoryDatabase("HotelManagementDB"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // ========== Repositories (DI) ==========
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
