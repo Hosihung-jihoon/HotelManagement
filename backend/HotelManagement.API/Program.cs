@@ -17,12 +17,6 @@ builder.Services.AddDbContext<HotelDbContext>(options =>
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IRoomTypeRepository, RoomTypeRepository>();
 builder.Services.AddScoped<IRoomRepository, RoomRepository>();
-
-// ========== Services (DI) ==========
-builder.Services.AddScoped<IRoomTypeService, RoomTypeService>();
-builder.Services.AddScoped<IRoomService, RoomService>();
-builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
-
 builder.Services.AddScoped<IServiceCategoryRepository, ServiceCategoryRepository>();
 builder.Services.AddScoped<IServiceRepository, ServiceRepository>();
 builder.Services.AddScoped<IAmenityRepository, AmenityRepository>();
@@ -30,6 +24,8 @@ builder.Services.AddScoped<IMembershipRepository, MembershipRepository>();
 
 // ========== Services (DI) ==========
 builder.Services.AddScoped<IRoomTypeService, RoomTypeService>();
+builder.Services.AddScoped<IRoomService, RoomService>();
+builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
 builder.Services.AddScoped<IServiceCategoryService, ServiceCategoryService>();
 builder.Services.AddScoped<IServiceService, ServiceService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
