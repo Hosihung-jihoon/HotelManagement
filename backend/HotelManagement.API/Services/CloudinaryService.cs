@@ -1,21 +1,26 @@
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
-using HotelManagement.API.Models;
-using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 
 namespace HotelManagement.API.Services;
+
+public interface ICloudinaryService
+{
+    Task<string> UploadImageAsync(IFormFile file);
+    Task<DeletionResult> DeleteImageAsync(string publicId);
+}
 
 public class CloudinaryService : ICloudinaryService
 {
     private readonly Cloudinary _cloudinary;
 
-    public CloudinaryService(IOptions<CloudinarySettings> config)
+    public CloudinaryService(IConfiguration config)
     {
-        var acc = new Account
-        (
-            config.Value.CloudName,
-            config.Value.ApiKey,
-            config.Value.ApiSecret
+        var acc = new Account(
+            config["Cloudinary:CloudName"],
+            config["Cloudinary:ApiKey"],
+            config["Cloudinary:ApiSecret"]
         );
 
         _cloudinary = new Cloudinary(acc);
@@ -37,14 +42,12 @@ public class CloudinaryService : ICloudinaryService
             uploadResult = await _cloudinary.UploadAsync(uploadParams);
         }
 
-        return uploadResult.Url?.ToString() ?? string.Empty;
+        return uploadResult.SecureUrl?.ToString() ?? string.Empty;
     }
 
-    public async Task<bool> DeleteImageAsync(string publicId)
+    public async Task<DeletionResult> DeleteImageAsync(string publicId)
     {
         var deleteParams = new DeletionParams(publicId);
-        var result = await _cloudinary.DestroyAsync(deleteParams);
-
-        return result.Result == "ok";
+        return await _cloudinary.DestroyAsync(deleteParams);
     }
 }
