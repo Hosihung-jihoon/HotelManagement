@@ -115,6 +115,9 @@ builder.Services.AddCors(options =>
     });
 });
 
+// ========== QuestPDF License ==========
+QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
+
 var app = builder.Build();
 
 // ========== Middleware Pipeline ==========

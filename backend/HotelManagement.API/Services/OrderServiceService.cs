@@ -70,7 +70,7 @@ public class OrderServiceService : IOrderServiceService
                 Id = d.Id,
                 OrderServiceId = d.OrderServiceId,
                 ServiceId = d.ServiceId,
-                ServiceName = services.First(s => s.Id == d.ServiceId).ServiceName,
+                ServiceName = services.First(s => s.Id == d.ServiceId).Name,
                 Quantity = d.Quantity,
                 UnitPrice = d.UnitPrice
             }).ToList()
@@ -99,7 +99,7 @@ public class OrderServiceService : IOrderServiceService
                 Id = d.Id,
                 OrderServiceId = d.OrderServiceId,
                 ServiceId = d.ServiceId,
-                ServiceName = d.Service?.ServiceName,
+                ServiceName = d.Service?.Name,
                 Quantity = d.Quantity,
                 UnitPrice = d.UnitPrice
             }).ToList()
@@ -123,7 +123,7 @@ public class OrderServiceService : IOrderServiceService
                 Id = d.Id,
                 OrderServiceId = d.OrderServiceId,
                 ServiceId = d.ServiceId,
-                ServiceName = d.Service?.ServiceName,
+                ServiceName = d.Service?.Name,
                 Quantity = d.Quantity,
                 UnitPrice = d.UnitPrice
             }).ToList()

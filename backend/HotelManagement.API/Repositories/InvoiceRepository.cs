@@ -32,4 +32,14 @@ public class InvoiceRepository : GenericRepository<Invoice>, IInvoiceRepository
             .Include(i => i.Booking)
             .ToListAsync();
     }
+
+    /// <summary>
+    /// Lấy Invoice theo BookingId
+    /// </summary>
+    public async Task<Invoice?> GetByBookingIdAsync(int bookingId)
+    {
+        return await _context.Invoices
+            .Include(i => i.Payments)
+            .FirstOrDefaultAsync(i => i.BookingId == bookingId);
+    }
 }
