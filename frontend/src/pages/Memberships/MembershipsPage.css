@@ -1,0 +1,202 @@
+/* MembershipsPage.css */
+.memberships-container {
+  padding: 40px 24px;
+  background-color: #f8fafc;
+  min-height: calc(100vh - 80px);
+}
+
+.anim-fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.memberships-header {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.memberships-header h1 {
+  font-size: 38px;
+  color: #1e293b;
+  margin-bottom: 16px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.memberships-header p {
+  font-size: 16px;
+  color: #64748b;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.tiers-grid {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+  flex-wrap: wrap;
+}
+
+.tier-card {
+  background: white;
+  border-radius: 24px;
+  padding: 32px 24px;
+  width: 340px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.tier-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 30px -5px rgba(0, 0, 0, 0.1);
+}
+
+.tier-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.tier-header h3 {
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.tier-icon {
+  font-size: 28px;
+}
+
+.silver h3 { color: #64748b; }
+.gold h3 { color: #d97706; }
+.platinum h3 { color: #1e293b; }
+
+.tier-points {
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #f1f5f9;
+}
+
+.tier-points span {
+  font-size: 14px;
+  color: #94a3b8;
+}
+
+.tier-points strong {
+  font-size: 18px;
+  color: #1e293b;
+  font-weight: 700;
+}
+
+.tier-desc {
+  color: #475569;
+  font-size: 15px;
+  line-height: 1.5;
+  margin-bottom: 24px;
+  min-height: 45px;
+}
+
+.benefits-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 32px 0;
+  flex-grow: 1;
+}
+
+.benefits-list li {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: #334155;
+  line-height: 1.5;
+}
+
+.benefits-list li span {
+  margin-right: 12px;
+  color: #10b981;
+  font-weight: bold;
+}
+
+.benefits-list li.disabled {
+  color: #94a3b8;
+}
+
+.benefits-list li.disabled span {
+  color: #cbd5e1;
+}
+
+.popular {
+  border: 2px solid #fbbf24;
+  transform: scale(1.05);
+}
+
+.popular:hover {
+  transform: scale(1.05) translateY(-8px);
+}
+
+.popular-badge {
+  position: absolute;
+  top: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 13px;
+  box-shadow: 0 4px 6px -1px rgba(245, 158, 11, 0.4);
+}
+
+.btn-tier {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.silver-btn {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.silver-btn:hover { background: #e2e8f0; }
+
+.gold-btn {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.gold-btn:hover { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+
+.platinum-btn {
+  background: #1e293b;
+  color: white;
+}
+
+.platinum-btn:hover { background: #0f172a; }
+
+/* Responsive adjustments */
+@media (max-width: 1100px) {
+  .popular {
+    transform: none;
+  }
+  .popular:hover {
+    transform: translateY(-8px);
+  }
+}
