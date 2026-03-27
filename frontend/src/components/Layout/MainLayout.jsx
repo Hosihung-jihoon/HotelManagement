@@ -10,7 +10,7 @@ function MainLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const menuItems = [
-    { path: '/', label: 'Dashboard', icon: '📊' },
+    { path: '/admin', label: 'Dashboard', icon: '📊' },
     { path: '/room-types', label: 'Loại Phòng', icon: '🏨' },
     { path: '/rooms', label: 'Phòng', icon: '🚪' },
     { path: '/bookings', label: 'Đặt Phòng', icon: '📅' },
@@ -20,6 +20,7 @@ function MainLayout() {
     { path: '/articles', label: 'Bài Viết', icon: '📰' },
     { path: '/reviews', label: 'Đánh Giá', icon: '⭐' },
     { path: '/users', label: 'Người Dùng', icon: '👥' },
+    { path: '/roles', label: 'Vai Trò', icon: '🔑' },
     { path: '/vouchers', label: 'Voucher', icon: '🎟️' },
     { path: '/memberships', label: 'Membership', icon: '💎' },
   ];

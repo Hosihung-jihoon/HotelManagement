@@ -1,0 +1,64 @@
+/* ========== Booking History Page ========== */
+.booking-history-page {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.bh-header { text-align: center; margin-bottom: 40px; }
+.bh-header h1 { font-size: 2rem; color: #1e293b; margin-bottom: 8px; }
+.bh-header p { color: #64748b; font-size: 1.05rem; }
+
+.bh-list { display: flex; flex-direction: column; gap: 24px; }
+
+/* Empty State */
+.bh-empty { background: #fff; border-radius: 16px; padding: 60px 20px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.04); border: 1px dashed #cbd5e1; }
+.bh-empty-icon { font-size: 4rem; margin-bottom: 20px; }
+.bh-empty h3 { font-size: 1.5rem; color: #1e293b; margin-bottom: 12px; }
+.bh-empty p { color: #64748b; font-size: 1rem; margin-bottom: 24px; }
+.btn-explore { background: linear-gradient(135deg, #0ea5e9, #3b82f6); color: #fff; padding: 12px 24px; border-radius: 12px; text-decoration: none; font-weight: 600; font-size: 1rem; box-shadow: 0 4px 12px rgba(14,165,233,0.3); transition: all 0.2s; display: inline-block; }
+.btn-explore:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(14,165,233,0.4); }
+
+/* Booking Card */
+.bh-card { background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.06); border: 1px solid #f1f5f9; transition: transform 0.2s, box-shadow 0.2s; }
+.bh-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+
+/* Card Header */
+.bh-card-header { background: #f8fafc; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; }
+.bh-code { font-weight: 800; color: #0f172a; font-size: 1.05rem; margin-right: 16px; }
+.bh-date-booked { font-size: 0.85rem; color: #64748b; }
+
+.b-badge { padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; display: inline-block; }
+.b-paid { background: #dcfce7; color: #16a34a; }
+.b-pending { background: #fef3c7; color: #d97706; }
+.b-cancelled { background: #fee2e2; color: #dc2626; }
+.b-completed { background: #e0e7ff; color: #4338ca; }
+
+/* Card Body */
+.bh-card-body { padding: 24px; display: grid; grid-template-columns: 240px 1fr 220px; gap: 24px; align-items: center; }
+
+@media (max-width: 800px) {
+  .bh-card-body { grid-template-columns: 1fr; gap: 20px; }
+  .bh-room-img img { height: 200px !important; }
+}
+
+.bh-room-img img { width: 100%; height: 160px; object-fit: cover; border-radius: 12px; display: block; }
+
+.bh-room-info { display: flex; flex-direction: column; gap: 12px; }
+.bh-room-title { font-size: 1.25rem; font-weight: 700; color: #1e293b; margin: 0; }
+
+.bh-dates-row { display: flex; align-items: center; gap: 16px; background: #f8fafc; padding: 12px 16px; border-radius: 10px; }
+.bh-date-item { display: flex; flex-direction: column; }
+.b-lbl { font-size: 0.75rem; color: #64748b; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; margin-bottom: 4px; }
+.b-val { font-size: 1rem; color: #0f172a; }
+.bh-date-divider { font-size: 1.25rem; color: #94a3b8; }
+
+.bh-payment-method { margin-top: 4px; display: flex; flex-direction: column; }
+
+.bh-price-info { text-align: right; border-left: 1px dashed #e2e8f0; padding-left: 24px; display: flex; flex-direction: column; justify-content: center; height: 100%; }
+.bh-total-price { display: block; font-size: 1.6rem; font-weight: 800; color: #e11d48; margin-top: 4px; margin-bottom: 16px; }
+
+.bh-actions { display: flex; flex-direction: column; gap: 10px; }
+.btn-pay-now { background: linear-gradient(135deg, #10b981, #059669); color: #fff; border: none; padding: 10px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 10px rgba(16,185,129,0.25); }
+.btn-pay-now:hover { transform: translateY(-1px); box-shadow: 0 6px 14px rgba(16,185,129,0.35); }
+.btn-view-details { background: #f1f5f9; color: #475569; border: none; padding: 10px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s; border: 1px solid #e2e8f0; }
+.btn-view-details:hover { background: #e2e8f0; color: #0f172a; }
