@@ -39,6 +39,13 @@ public class HotelDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
+        // ===== Global Query Filters (Soft Delete) =====
+        modelBuilder.Entity<Amenity>()
+            .HasQueryFilter(a => !a.IsDeleted);
+
+        modelBuilder.Entity<Membership>()
+            .HasQueryFilter(m => !m.IsDeleted);
+
         // ===== Composite Keys =====
         modelBuilder.Entity<RolePermission>()
             .HasKey(rp => new { rp.RoleId, rp.PermissionId });
@@ -65,7 +72,7 @@ public class HotelDbContext : DbContext
 
         // ===== Check Constraints =====
         modelBuilder.Entity<Review>()
-            .ToTable(t => t.HasCheckConstraint("CK_Reviews_Rating", "[rating] >= 1 AND [rating] <= 5"));
+            .HasCheckConstraint("CK_Reviews_Rating", "[rating] >= 1 AND [rating] <= 5");
 
         // ===== Seed Data: Roles =====
         modelBuilder.Entity<Role>().HasData(

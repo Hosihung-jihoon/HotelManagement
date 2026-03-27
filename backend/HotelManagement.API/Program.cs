@@ -16,12 +16,43 @@ builder.Services.AddDbContext<HotelDbContext>(options =>
 // ========== Repositories (DI) ==========
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IRoomTypeRepository, RoomTypeRepository>();
+builder.Services.AddScoped<IArticleCategoryRepository, ArticleCategoryRepository>();
+builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
+builder.Services.AddScoped<IAttractionRepository, AttractionRepository>();
+builder.Services.AddScoped<IRoomInventoryRepository, RoomInventoryRepository>();
+builder.Services.AddScoped<IBookingRepository, BookingRepository>();
+builder.Services.AddScoped<IVoucherRepository, VoucherRepository>();
+builder.Services.AddScoped<IRoomRepository, RoomRepository>();
+builder.Services.AddScoped<IServiceCategoryRepository, ServiceCategoryRepository>();
+builder.Services.AddScoped<IServiceRepository, ServiceRepository>();
+builder.Services.AddScoped<IAmenityRepository, AmenityRepository>();
+builder.Services.AddScoped<IMembershipRepository, MembershipRepository>();
+builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
+builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+builder.Services.AddScoped<IOrderServiceRepository, OrderServiceRepository>();
 
 // ========== Services (DI) ==========
 builder.Services.AddScoped<IRoomTypeService, RoomTypeService>();
+builder.Services.AddScoped<IRoomService, RoomService>();
+builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
+builder.Services.AddScoped<IServiceCategoryService, ServiceCategoryService>();
+builder.Services.AddScoped<IServiceService, ServiceService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
+builder.Services.AddScoped<IArticleCategoryService, ArticleCategoryService>();
+builder.Services.AddScoped<IArticleService, ArticleService>();
+builder.Services.AddScoped<IAttractionService, AttractionService>();
+builder.Services.AddScoped<IRoomInventoryService, RoomInventoryService>();
+builder.Services.Configure<HotelManagement.API.Models.CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
+builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
+builder.Services.AddScoped<IBookingService, BookingService>();
+builder.Services.AddScoped<IVoucherService, VoucherService>();
+builder.Services.AddScoped<IAmenityService, AmenityService>();
+builder.Services.AddScoped<IMembershipService, MembershipService>();
+builder.Services.AddScoped<IInvoiceService, InvoiceService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IOrderServiceService, OrderServiceService>();
 
 // ========== JWT Authentication ==========
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
@@ -46,8 +77,9 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// ========== Controllers ==========
+// ========== Controllers & SignalR ==========
 builder.Services.AddControllers();
+builder.Services.AddSignalR();
 
 // ========== Swagger (có Bearer Token) ==========
 builder.Services.AddEndpointsApiExplorer();
@@ -94,7 +126,8 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins("http://localhost:5173")
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials();
     });
 });
 
@@ -117,5 +150,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<HotelManagement.API.Hubs.RoomHub>("/roomHub");
 
 app.Run();

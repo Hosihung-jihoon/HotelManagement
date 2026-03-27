@@ -11,8 +11,9 @@ function MainLayout() {
 
   const menuItems = [
     { path: '/', label: 'Dashboard', icon: '📊' },
-    { path: '/room-types', label: 'Loại Phòng', icon: '🏨' },
-    { path: '/rooms', label: 'Phòng', icon: '🚪' },
+    { path: '/room-types', label: 'Cấu Hình Loại PC', icon: '⚙️' },
+    { path: '/client/room-types', label: 'Quỹ Phòng (Client)', icon: '🏨' },
+    { path: '/rooms', label: 'Quản Lý Phòng', icon: '🚪' },
     { path: '/bookings', label: 'Đặt Phòng', icon: '📅' },
     { path: '/invoices', label: 'Hóa Đơn', icon: '💰' },
     { path: '/services', label: 'Dịch Vụ', icon: '🍽️' },

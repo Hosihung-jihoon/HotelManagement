@@ -21,6 +21,9 @@ public class Membership
     [Column("discount_percent", TypeName = "decimal(5,2)")]
     public decimal? DiscountPercent { get; set; } = 0;
 
+    [Column("is_deleted")]
+    public bool IsDeleted { get; set; } = false;
+
     // Navigation
     public ICollection<User> Users { get; set; } = new List<User>();
 }

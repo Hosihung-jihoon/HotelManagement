@@ -11,10 +11,12 @@ namespace HotelManagement.API.Services;
 public class RoomTypeService : IRoomTypeService
 {
     private readonly IRoomTypeRepository _repository;
+    private readonly ICloudinaryService _cloudinaryService;
 
-    public RoomTypeService(IRoomTypeRepository repository)
+    public RoomTypeService(IRoomTypeRepository repository, ICloudinaryService cloudinaryService)
     {
         _repository = repository;
+        _cloudinaryService = cloudinaryService;
     }
 
     public async Task<IEnumerable<RoomTypeDto>> GetAllAsync()
@@ -108,5 +110,59 @@ public class RoomTypeService : IRoomTypeService
 
         await _repository.DeleteAsync(id);
         return true;
+    }
+
+    public async Task<List<RoomImageDto>> UploadImagesAsync(UploadRoomTypeImagesDto dto)
+    {
+        var uploadedImages = new List<RoomImageDto>();
+        var roomType = await _repository.GetByIdAsync(dto.RoomTypeId);
+        if (roomType == null) return uploadedImages;
+
+        foreach (var file in dto.Images)
+        {
+            var url = await _cloudinaryService.UploadImageAsync(file);
+            if (!string.IsNullOrEmpty(url))
+            {
+                var imageEntity = new RoomImage
+                {
+                    RoomTypeId = dto.RoomTypeId,
+                    ImageUrl = url,
+                    IsPrimary = false 
+                };
+                await _repository.AddImageAsync(imageEntity);
+
+                uploadedImages.Add(new RoomImageDto
+                {
+                    Id = imageEntity.Id,
+                    ImageUrl = imageEntity.ImageUrl,
+                    IsPrimary = false
+                });
+            }
+        }
+        return uploadedImages;
+    }
+
+    public async Task<(bool success, string? error)> SetPrimaryImageAsync(SetPrimaryImageDto dto)
+    {
+        var image = await _repository.GetImageByIdAsync(dto.ImageId);
+        if (image == null || image.RoomTypeId != dto.RoomTypeId) 
+            return (false, "Không tìm thấy ảnh hoặc ảnh không thuộc loại phòng này.");
+
+        var images = await _repository.GetImagesByRoomTypeIdAsync(dto.RoomTypeId);
+        
+        foreach(var img in images)
+        {
+            if (img.Id == dto.ImageId)
+            {
+                img.IsPrimary = true;
+            }
+            else
+            {
+                img.IsPrimary = false;
+            }
+            await _repository.UpdateImageAsync(img);
+        }
+
+        return (true, null);
     }
 }
