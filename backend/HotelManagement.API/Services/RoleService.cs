@@ -17,12 +17,12 @@ public class RoleService : IRoleService
         _context = context;
     }
 
-    /// <summary>
-    /// Lấy danh sách tất cả roles
-    /// </summary>
+    // ========== Query ==========
+
     public async Task<IEnumerable<RoleDto>> GetAllRolesAsync()
     {
         return await _context.Roles
+            .OrderBy(r => r.Id)
             .Select(r => new RoleDto
             {
                 Id = r.Id,
@@ -32,9 +32,6 @@ public class RoleService : IRoleService
             .ToListAsync();
     }
 
-    /// <summary>
-    /// Lấy role kèm danh sách permissions
-    /// </summary>
     public async Task<RoleWithPermissionsDto?> GetRoleWithPermissionsAsync(int roleId)
     {
         var role = await _context.Roles
@@ -57,9 +54,93 @@ public class RoleService : IRoleService
         };
     }
 
-    /// <summary>
-    /// Gán permissions cho role - xóa cũ, thêm mới
-    /// </summary>
+    public async Task<IEnumerable<PermissionDto>> GetAllPermissionsAsync()
+    {
+        return await _context.Permissions
+            .OrderBy(p => p.Name)
+            .Select(p => new PermissionDto
+            {
+                Id = p.Id,
+                Name = p.Name
+            })
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<PermissionDto>> GetMyPermissionsAsync(int userId)
+    {
+        var user = await _context.Users
+            .Include(u => u.Role)
+                .ThenInclude(r => r!.RolePermissions)
+                    .ThenInclude(rp => rp.Permission)
+            .FirstOrDefaultAsync(u => u.Id == userId);
+
+        if (user?.Role == null)
+            return Enumerable.Empty<PermissionDto>();
+
+        return user.Role.RolePermissions.Select(rp => new PermissionDto
+        {
+            Id = rp.Permission.Id,
+            Name = rp.Permission.Name
+        });
+    }
+
+    // ========== CRUD Roles ==========
+
+    public async Task<RoleDto> CreateRoleAsync(CreateRoleDto dto)
+    {
+        var nameExists = await _context.Roles.AnyAsync(r => r.Name == dto.Name);
+        if (nameExists)
+            throw new ArgumentException($"Tên vai trò '{dto.Name}' đã tồn tại.");
+
+        var role = new Role
+        {
+            Name = dto.Name,
+            Description = dto.Description
+        };
+
+        _context.Roles.Add(role);
+        await _context.SaveChangesAsync();
+
+        return new RoleDto { Id = role.Id, Name = role.Name, Description = role.Description };
+    }
+
+    public async Task<bool> UpdateRoleAsync(int roleId, UpdateRoleDto dto)
+    {
+        var role = await _context.Roles.FindAsync(roleId);
+        if (role == null) return false;
+
+        var nameExists = await _context.Roles.AnyAsync(r => r.Name == dto.Name && r.Id != roleId);
+        if (nameExists)
+            throw new ArgumentException($"Tên vai trò '{dto.Name}' đã tồn tại.");
+
+        role.Name = dto.Name;
+        role.Description = dto.Description;
+
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> DeleteRoleAsync(int roleId)
+    {
+        var role = await _context.Roles.FindAsync(roleId);
+        if (role == null) return false;
+
+        // Kiểm tra có user nào đang dùng role này không
+        var hasUsers = await _context.Users.AnyAsync(u => u.RoleId == roleId);
+        if (hasUsers)
+            throw new InvalidOperationException("Không thể xóa vai trò đang được gán cho nhân viên. Hãy đổi role cho nhân viên trước.");
+
+        // Xóa permissions liên kết trước
+        var rolePermissions = await _context.RolePermissions.Where(rp => rp.RoleId == roleId).ToListAsync();
+        _context.RolePermissions.RemoveRange(rolePermissions);
+
+        _context.Roles.Remove(role);
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    // ========== Permissions ==========
+
     public async Task<bool> AssignPermissionsAsync(AssignPermissionDto dto)
     {
         var role = await _context.Roles.FindAsync(dto.RoleId);
@@ -88,40 +169,5 @@ public class RoleService : IRoleService
 
         await _context.SaveChangesAsync();
         return true;
-    }
-
-    /// <summary>
-    /// Lấy danh sách permissions của user hiện tại (qua role)
-    /// </summary>
-    public async Task<IEnumerable<PermissionDto>> GetMyPermissionsAsync(int userId)
-    {
-        var user = await _context.Users
-            .Include(u => u.Role)
-                .ThenInclude(r => r!.RolePermissions)
-                    .ThenInclude(rp => rp.Permission)
-            .FirstOrDefaultAsync(u => u.Id == userId);
-
-        if (user?.Role == null)
-            return Enumerable.Empty<PermissionDto>();
-
-        return user.Role.RolePermissions.Select(rp => new PermissionDto
-        {
-            Id = rp.Permission.Id,
-            Name = rp.Permission.Name
-        });
-    }
-
-    /// <summary>
-    /// Lấy tất cả permissions (để hiển thị khi gán cho role)
-    /// </summary>
-    public async Task<IEnumerable<PermissionDto>> GetAllPermissionsAsync()
-    {
-        return await _context.Permissions
-            .Select(p => new PermissionDto
-            {
-                Id = p.Id,
-                Name = p.Name
-            })
-            .ToListAsync();
     }
 }

@@ -21,9 +21,7 @@ public class RolesController : ControllerBase
         _roleService = roleService;
     }
 
-    /// <summary>
-    /// Lấy danh sách tất cả roles
-    /// </summary>
+    /// <summary>Lấy danh sách tất cả roles</summary>
     [HttpGet]
     [PermissionAuthorize("manage_roles")]
     public async Task<ActionResult<IEnumerable<RoleDto>>> GetAll()
@@ -32,9 +30,7 @@ public class RolesController : ControllerBase
         return Ok(result);
     }
 
-    /// <summary>
-    /// Lấy role kèm danh sách permissions
-    /// </summary>
+    /// <summary>Lấy role kèm danh sách permissions</summary>
     [HttpGet("{id}/permissions")]
     [PermissionAuthorize("manage_roles")]
     public async Task<ActionResult<RoleWithPermissionsDto>> GetRoleWithPermissions(int id)
@@ -42,13 +38,10 @@ public class RolesController : ControllerBase
         var result = await _roleService.GetRoleWithPermissionsAsync(id);
         if (result == null)
             return NotFound(new { message = $"Không tìm thấy role với ID = {id}" });
-
         return Ok(result);
     }
 
-    /// <summary>
-    /// Lấy tất cả permissions (để hiển thị khi gán)
-    /// </summary>
+    /// <summary>Lấy tất cả permissions (để hiển thị khi gán)</summary>
     [HttpGet("all-permissions")]
     [PermissionAuthorize("manage_roles")]
     public async Task<ActionResult<IEnumerable<PermissionDto>>> GetAllPermissions()
@@ -57,9 +50,59 @@ public class RolesController : ControllerBase
         return Ok(result);
     }
 
-    /// <summary>
-    /// Gán permissions cho role
-    /// </summary>
+    /// <summary>Tạo role mới</summary>
+    [HttpPost]
+    [PermissionAuthorize("manage_roles")]
+    public async Task<ActionResult<RoleDto>> Create([FromBody] CreateRoleDto dto)
+    {
+        try
+        {
+            var result = await _roleService.CreateRoleAsync(dto);
+            return CreatedAtAction(nameof(GetRoleWithPermissions), new { id = result.Id }, result);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>Cập nhật role</summary>
+    [HttpPut("{id}")]
+    [PermissionAuthorize("manage_roles")]
+    public async Task<IActionResult> Update(int id, [FromBody] UpdateRoleDto dto)
+    {
+        try
+        {
+            var success = await _roleService.UpdateRoleAsync(id, dto);
+            if (!success)
+                return NotFound(new { message = $"Không tìm thấy role với ID = {id}" });
+            return Ok(new { message = "Cập nhật vai trò thành công." });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>Xóa role</summary>
+    [HttpDelete("{id}")]
+    [PermissionAuthorize("manage_roles")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        try
+        {
+            var success = await _roleService.DeleteRoleAsync(id);
+            if (!success)
+                return NotFound(new { message = $"Không tìm thấy role với ID = {id}" });
+            return Ok(new { message = "Đã xóa vai trò." });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>Gán permissions cho role (replace all)</summary>
     [HttpPost("assign-permission")]
     [PermissionAuthorize("manage_roles")]
     public async Task<IActionResult> AssignPermission([FromBody] AssignPermissionDto dto)
@@ -75,9 +118,7 @@ public class RolesController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Lấy danh sách permissions của user hiện tại
-    /// </summary>
+    /// <summary>Lấy danh sách permissions của user hiện tại</summary>
     [HttpGet("my-permissions")]
     public async Task<ActionResult<IEnumerable<PermissionDto>>> GetMyPermissions()
     {
