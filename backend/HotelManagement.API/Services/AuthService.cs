@@ -51,10 +51,16 @@ public class AuthService : IAuthService
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
 
-        // Load role để tạo token
+        // Load role và permissions để tạo token
         await _context.Entry(user).Reference(u => u.Role).LoadAsync();
+        if (user.Role != null)
+        {
+            await _context.Entry(user.Role).Collection(r => r.RolePermissions).Query().Include(rp => rp.Permission).LoadAsync();
+        }
 
-        return GenerateTokenResponse(user);
+        var permissions = user.Role?.RolePermissions.Select(rp => rp.Permission.Name).ToList() ?? new List<string>();
+
+        return GenerateTokenResponse(user, permissions);
     }
 
     /// <summary>
@@ -64,6 +70,8 @@ public class AuthService : IAuthService
     {
         var user = await _context.Users
             .Include(u => u.Role)
+                .ThenInclude(r => r!.RolePermissions)
+                    .ThenInclude(rp => rp.Permission)
             .FirstOrDefaultAsync(u => u.Email == dto.Email);
 
         if (user == null)
@@ -75,12 +83,14 @@ public class AuthService : IAuthService
         if (user.Status != true)
             throw new UnauthorizedAccessException("Tài khoản đã bị khóa.");
 
-        return GenerateTokenResponse(user);
+        var permissions = user.Role?.RolePermissions.Select(rp => rp.Permission.Name).ToList() ?? new List<string>();
+
+        return GenerateTokenResponse(user, permissions);
     }
 
     // ===== Private Helpers =====
 
-    private TokenResponseDto GenerateTokenResponse(User user)
+    private TokenResponseDto GenerateTokenResponse(User user, List<string> permissions)
     {
         var jwtSettings = _configuration.GetSection("JwtSettings");
         var secretKey = jwtSettings["SecretKey"]!;
@@ -117,7 +127,8 @@ public class AuthService : IAuthService
                 Id = user.Id,
                 Email = user.Email,
                 FullName = user.FullName,
-                RoleName = user.Role?.Name
+                RoleName = user.Role?.Name,
+                Permissions = permissions
             }
         };
     }

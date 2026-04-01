@@ -39,6 +39,7 @@ builder.Services.AddScoped<IMembershipService, MembershipService>();
 builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IOrderServiceService, OrderServiceService>();
+builder.Services.AddScoped<IVnPayService, VnPayService>();
 
 // ========== JWT Authentication ==========
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
