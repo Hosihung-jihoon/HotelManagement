@@ -34,6 +34,7 @@ public class HotelDbContext : DbContext
     public DbSet<ServiceCategory> ServiceCategories { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<Voucher> Vouchers { get; set; }
+    public DbSet<Notification> Notifications { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -1,0 +1,11 @@
+| Email | Password |
+| :--- | :--- |
+| admin@hotel.com | admin |
+| manager@hotel.com | manager |
+| reception1@hotel.com | 123456 |
+| reception2@hotel.com | 123456 |
+| accountant@hotel.com | 123456 |
+| hunglm@vaa.edu.vn | 123456 |
+| manhung08062@gmail.com | 123456 |
+| dainguyen1254@gmail.com | 123456 |
+| nguyenbinhan2707@gmail.com | 123456 |

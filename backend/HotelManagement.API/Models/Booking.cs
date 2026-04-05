@@ -37,6 +37,9 @@ public class Booking
     [MaxLength(50)]
     public string? Status { get; set; } = "Pending";
 
+    [Column("created_at")]
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
     // Navigation
     [ForeignKey("UserId")]
     public User? User { get; set; }

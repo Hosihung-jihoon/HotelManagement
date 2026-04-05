@@ -1,0 +1,52 @@
+/* LossesPage */
+@import url('../Rooms/RoomsPage.css');
+@import url('../Inventory/InventoryPage.css');
+.losses-page { padding: 0; }
+
+/* Stats grid */
+.stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
+.stat-card {
+  display: flex; align-items: center; gap: 16px;
+  padding: 18px 20px; border-radius: 14px; background: var(--surface-color);
+  border: 1px solid var(--border-color);
+}
+.stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+.stat-card.red .stat-icon { background: #fee2e2; color: #dc2626; }
+.stat-card.orange .stat-icon { background: #fef3c7; color: #d97706; }
+.stat-card.blue .stat-icon { background: #dbeafe; color: #2563eb; }
+.stat-value { font-size: 1.3rem; font-weight: 800; color: var(--text-primary); }
+.stat-label { font-size: 0.8rem; color: var(--text-muted); margin-top: 2px; }
+
+/* Loss ID */
+.loss-id { font-family: monospace; font-size: 0.82rem; font-weight: 700; color: #2563eb; background: #dbeafe; padding: 2px 8px; border-radius: 4px; }
+
+/* Evidence thumb */
+.evidence-thumb { width: 48px; height: 36px; border-radius: 6px; object-fit: cover; border: 1px solid var(--border-color); }
+.no-image { display: flex; align-items: center; gap: 4px; color: var(--text-muted); font-size: 0.78rem; }
+
+/* Fine amount */
+.fine-amount { font-weight: 700; color: #dc2626; font-size: 0.875rem; }
+
+.desc-cell { color: var(--text-secondary); font-size: 0.82rem; }
+
+/* Action buttons */
+.action-btns { display: flex; gap: 6px; }
+.btn-delete {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 10px; border-radius: 7px; border: 1px solid #fecaca;
+  background: #fff1f2; color: #dc2626; font-size: 0.82rem; cursor: pointer; transition: all 0.2s;
+}
+.btn-delete:hover { background: #dc2626; color: #fff; border-color: #dc2626; }
+
+/* Confirm box */
+.confirm-box {
+  background: var(--surface-color); border-radius: 14px; padding: 28px 32px;
+  max-width: 380px; width: 100%; text-align: center;
+}
+.confirm-box h4 { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
+.confirm-box p { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 20px; }
+.confirm-actions { display: flex; gap: 12px; justify-content: center; }
+.btn-delete-confirm { padding: 9px 24px; border-radius: 9px; background: #dc2626; color: #fff; border: none; font-weight: 600; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+.btn-delete-confirm:hover { background: #b91c1c; }
+
+@media (max-width: 768px) { .stats-grid { grid-template-columns: 1fr; } }

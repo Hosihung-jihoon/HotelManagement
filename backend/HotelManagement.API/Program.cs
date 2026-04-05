@@ -1,5 +1,6 @@
 using System.Text;
 using HotelManagement.API.Data;
+using HotelManagement.API.Hubs;
 using HotelManagement.API.Repositories;
 using HotelManagement.API.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -30,6 +31,7 @@ builder.Services.AddScoped<IMembershipRepository, MembershipRepository>();
 builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<IOrderServiceRepository, OrderServiceRepository>();
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 
 // ========== Services (DI) ==========
 builder.Services.AddScoped<IRoomTypeService, RoomTypeService>();
@@ -53,6 +55,10 @@ builder.Services.AddScoped<IMembershipService, MembershipService>();
 builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IOrderServiceService, OrderServiceService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<ILossAndDamageService, LossAndDamageService>();
+builder.Services.AddScoped<IPasswordResetService, PasswordResetService>();
 
 // ========== JWT Authentication ==========
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
@@ -76,6 +82,9 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(secretKey)
     };
 });
+
+// ========== SignalR ==========
+builder.Services.AddSignalR();
 
 // ========== Controllers ==========
 builder.Services.AddControllers();
@@ -125,7 +134,8 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins("http://localhost:5173")
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials();
     });
 });
 
@@ -148,5 +158,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// ========== SignalR Hub ==========
+app.MapHub<NotificationHub>("/hubs/notification");
 
 app.Run();

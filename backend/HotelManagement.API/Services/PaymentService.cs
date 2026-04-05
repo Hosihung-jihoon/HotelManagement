@@ -1,3 +1,4 @@
+using HotelManagement.API.Data;
 using HotelManagement.API.DTOs;
 using HotelManagement.API.Models;
 using HotelManagement.API.Repositories;
