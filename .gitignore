@@ -52,3 +52,5 @@ desktop.ini
 *.pdf
 *.md.resolved
 .antigravityrules
+*.db
+export_to_sqlite.py

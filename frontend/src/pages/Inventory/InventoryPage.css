@@ -37,3 +37,11 @@
 /* form hint */
 .form-hint { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; }
 .depreciation-preview { font-size: 0.75rem; color: #2563eb; margin-top: 4px; display: block; }
+
+/* 9-column compact table */
+.inv-table th, .inv-table td {
+  padding: 10px 10px;
+  font-size: 0.82rem;
+}
+.inv-table td:first-child { padding: 8px 10px; }
+

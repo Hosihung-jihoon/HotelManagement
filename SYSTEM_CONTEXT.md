@@ -2,7 +2,7 @@
 
 > **Mục đích:** File này là "bộ nhớ" duy nhất cho toàn bộ dự án. Bất kỳ phiên làm việc mới nào (với AI hoặc thành viên mới) đều cần đọc file này trước tiên.
 >
-> **Cập nhật lần cuối:** 2026-03-30 (Sprint 3 → 4)
+> **Cập nhật lần cuối:** 2026-04-07 (Sprint 4 — SQLite support, Inventory refactor)
 
 ---
 
@@ -14,7 +14,7 @@
 | **Mô hình** | Monorepo — Backend + Frontend cùng 1 repository |
 | **Quy mô** | 6 Module nghiệp vụ · 28 Entity Model · 4 Actors · 6 thành viên |
 | **Timeline** | 6 Sprint (10/03 – 20/04/2026) |
-| **Trạng thái hiện tại** | ✅ Sprint 3 hoàn thành · 🚧 Sprint 4 đang chạy |
+| **Trạng thái hiện tại** | ✅ Sprint 4 hoàn thành · ⏳ Sprint 5 sắp bắt đầu |
 
 ### Actors & Phân quyền (RBAC)
 
@@ -39,12 +39,14 @@
 │  SignalR Client (@microsoft/   │   │  SignalR Hub (NotificationHub) │
 │    signalr)                    │   │  Swagger / Postman             │
 │  Context API (AuthContext)     │   │  Visual Studio 2022            │
-│  VS Code                       │   │                                │
+│  VS Code                       │   │  🆕 SQLite (dev nhẹ)          │
 └────────────────────────────────┘   └────────────────────────────────┘
                     │                            │
-                    └───── SQL Server (SSMS) ─────┘
+                    └─ SQL Server (SSMS) / SQLite ┘
                              GitHub (Monorepo)
 ```
+
+> 🆕 **Dual Database:** Backend hỗ trợ cả SQL Server và SQLite. Xem `SQLITE_GUIDE.md` để biết cách chuyển đổi.
 
 ### Ports đang chạy
 
@@ -353,7 +355,8 @@ POST   /api/LossAndDamages              → Báo cáo hư hỏng/mất mát
 | `/login` | `LoginPage` | ✅ Hoàn thành |
 | `/` | `DashboardPage` | ✅ UI hiện đại (charts, KPIs) |
 | `/rooms` | `RoomsPage` | ✅ CRUD đầy đủ |
-| `/inventory` | `InventoryPage` | ✅ CRUD đầy đủ |
+| `/room-types` | `RoomTypesPage` | ✅ CRUD đầy đủ |
+| `/inventory` | `InventoryPage` | ✅ **Refactor toàn cục** — gộp tất cả vật tư theo tên, không theo phòng |
 | `/losses` | `LossesPage` | ✅ CRUD đầy đủ |
 | `/housekeeping` | `HousekeepingPage` | ✅ UI dọn phòng |
 | `/bookings` | `BookingsPage` | ✅ CRUD đầy đủ |
@@ -369,9 +372,11 @@ POST   /api/LossAndDamages              → Báo cáo hư hỏng/mất mát
 |------|-------|
 | `GETTING_STARTED.md` | Hướng dẫn setup sau khi clone repo |
 | `GIT_GUIDELINE.md` | Quy trình Git & branching |
+| `SQLITE_GUIDE.md` | 🆕 Hướng dẫn dùng SQLite thay SQL Server |
 | `API_DOCUMENTATION.md` | Chi tiết API endpoints |
 | `erd.mmd` | Sơ đồ ERD (Mermaid, màu theo thành viên) |
 | `database/HotelManagement.sql` | Script tạo DB + seed data |
+| `database/export_to_sqlite.py` | 🆕 Script export SQL Server → SQLite |
 | `site.html` | API reference tĩnh (HTML) |
 
 ---
@@ -383,8 +388,8 @@ POST   /api/LossAndDamages              → Báo cáo hư hỏng/mất mát
 | **1** | 10-16/03 | Setup base: Monorepo, DB, API mẫu, Git guideline | ✅ Hoàn thành |
 | **2** | 17-23/03 | Backend CRUD cơ bản (mỗi người làm API của module mình) | ✅ Hoàn thành |
 | **3** | 24-30/03 | Backend logic nâng cao (Overlap, Check-out, Dashboard, SignalR) | ✅ Hoàn thành |
-| **4** | 31/03-06/04 | Frontend UI (Layout, CRUD pages, Forms) | 🚧 Đang chạy |
-| **5** | 07-13/04 | Tích hợp BE↔FE, Fix bugs, Test E2E | ⏳ Chờ |
+| **4** | 31/03-06/04 | Frontend UI (Layout, CRUD pages, Forms) + SQLite support | ✅ Hoàn thành |
+| **5** | 07-13/04 | Tích hợp BE↔FE, Fix bugs, Test E2E | 🚧 Đang chạy |
 | **6** | 14-20/04 | Tài liệu, Swagger docs, Slide, Demo | ⏳ Chờ |
 
 ### Đã hoàn thành trong Sprint 3
@@ -401,9 +406,24 @@ POST   /api/LossAndDamages              → Báo cáo hư hỏng/mất mát
 - ✅ Frontend: MainLayout, AuthContext, PrivateRoute, useSignalR hook
 - ✅ Frontend: 9 trang Admin (Dashboard, Rooms, Inventory, Losses, Housekeeping, Bookings, Users, Roles, Login)
 
+### Đã hoàn thành trong Sprint 4
+
+- ✅ **SQLite dual-database support** — chuyển đổi bằng biến môi trường `$env:DatabaseProvider`
+- ✅ **EF Core Migrations** — tạo đủ migration cho cả SQL Server và SQLite
+- ✅ **Script export** `database/export_to_sqlite.py` — chuyển toàn bộ data SQL Server → `hotel.db`
+- ✅ **SQLITE_GUIDE.md** — tài liệu hướng dẫn đầy đủ cho thành viên dùng SQLite
+- ✅ **Inventory refactor (toàn cục)** — gộp vật tư theo tên trên toàn khách sạn, không theo từng phòng
+- ✅ **RoomInventoryDTOs** cập nhật phù hợp với model toàn cục
+- ✅ **RoomInventoryService** refactor logic tổng hợp số lượng, hư hỏng  
+- ✅ **InventoryPage.jsx** + CSS — UI mới hiển thị danh sách vật tư toàn cục
+- ✅ **HotelDbContext.cs** — cấu hình dual-provider, Check Constraint tương thích SQLite/SQL Server
+- ✅ **Program.cs** — DI dynamic theo `DatabaseProvider` (SqlServer / Sqlite)
+- ✅ `.gitignore` cập nhật — loại trừ `*.db`, `*.db-shm`, `*.db-wal`
+
 ---
 
 > **Ghi chú cho AI:** Khi nhận prompt về dự án này, hãy đọc file `SYSTEM_CONTEXT.md` trước. Mọi code phải tuân thủ: Soft Delete, Cloudinary, Repository Pattern, DTO mapping, JWT auth. Tham chiếu section 6 để biết ai đang làm module nào.
 >
-> **Backend đã BUILD THÀNH CÔNG** — chạy `dotnet run` tại `backend/HotelManagement.API/`.
-> **Frontend đang chạy** — chạy `npm run dev` tại `frontend/`. URL: `http://localhost:5173`.
+> **Backend:** Chạy `dotnet run` tại `backend/HotelManagement.API/`. Mặc định dùng SQL Server. Dùng SQLite: `$env:DatabaseProvider = "Sqlite"; dotnet run`.
+> **Frontend:** Chạy `npm run dev` tại `frontend/`. URL: `http://localhost:5173`.
+> **SQLite:** Xem `SQLITE_GUIDE.md` · File `hotel.db` không commit lên Git, chia sẻ qua Google Drive.

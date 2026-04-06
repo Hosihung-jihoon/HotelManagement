@@ -1,11 +1,76 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
-import { Search, RotateCcw, Plus, X, Pencil, Package, RefreshCw } from 'lucide-react';
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
+import { Search, RotateCcw, Plus, X, Pencil, Package, RefreshCw, Image as ImageIcon } from 'lucide-react';
 import { uploadToCloudinary, createLocalPreview } from '../../utils/cloudinaryUpload';
 import axiosClient from '../../api/axiosClient';
 import './InventoryPage.css';
 
-const emptyForm = { itemName: '', roomId: '', quantity: '', priceIfLost: '' };
+const emptyForm = {
+  itemName: '', unit: '', roomId: '',
+  quantity: '', quantityInUse: 0, quantityDamaged: 0,
+  priceIfLost: '', imageUrl: '', note: '', itemType: '',
+};
 
+/* ── Thumbnail ảnh vật tư ── */
+function ItemThumb({ src }) {
+  const [err, setErr] = useState(false);
+  const style = {
+    width: 44, height: 44, borderRadius: 8, objectFit: 'cover',
+    border: '1px solid var(--border-color)', display: 'block', flexShrink: 0,
+  };
+  const placeholder = {
+    width: 44, height: 44, borderRadius: 8, flexShrink: 0,
+    background: '#f3f4f6', border: '1px dashed #d1d5db',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+  };
+  if (!src || err) {
+    return (
+      <div style={placeholder} title="Chưa có ảnh">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+          fill="none" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2" />
+          <circle cx="8.5" cy="8.5" r="1.5" />
+          <path d="m21 15-5-5L5 21" />
+        </svg>
+      </div>
+    );
+  }
+  return <img src={src} alt="vật tư" style={style} onError={() => setErr(true)} />;
+}
+
+/* ── Upload ảnh area ── */
+function ImageUploadArea({ preview, onFile, uploading, finalUrl }) {
+  const ref = useRef();
+  return (
+    <div>
+      <div
+        onClick={() => ref.current.click()}
+        style={{
+          border: '2px dashed var(--border-color)', borderRadius: 10, padding: 16,
+          textAlign: 'center', cursor: 'pointer', background: 'var(--surface-hover, #f9fafb)',
+          transition: 'border-color .2s',
+        }}
+        onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--primary, #2563eb)'}
+        onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-color)'}
+      >
+        {preview ? (
+          <img src={preview} alt="preview"
+            style={{ maxHeight: 120, maxWidth: '100%', borderRadius: 8, objectFit: 'cover', margin: '0 auto', display: 'block' }} />
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, color: 'var(--text-secondary)' }}>
+            <ImageIcon size={28} />
+            <span style={{ fontSize: '0.85rem' }}>Nhấn để chọn / kéo ảnh vào đây</span>
+            <small style={{ fontSize: '0.75rem' }}>JPG, PNG, WEBP — tối đa 5MB</small>
+          </div>
+        )}
+      </div>
+      <input ref={ref} type="file" accept="image/*" style={{ display: 'none' }} onChange={onFile} />
+      {uploading && <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: 4 }}>⏳ Đang tải lên Cloudinary...</p>}
+      {finalUrl && !uploading && <p style={{ fontSize: '0.8rem', color: '#16a34a', marginTop: 4 }}>✅ Ảnh đã lưu</p>}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════ */
 function InventoryPage() {
   const [inventory, setInventory] = useState([]);
   const [rooms, setRooms]         = useState([]);
@@ -15,8 +80,9 @@ function InventoryPage() {
   const [showModal, setShowModal] = useState(false);
   const [editItem, setEditItem]   = useState(null);
   const [form, setForm]           = useState(emptyForm);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [uploading, setUploading] = useState(false);
   const [saving, setSaving]       = useState(false);
-  const fileRef = useRef();
 
   const fetchAll = useCallback(async () => {
     try {
@@ -36,37 +102,89 @@ function InventoryPage() {
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
 
-  const getRoomLabel = (roomId) => {
-    const r = rooms.find(r => r.id === roomId);
-    return r ? `P.${r.roomNumber}` : `Phòng #${roomId}`;
-  };
+  /* ── Group by itemName — gom tất cả phòng thành 1 dòng mỗi loại vật tư ── */
+  const grouped = useMemo(() => {
+    const map = new Map();
+    for (const item of inventory) {
+      const key = item.itemName.trim().toLowerCase();
+      if (map.has(key)) {
+        const g = map.get(key);
+        g.quantity        += (item.quantity ?? 0);
+        g.quantityInUse   += (item.quantityInUse ?? 0);
+        g.quantityDamaged += (item.quantityDamaged ?? 0);
+        g.roomCount       += 1;
+        g._ids.push(item.id);
+        // dùng ảnh đầu tiên tìm được
+        if (!g.imageUrl && item.imageUrl) g.imageUrl = item.imageUrl;
+      } else {
+        map.set(key, {
+          _key:            key,
+          _ids:            [item.id],
+          _firstId:        item.id,
+          itemName:        item.itemName,
+          unit:            item.unit,
+          imageUrl:        item.imageUrl,
+          priceIfLost:     item.priceIfLost,
+          itemType:        item.itemType,
+          quantity:        item.quantity ?? 0,
+          quantityInUse:   item.quantityInUse ?? 0,
+          quantityDamaged: item.quantityDamaged ?? 0,
+          roomCount:       1,
+          // giữ raw item đầu để edit
+          _raw:            item,
+        });
+      }
+    }
+    return [...map.values()].sort((a, b) => a.itemName.localeCompare(b.itemName, 'vi'));
+  }, [inventory]);
 
-  const filtered = inventory.filter(item => {
+  const filtered = grouped.filter(g => {
     const q = search.toLowerCase();
-    const matchSearch = !q || item.itemName.toLowerCase().includes(q);
-    const matchRoom   = !filterRoom || String(item.roomId) === filterRoom;
-    return matchSearch && matchRoom;
+    return !q || g.itemName.toLowerCase().includes(q);
   });
 
-  const handleReset  = () => { setSearch(''); setFilterRoom(''); };
-  const openAdd      = () => { setEditItem(null); setForm(emptyForm); setShowModal(true); };
-  const openEdit     = (item) => {
+  /* ── Modal helpers ── */
+  const openAdd  = () => { setEditItem(null); setForm(emptyForm); setImagePreview(null); setShowModal(true); };
+  const openEdit = (item) => {
     setEditItem(item);
-    setForm({ itemName: item.itemName, roomId: item.roomId ?? '', quantity: item.quantity ?? '', priceIfLost: item.priceIfLost ?? '' });
+    setForm({
+      itemName: item.itemName ?? '', unit: item.unit ?? '', roomId: item.roomId ?? '',
+      quantity: item.quantity ?? '', quantityInUse: item.quantityInUse ?? 0,
+      quantityDamaged: item.quantityDamaged ?? 0, priceIfLost: item.priceIfLost ?? '',
+      imageUrl: item.imageUrl ?? '', note: item.note ?? '', itemType: item.itemType ?? '',
+    });
+    setImagePreview(item.imageUrl || null);
     setShowModal(true);
   };
-  const closeModal = () => { setShowModal(false); setEditItem(null); };
+  const closeModal  = () => { setShowModal(false); setEditItem(null); setImagePreview(null); };
   const handleChange = (k, v) => setForm(prev => ({ ...prev, [k]: v }));
+
+  const handleImageFile = async (e) => {
+    const file = e.target.files[0]; if (!file) return;
+    setImagePreview(createLocalPreview(file));
+    setUploading(true);
+    try {
+      const { url } = await uploadToCloudinary(file, 'hotel/inventory');
+      setForm(prev => ({ ...prev, imageUrl: url }));
+    } catch { alert('❌ Upload ảnh thất bại.'); }
+    finally { setUploading(false); }
+  };
 
   const handleSave = async () => {
     if (!form.itemName || !form.quantity) { alert('Vui lòng điền tên vật tư và số lượng!'); return; }
     setSaving(true);
     try {
       const payload = {
-        itemName: form.itemName,
-        roomId: form.roomId ? Number(form.roomId) : null,
-        quantity: Number(form.quantity),
-        priceIfLost: form.priceIfLost ? Number(form.priceIfLost) : null,
+        itemName:        form.itemName,
+        unit:            form.unit || null,
+        roomId:          form.roomId ? Number(form.roomId) : null,
+        quantity:        Number(form.quantity),
+        quantityInUse:   Number(form.quantityInUse) || 0,
+        quantityDamaged: Number(form.quantityDamaged) || 0,
+        priceIfLost:     form.priceIfLost ? Number(form.priceIfLost) : null,
+        imageUrl:        form.imageUrl || null,
+        note:            form.note || null,
+        itemType:        form.itemType || null,
       };
       if (editItem) {
         await axiosClient.put(`/RoomInventories/${editItem.id}`, payload);
@@ -92,138 +210,225 @@ function InventoryPage() {
     }
   };
 
-  // Nhóm theo phòng để hiển thị filter
-  const uniqueRoomIds = [...new Set(inventory.map(i => i.roomId).filter(Boolean))];
+  /* ── Số lượng còn lại (không âm) ── */
+  const remaining = (item) =>
+    Math.max(0, (item.quantity ?? 0) - (item.quantityInUse ?? 0) - (item.quantityDamaged ?? 0));
 
   return (
     <div className="inventory-page">
+      {/* Header */}
       <div className="inv-header">
         <div>
           <h1 className="page-title">Kho vật tư</h1>
-          <p className="page-subtitle">{inventory.length} mục vật tư trong {uniqueRoomIds.length} phòng</p>
+          <p className="page-subtitle">{grouped.length} loại vật tư · {inventory.length} bản ghi</p>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
-          <button className="btn-add" onClick={fetchAll} disabled={loading}
-            style={{ background: 'var(--surface-color)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}>
-            <RefreshCw size={16} style={loading ? { animation: 'spin 1s linear infinite' } : {}} />
-            Làm mới
+          <button onClick={fetchAll} disabled={loading}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 14px', border: '1px solid var(--border-color)', borderRadius: 8, background: 'var(--surface-color)', cursor: 'pointer', fontSize: '0.85rem', color: 'var(--text-primary)' }}>
+            <RefreshCw size={14} style={loading ? { animation: 'spin 1s linear infinite' } : {}} /> Làm mới
           </button>
-          <button className="btn-add" onClick={openAdd}><Plus size={18} /> Thêm vật tư mới</button>
+          <button className="btn-add" onClick={openAdd}><Plus size={18} /> Thêm vật tư</button>
         </div>
       </div>
 
+      {/* Filter */}
       <div className="filter-bar">
-        <div className="search-wrap">
+        <div className="search-wrap" style={{ flex: 1 }}>
           <Search size={16} className="search-icon" />
-          <input className="search-input" placeholder="Tìm theo tên vật tư..." value={search} onChange={e => setSearch(e.target.value)} />
+          <input className="search-input" placeholder="Tìm theo tên vật tư..." value={search}
+            onChange={e => setSearch(e.target.value)} />
         </div>
-        <select className="filter-select" value={filterRoom} onChange={e => setFilterRoom(e.target.value)}>
-          <option value="">Tất cả phòng</option>
-          {uniqueRoomIds.map(rid => (
-            <option key={rid} value={rid}>{getRoomLabel(rid)}</option>
-          ))}
-        </select>
-        <button className="btn-reset" onClick={handleReset} title="Làm mới"><RotateCcw size={16} /></button>
+        <button className="btn-reset" onClick={() => { setSearch(''); }} title="Xóa bộ lọc">
+          <RotateCcw size={16} />
+        </button>
       </div>
 
+      {/* Table */}
       <div className="table-card">
         {loading ? (
           <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-secondary)' }}>
             <RefreshCw size={24} style={{ animation: 'spin 1s linear infinite' }} />
-            <p style={{ marginTop: 8 }}>Đang tải dữ liệu kho vật tư...</p>
+            <p style={{ marginTop: 8 }}>Đang tải kho vật tư...</p>
           </div>
         ) : (
-          <table className="rooms-table">
+          <table className="rooms-table inv-table">
             <thead>
               <tr>
+                <th style={{ width: 56 }}>Ảnh</th>
                 <th>Tên vật tư</th>
-                <th>Phòng</th>
-                <th style={{ textAlign: 'center' }}>Số lượng</th>
-                <th>Giá đền bù</th>
-                <th>Thao tác</th>
+                <th style={{ textAlign: 'center', width: 60 }}>ĐVT</th>
+                <th style={{ textAlign: 'center', width: 80 }}>Tổng</th>
+                <th style={{ textAlign: 'center', width: 90 }}>Đang dùng</th>
+                <th style={{ textAlign: 'center', width: 90 }}>Còn lại</th>
+                <th style={{ textAlign: 'center', width: 80 }}>Hỏng/Mất</th>
+                <th style={{ width: 130 }}>Giá đền bù</th>
+                <th style={{ textAlign: 'center', width: 70 }}>Thao tác</th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
-                <tr><td colSpan={5} className="empty-row">
-                  {inventory.length === 0 ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-                      <Package size={32} style={{ opacity: 0.3 }} />
-                      <span>Chưa có vật tư nào trong kho</span>
-                    </div>
-                  ) : 'Không tìm thấy vật tư phù hợp'}
+                <tr><td colSpan={9} className="empty-row">
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                    <Package size={32} style={{ opacity: 0.3 }} />
+                    <span>{inventory.length === 0 ? 'Chưa có vật tư nào trong kho' : 'Không tìm thấy vật tư phù hợp'}</span>
+                  </div>
                 </td></tr>
-              ) : filtered.map(item => (
-                <tr key={item.id}>
-                  <td>
-                    <div className="inv-thumb-placeholder" style={{ display: 'inline-flex', marginRight: 8 }}><Package size={16} /></div>
-                    <span className="inv-name">{item.itemName}</span>
-                  </td>
-                  <td>
-                    {item.roomId ? (
-                      <span className="role-badge role-receptionist">{getRoomLabel(item.roomId)}</span>
-                    ) : (
-                      <span style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>Kho chung</span>
-                    )}
-                  </td>
-                  <td style={{ textAlign: 'center' }}>
-                    <strong>{item.quantity ?? '—'}</strong>
-                  </td>
-                  <td>
-                    {item.priceIfLost ? (
-                      <span className="fine-amount">{Number(item.priceIfLost).toLocaleString('vi-VN')}đ</span>
-                    ) : '—'}
-                  </td>
-                  <td>
-                    <div className="action-btns">
-                      <button className="btn-edit" onClick={() => openEdit(item)}><Pencil size={14} /> Sửa</button>
-                      <button className="btn-delete" onClick={() => handleDelete(item.id)} style={{ marginLeft: 6 }}>
-                        <X size={14} />
+              ) : filtered.map(g => {
+                const left = remaining(g);
+                return (
+                  <tr key={g._key}>
+                    <td style={{ padding: '8px 10px' }}>
+                      <ItemThumb src={g.imageUrl} />
+                    </td>
+                    <td>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <span className="inv-name">{g.itemName}</span>
+                        {g.roomCount > 1 && (
+                          <span style={{ fontSize: '0.73rem', color: 'var(--text-secondary)' }}>
+                            Tổng hợp từ {g.roomCount} phòng
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td style={{ textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.82rem' }}>
+                      {g.unit || '—'}
+                    </td>
+                    <td style={{ textAlign: 'center', fontWeight: 700 }}>{g.quantity}</td>
+                    <td style={{ textAlign: 'center' }}>
+                      <span style={{
+                        color: g.quantityInUse > 0 ? '#2563eb' : 'var(--text-muted)',
+                        fontWeight: g.quantityInUse > 0 ? 700 : 400,
+                      }}>{g.quantityInUse}</span>
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      <span style={{
+                        fontWeight: 700,
+                        color: left === 0 ? '#ef4444' : left < 3 ? '#f59e0b' : '#16a34a',
+                      }}>{left}</span>
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      {g.quantityDamaged > 0 ? (
+                        <span className="qty-damaged negative">-{g.quantityDamaged}</span>
+                      ) : (
+                        <span style={{ color: 'var(--text-muted)' }}>0</span>
+                      )}
+                    </td>
+                    <td>
+                      {g.priceIfLost ? (
+                        <span className="fine-amount">{Number(g.priceIfLost).toLocaleString('vi-VN')}đ</span>
+                      ) : '—'}
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      <button
+                        className="btn-edit"
+                        onClick={() => openEdit(g._raw)}
+                        title="Chỉnh sửa"
+                        style={{ padding: '6px 8px' }}
+                      >
+                        <Pencil size={14} />
                       </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}
-        {!loading && <div className="table-footer">Hiển thị {filtered.length} / {inventory.length} vật tư</div>}
+        {!loading && (
+          <div className="table-footer">Hiển thị {filtered.length} / {grouped.length} loại vật tư</div>
+        )}
       </div>
 
       {/* Modal Add/Edit */}
       {showModal && (
         <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-box" onClick={e => e.stopPropagation()}>
+          <div className="modal-box" style={{ maxWidth: 560 }} onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h3>{editItem ? 'Chỉnh sửa vật tư' : 'Thêm vật tư mới'}</h3>
               <button className="modal-close" onClick={closeModal}><X size={20} /></button>
             </div>
             <div className="modal-body">
-              <div className="form-group">
-                <label>Tên vật tư <span className="required">*</span></label>
-                <input className="form-input" value={form.itemName} onChange={e => handleChange('itemName', e.target.value)} placeholder="VD: Khăn tắm lớn" />
+              {/* Tên + ĐVT */}
+              <div className="form-row">
+                <div className="form-col" style={{ flex: 2 }}>
+                  <label>Tên vật tư <span className="required">*</span></label>
+                  <input className="form-input" value={form.itemName}
+                    onChange={e => handleChange('itemName', e.target.value)} placeholder="VD: Khăn tắm" />
+                </div>
+                <div className="form-col" style={{ flex: 1 }}>
+                  <label>ĐVT</label>
+                  <input className="form-input" value={form.unit}
+                    onChange={e => handleChange('unit', e.target.value)} placeholder="cái / bộ / m..." />
+                </div>
               </div>
+
+              {/* Phòng + Loại */}
               <div className="form-row">
                 <div className="form-col">
-                  <label>Phòng (tùy chọn)</label>
+                  <label>Phòng</label>
                   <select className="form-input" value={form.roomId} onChange={e => handleChange('roomId', e.target.value)}>
                     <option value="">-- Kho chung --</option>
-                    {rooms.map(r => <option key={r.id} value={r.id}>Phòng {r.roomNumber} (Tầng {r.floor})</option>)}
+                    {rooms.map(r => (
+                      <option key={r.id} value={r.id}>Phòng {r.roomNumber} (Tầng {r.floor})</option>
+                    ))}
                   </select>
                 </div>
                 <div className="form-col">
-                  <label>Số lượng <span className="required">*</span></label>
-                  <input className="form-input" type="number" min="0" value={form.quantity} onChange={e => handleChange('quantity', e.target.value)} />
+                  <label>Loại vật tư</label>
+                  <input className="form-input" value={form.itemType}
+                    onChange={e => handleChange('itemType', e.target.value)} placeholder="Đồ dùng / Thiết bị..." />
                 </div>
               </div>
+
+              {/* Số lượng */}
+              <div className="form-row">
+                <div className="form-col">
+                  <label>Tổng số lượng <span className="required">*</span></label>
+                  <input className="form-input" type="number" min="0" value={form.quantity}
+                    onChange={e => handleChange('quantity', e.target.value)} />
+                </div>
+                <div className="form-col">
+                  <label>Đang sử dụng</label>
+                  <input className="form-input" type="number" min="0" value={form.quantityInUse}
+                    onChange={e => handleChange('quantityInUse', e.target.value)} />
+                </div>
+                <div className="form-col">
+                  <label>Hỏng / Mất</label>
+                  <input className="form-input" type="number" min="0" value={form.quantityDamaged}
+                    onChange={e => handleChange('quantityDamaged', e.target.value)} />
+                </div>
+              </div>
+
+              {/* Giá đền bù */}
               <div className="form-group">
                 <label>Giá đền bù nếu mất/hỏng (VNĐ)</label>
-                <input className="form-input" type="number" min="0" value={form.priceIfLost} onChange={e => handleChange('priceIfLost', e.target.value)} placeholder="0" />
+                <input className="form-input" type="number" min="0" value={form.priceIfLost}
+                  onChange={e => handleChange('priceIfLost', e.target.value)} placeholder="0" />
+              </div>
+
+              {/* Ảnh upload */}
+              <div className="form-group">
+                <label>Ảnh vật tư (tùy chọn)</label>
+                <ImageUploadArea
+                  preview={imagePreview}
+                  onFile={handleImageFile}
+                  uploading={uploading}
+                  finalUrl={form.imageUrl}
+                />
+              </div>
+
+              {/* Ghi chú */}
+              <div className="form-group">
+                <label>Ghi chú</label>
+                <textarea className="form-input" rows={2} value={form.note}
+                  onChange={e => handleChange('note', e.target.value)}
+                  placeholder="Ghi chú thêm về vật tư..." />
               </div>
             </div>
+
             <div className="modal-footer">
               <button className="btn-back" onClick={closeModal} disabled={saving}>Hủy</button>
-              <button className="btn-save" onClick={handleSave} disabled={saving}>
+              <button className="btn-save" onClick={handleSave} disabled={saving || uploading}>
                 {saving ? 'Đang lưu...' : `✓ ${editItem ? 'Cập nhật' : 'Thêm mới'}`}
               </button>
             </div>
