@@ -1,6 +1,6 @@
 | Email | Password |
 | :--- | :--- |
-| admin@hotel.com | admin |
+| vibecoding209@gmail.com | admin |
 | manager@hotel.com | manager |
 | reception1@hotel.com | 123456 |
 | reception2@hotel.com | 123456 |
