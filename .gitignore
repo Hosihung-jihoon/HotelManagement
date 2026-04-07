@@ -12,9 +12,11 @@ obj/
 packages/
 *.nupkg
 
-# Configurations containing secrets
+# Configurations containing secrets — keep example files for teammates
 appsettings.json
 appsettings.*.json
+!appsettings.example.json
+!appsettings.*.example.json
 
 # ============================
 # Node / React
@@ -54,3 +56,4 @@ desktop.ini
 .antigravityrules
 *.db
 export_to_sqlite.py
+assets/
