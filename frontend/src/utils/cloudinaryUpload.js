@@ -1,48 +1,41 @@
 /**
- * Utility upload ảnh lên Cloudinary qua unsigned upload preset.
- * Không dùng API Key trực tiếp ở frontend (bảo mật).
- * Cần tạo "unsigned upload preset" tên "hotel_unsigned" tại:
- * https://console.cloudinary.com/settings/upload
+ * Utility upload ảnh qua backend (POST /api/Upload/image).
+ * Backend sẽ forward lên Cloudinary bằng signed upload — không cần preset.
  */
 
-const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5280/api';
 
 /**
- * Upload 1 file ảnh lên Cloudinary
- * @param {File} file - File object từ input[type=file]
- * @param {string} folder - Tên folder trên Cloudinary (vd: 'rooms', 'inventory')
- * @returns {Promise<{url: string, publicId: string}>}
+ * Upload 1 file ảnh qua backend → Cloudinary
+ * @param {File} file   - File object từ input[type=file]
+ * @param {string} folder - Folder trên Cloudinary (vd: 'hotel/inventory')
+ * @returns {Promise<{url: string}>}
  */
 export async function uploadToCloudinary(file, folder = 'hotel') {
-  if (!CLOUD_NAME || !UPLOAD_PRESET) {
-    throw new Error('Cloudinary chưa được cấu hình. Kiểm tra .env file.');
-  }
-
   const formData = new FormData();
   formData.append('file', file);
-  formData.append('upload_preset', UPLOAD_PRESET);
-  formData.append('folder', folder);
+
+  const token = sessionStorage.getItem('token');
+  const headers = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
 
   const response = await fetch(
-    `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
-    { method: 'POST', body: formData }
+    `${API_BASE}/Upload/image?folder=${encodeURIComponent(folder)}`,
+    { method: 'POST', body: formData, headers }
   );
 
   if (!response.ok) {
-    const err = await response.json();
-    throw new Error(err.error?.message || 'Upload thất bại');
+    let msg = 'Upload thất bại';
+    try { const err = await response.json(); msg = err.message ?? msg; } catch (_) {}
+    throw new Error(msg);
   }
 
   const data = await response.json();
-  return {
-    url: data.secure_url,
-    publicId: data.public_id,
-  };
+  return { url: data.url };
 }
 
 /**
- * Tạo URL preview local từ File object (dùng trước khi upload)
+ * Tạo URL preview local từ File object (dùng trước khi upload thật)
  * @param {File} file
  * @returns {string} object URL
  */

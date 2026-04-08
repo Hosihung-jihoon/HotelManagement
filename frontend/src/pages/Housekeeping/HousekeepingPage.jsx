@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { Search, X, CheckCircle, Camera, AlertTriangle, RefreshCw } from 'lucide-react';
 import { uploadToCloudinary, createLocalPreview } from '../../utils/cloudinaryUpload';
 import axiosClient from '../../api/axiosClient';
+import { getRoomCleanStatus, setRoomCleanStatus } from '../../utils/roomCleanStatus';
 import './HousekeepingPage.css';
 
 const FINE_MAP = {
@@ -216,10 +217,9 @@ function HousekeepingPage() {
         axiosClient.get('/Rooms'),
         axiosClient.get('/RoomInventories'),
       ]);
-      // Chỉ lấy phòng cần dọn (Cleaning status hoặc sau checkout)
-      const needsCleaning = roomsRes.data.filter(r =>
-        r.status === 'Cleaning' || r.status === 'Available'
-      );
+      // Chỉ lấy các phòng đang được đánh dấu cần dọn.
+      // Nếu đã hoàn tất, phòng sẽ được chuyển về Available và không nên quay lại danh sách sau khi refresh.
+      const needsCleaning = roomsRes.data.filter(r => getRoomCleanStatus(r.id) === 'dirty');
       setRooms(needsCleaning);
       setAllInventory(invRes.data);
     } catch (err) {
@@ -239,13 +239,11 @@ function HousekeepingPage() {
 
   const handleFinish = async (roomId, reported) => {
     const room = rooms.find(r => r.id === roomId);
-    // Cập nhật status phòng → Available sau khi dọn xong
-    try {
-      await axiosClient.patch('/Rooms/patch-status', { roomId, status: 'Available' });
-    } catch (err) {
-      console.error('Lỗi cập nhật trạng thái phòng:', err);
-    }
+    if (!room) return;
+
+    setRoomCleanStatus(roomId, 'clean');
     setRooms(prev => prev.filter(r => r.id !== roomId));
+
     if (reported.length > 0) {
       reported.forEach(item => {
         addToast(`⚠️ Cảnh báo thất thoát — Phòng ${room?.roomNumber}\nGhi nhận hỏng/mất ${item.itemName} tại phòng ${room?.roomNumber}`);

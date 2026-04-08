@@ -11,6 +11,7 @@ public interface ILossAndDamageService
     Task<LossAndDamageDto?> GetByIdAsync(int id);
     Task<LossAndDamageDto> CreateAsync(CreateLossAndDamageDto dto);
     Task<bool> UpdateAsync(int id, UpdateLossAndDamageDto dto);
+    Task<bool> ToggleStatusAsync(int id);
     Task<bool> DeleteAsync(int id);
 }
 
@@ -27,6 +28,7 @@ public class LossAndDamageService : ILossAndDamageService
     {
         return await _db.LossAndDamages
             .Include(l => l.RoomInventory)
+                .ThenInclude(ri => ri != null ? ri.Room : null)
             .Include(l => l.BookingDetail)
                 .ThenInclude(bd => bd != null ? bd.Room : null)
             .OrderByDescending(l => l.CreatedAt)
@@ -36,13 +38,17 @@ public class LossAndDamageService : ILossAndDamageService
                 BookingDetailId  = l.BookingDetailId,
                 RoomInventoryId  = l.RoomInventoryId,
                 ItemName         = l.RoomInventory != null ? l.RoomInventory.ItemName : "Không xác định",
-                RoomNumber       = l.BookingDetail != null && l.BookingDetail.Room != null
+                RoomNumber       = (l.BookingDetail != null && l.BookingDetail.Room != null)
                                     ? l.BookingDetail.Room.RoomNumber
-                                    : null,
+                                    : (l.RoomInventory != null && l.RoomInventory.Room != null)
+                                        ? l.RoomInventory.Room.RoomNumber : null,
                 Quantity         = l.Quantity,
                 PenaltyAmount    = l.PenaltyAmount,
                 Description      = l.Description,
+                ImageUrl         = l.ImageUrl,
+                IsPaid           = l.IsPaid,
                 CreatedAt        = l.CreatedAt,
+                UpdatedAt        = l.UpdatedAt,
             })
             .ToListAsync();
     }
@@ -50,7 +56,7 @@ public class LossAndDamageService : ILossAndDamageService
     public async Task<LossAndDamageDto?> GetByIdAsync(int id)
     {
         var l = await _db.LossAndDamages
-            .Include(x => x.RoomInventory)
+            .Include(x => x.RoomInventory).ThenInclude(ri => ri != null ? ri.Room : null)
             .Include(x => x.BookingDetail).ThenInclude(bd => bd != null ? bd.Room : null)
             .FirstOrDefaultAsync(x => x.Id == id);
 
@@ -62,11 +68,14 @@ public class LossAndDamageService : ILossAndDamageService
             BookingDetailId = l.BookingDetailId,
             RoomInventoryId = l.RoomInventoryId,
             ItemName        = l.RoomInventory?.ItemName ?? "Không xác định",
-            RoomNumber      = l.BookingDetail?.Room?.RoomNumber,
+            RoomNumber      = l.BookingDetail?.Room?.RoomNumber ?? l.RoomInventory?.Room?.RoomNumber,
             Quantity        = l.Quantity,
             PenaltyAmount   = l.PenaltyAmount,
             Description     = l.Description,
+            ImageUrl        = l.ImageUrl,
+            IsPaid          = l.IsPaid,
             CreatedAt       = l.CreatedAt,
+            UpdatedAt       = l.UpdatedAt,
         };
     }
 
@@ -79,6 +88,7 @@ public class LossAndDamageService : ILossAndDamageService
             Quantity        = dto.Quantity,
             PenaltyAmount   = dto.PenaltyAmount,
             Description     = dto.Description,
+            ImageUrl        = dto.ImageUrl,
             CreatedAt       = DateTime.Now,
         };
         _db.LossAndDamages.Add(entity);
@@ -94,6 +104,19 @@ public class LossAndDamageService : ILossAndDamageService
         entity.Quantity      = dto.Quantity;
         entity.PenaltyAmount = dto.PenaltyAmount;
         entity.Description   = dto.Description;
+        entity.ImageUrl      = dto.ImageUrl;
+        entity.UpdatedAt     = DateTime.Now;
+        await _db.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> ToggleStatusAsync(int id)
+    {
+        var entity = await _db.LossAndDamages.FindAsync(id);
+        if (entity == null) return false;
+
+        entity.IsPaid = !entity.IsPaid;
+        entity.UpdatedAt = DateTime.Now;
         await _db.SaveChangesAsync();
         return true;
     }

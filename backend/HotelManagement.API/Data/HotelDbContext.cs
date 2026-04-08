@@ -42,6 +42,7 @@ public class HotelDbContext : DbContext
     public DbSet<User> Users { get; set; }
     public DbSet<Voucher> Vouchers { get; set; }
     public DbSet<Notification> Notifications { get; set; }
+    public DbSet<Equipment> Equipments { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { AlertTriangle, TriangleAlert, Calendar, Pencil, Trash2, Plus, X, Image as ImageIcon, RefreshCw } from 'lucide-react';
+import { AlertTriangle, TriangleAlert, Calendar, Pencil, Trash2, Plus, X, Image as ImageIcon, RefreshCw, CheckCircle, XCircle } from 'lucide-react';
 import { uploadToCloudinary, createLocalPreview } from '../../utils/cloudinaryUpload';
 import axiosClient from '../../api/axiosClient';
+import { setRoomCleanStatus } from '../../utils/roomCleanStatus';
 import './LossesPage.css';
 
-const emptyForm = { roomInventoryId: '', quantity: 1, penaltyAmount: 0, description: '', imageUrl: '' };
+const emptyForm = { roomId: '', roomInventoryId: '', quantity: 1, penaltyAmount: 0, description: '', imageUrl: '' };
 
 // Thumbnail bằng chứng — fallback sang placeholder SVG nếu ảnh lỗi
 function EvidenceThumb({ src }) {
@@ -48,6 +49,7 @@ function EvidenceThumb({ src }) {
 function LossesPage() {
   const [losses, setLosses]       = useState([]);
   const [inventory, setInventory] = useState([]); // danh sách vật tư để chọn
+  const [rooms, setRooms] = useState([]); // danh sách phòng
   const [loading, setLoading]     = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editItem, setEditItem]   = useState(null);
@@ -61,12 +63,14 @@ function LossesPage() {
   const fetchAll = useCallback(async () => {
     try {
       setLoading(true);
-      const [lossRes, invRes] = await Promise.all([
+      const [lossRes, invRes, roomsRes] = await Promise.all([
         axiosClient.get('/LossAndDamages'),
         axiosClient.get('/RoomInventories'),
+        axiosClient.get('/Rooms')
       ]);
       setLosses(lossRes.data);
       setInventory(invRes.data);
+      setRooms(roomsRes.data);
     } catch (err) {
       console.error('Lỗi tải dữ liệu thất thoát:', err);
     } finally {
@@ -87,7 +91,16 @@ function LossesPage() {
   };
   const openEdit = (l) => {
     setEditItem(l);
-    setForm({ roomInventoryId: l.roomInventoryId ?? '', quantity: l.quantity, penaltyAmount: l.penaltyAmount, description: l.description ?? '', imageUrl: '' });
+    // Find the room inventory to backfill the selected room
+    const invItem = inventory.find(i => i.id === l.roomInventoryId);
+    setForm({ 
+      roomId: invItem?.roomId ?? '',
+      roomInventoryId: l.roomInventoryId ?? '', 
+      quantity: l.quantity, 
+      penaltyAmount: l.penaltyAmount, 
+      description: l.description ?? '', 
+      imageUrl: '' 
+    });
     setImagePreview(null);
     setShowModal(true);
   };
@@ -116,6 +129,7 @@ function LossesPage() {
         quantity: Number(form.quantity),
         penaltyAmount: Number(form.penaltyAmount),
         description: form.description,
+        imageUrl: form.imageUrl || null,
       };
       if (editItem) {
         await axiosClient.put(`/LossAndDamages/${editItem.id}`, payload);
@@ -138,6 +152,30 @@ function LossesPage() {
       setConfirmDelete(null);
     } catch (err) {
       alert('Lỗi xóa: ' + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const getRoomIdFromLoss = (lossItem) => {
+    if (!lossItem?.roomNumber) return null;
+    const matchedRoom = rooms.find(r => String(r.roomNumber) === String(lossItem.roomNumber));
+    return matchedRoom?.id ?? null;
+  };
+
+  const handleToggleStatus = async (id) => {
+    try {
+      await axiosClient.patch(`/LossAndDamages/${id}/toggle-status`);
+      setLosses(prev => prev.map(l => {
+        if (l.id !== id) return l;
+
+        const nextLoss = { ...l, isPaid: !l.isPaid };
+        const roomId = getRoomIdFromLoss(nextLoss);
+        if (nextLoss.isPaid && roomId) {
+          setRoomCleanStatus(roomId, 'clean');
+        }
+        return nextLoss;
+      }));
+    } catch (err) {
+      alert('Lỗi cập nhật trạng thái: ' + (err.response?.data?.message || err.message));
     }
   };
 
@@ -218,12 +256,13 @@ function LossesPage() {
                 <th>Tiền phạt</th>
                 <th>Mô tả</th>
                 <th>Ngày báo cáo</th>
+                <th>Trạng thái</th>
                 <th>Thao tác</th>
               </tr>
             </thead>
             <tbody>
               {losses.length === 0 ? (
-                <tr><td colSpan={9} className="empty-row">
+                <tr><td colSpan={10} className="empty-row">
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
                     <AlertTriangle size={32} style={{ opacity: 0.3 }} />
                     <span>Chưa có báo cáo thất thoát nào</span>
@@ -248,9 +287,21 @@ function LossesPage() {
                     {l.createdAt ? new Date(l.createdAt).toLocaleDateString('vi-VN') : '—'}
                   </td>
                   <td>
+                    <span style={{ 
+                      padding: '4px 8px', borderRadius: 6, fontSize: '0.8rem', fontWeight: 600,
+                      background: l.isPaid ? '#dcfce7' : '#fee2e2',
+                      color: l.isPaid ? '#16a34a' : '#ef4444' 
+                    }}>
+                      {l.isPaid ? 'Đã đền bù' : 'Chưa đền bù'}
+                    </span>
+                  </td>
+                  <td>
                     <div className="action-btns">
-                      <button className="btn-edit" onClick={() => openEdit(l)}><Pencil size={13} /></button>
-                      <button className="btn-delete" onClick={() => setConfirmDelete(l.id)}><Trash2 size={13} /></button>
+                      <button className="btn-edit" onClick={() => handleToggleStatus(l.id)} title="Đổi trạng thái" style={{ color: l.isPaid ? '#f59e0b' : '#16a34a', background: 'transparent' }}>
+                        {l.isPaid ? <XCircle size={15} /> : <CheckCircle size={15} />}
+                      </button>
+                      <button className="btn-edit" onClick={() => openEdit(l)} title="Chỉnh sửa"><Pencil size={13} /></button>
+                      <button className="btn-delete" onClick={() => setConfirmDelete(l.id)} title="Xóa"><Trash2 size={13} /></button>
                     </div>
                   </td>
                 </tr>
@@ -284,16 +335,31 @@ function LossesPage() {
               <button className="modal-close" onClick={closeModal}><X size={20} /></button>
             </div>
             <div className="modal-body">
-              <div className="form-group">
-                <label>Vật tư (từ kho)</label>
-                <select className="form-input" value={form.roomInventoryId} onChange={e => handleInventoryChange(e.target.value)}>
-                  <option value="">-- Chọn vật tư --</option>
-                  {inventory.map(i => (
-                    <option key={i.id} value={i.id}>
-                      {i.itemName} {i.priceIfLost ? `(${Number(i.priceIfLost).toLocaleString('vi-VN')}đ/cái)` : ''}
-                    </option>
-                  ))}
-                </select>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label>Phòng</label>
+                  <select className="form-input" value={form.roomId || ''} onChange={e => {
+                    handleChange('roomId', e.target.value);
+                    handleChange('roomInventoryId', ''); // reset item when room changes
+                    handleChange('penaltyAmount', 0);
+                  }}>
+                    <option value="">-- Chọn phòng --</option>
+                    {rooms.map(r => (
+                      <option key={r.id} value={r.id}>Phòng {r.roomNumber}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="form-group" style={{ flex: 2 }}>
+                  <label>Vật tư lỗi / hỏng</label>
+                  <select className="form-input" value={form.roomInventoryId} onChange={e => handleInventoryChange(e.target.value)} disabled={!form.roomId}>
+                    <option value="">-- Chọn vật tư --</option>
+                    {inventory.filter(i => String(i.roomId) === String(form.roomId)).map(i => (
+                      <option key={i.id} value={i.id}>
+                        {i.itemName} {i.priceIfLost ? `(${Number(i.priceIfLost).toLocaleString('vi-VN')}đ/cái)` : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
               <div className="form-row">
                 <div className="form-col">

@@ -10,7 +10,10 @@ public class LossAndDamageDto
     public int Quantity { get; set; }
     public decimal PenaltyAmount { get; set; }
     public string? Description { get; set; }
+    public string? ImageUrl { get; set; }
+    public bool IsPaid { get; set; }
     public DateTime? CreatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
 }
 
 public class CreateLossAndDamageDto
@@ -20,6 +23,7 @@ public class CreateLossAndDamageDto
     public int Quantity { get; set; }
     public decimal PenaltyAmount { get; set; }
     public string? Description { get; set; }
+    public string? ImageUrl { get; set; }
 }
 
 public class UpdateLossAndDamageDto
@@ -27,4 +31,5 @@ public class UpdateLossAndDamageDto
     public int Quantity { get; set; }
     public decimal PenaltyAmount { get; set; }
     public string? Description { get; set; }
+    public string? ImageUrl { get; set; }
 }

@@ -19,7 +19,7 @@ public class CloudinaryService : ICloudinaryService
         _cloudinary = new Cloudinary(acc);
     }
 
-    public async Task<string> UploadImageAsync(IFormFile file)
+    public async Task<string> UploadImageAsync(IFormFile file, string folder = "hotel")
     {
         var uploadResult = new ImageUploadResult();
 
@@ -29,7 +29,8 @@ public class CloudinaryService : ICloudinaryService
             var uploadParams = new ImageUploadParams
             {
                 File = new FileDescription(file.FileName, stream),
-                Transformation = new Transformation().Height(500).Width(500).Crop("fill").Gravity("face")
+                Folder = folder,
+                Transformation = new Transformation().Quality("auto").FetchFormat("auto")
             };
 
             uploadResult = await _cloudinary.UploadAsync(uploadParams);

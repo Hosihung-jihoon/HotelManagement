@@ -86,6 +86,8 @@ public class RoomInventoryService : IRoomInventoryService
         var entity = await _repository.GetByIdAsync(id);
         if (entity == null) return false;
 
+        var originalName = entity.ItemName;
+
         entity.RoomId          = dto.RoomId;
         entity.ItemName        = dto.ItemName;
         entity.Unit            = dto.Unit;
@@ -98,6 +100,26 @@ public class RoomInventoryService : IRoomInventoryService
         entity.ItemType        = dto.ItemType;
 
         await _repository.UpdateAsync(entity);
+
+        // Sync shared properties across all instances of this item in other rooms
+        var relatedItems = await _db.Set<RoomInventory>()
+            .Where(r => r.Id != id && (r.ItemName == originalName || r.ItemName == dto.ItemName))
+            .ToListAsync();
+            
+        foreach(var item in relatedItems)
+        {
+            item.ItemName = dto.ItemName;
+            item.ImageUrl = dto.ImageUrl;
+            item.Unit = dto.Unit;
+            item.PriceIfLost = dto.PriceIfLost;
+            item.ItemType = dto.ItemType;
+        }
+
+        if(relatedItems.Any())
+        {
+            await _db.SaveChangesAsync();
+        }
+
         return true;
     }
 

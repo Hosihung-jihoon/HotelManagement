@@ -50,6 +50,15 @@ public class LossAndDamagesController : ControllerBase
         return NoContent();
     }
 
+    [HttpPatch("{id}/toggle-status")]
+    public async Task<IActionResult> ToggleStatus(int id)
+    {
+        var success = await _service.ToggleStatusAsync(id);
+        if (!success)
+            return NotFound(new { message = $"Không tìm thấy báo cáo với ID = {id}" });
+        return NoContent();
+    }
+
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
