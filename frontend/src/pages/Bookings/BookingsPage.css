@@ -1,0 +1,90 @@
+.bookings-page-full {
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Status badges specific to bookings */
+.badge-pending   { background: #fef9c3; color: #854d0e; }
+.badge-confirmed { background: #dcfce7; color: #166534; }
+.badge-checkout  { background: #ede9fe; color: #5b21b6; }
+.badge-cancelled { background: #fee2e2; color: #991b1b; }
+
+/* Confirm box (reuse from LossesPage pattern) */
+.confirm-box {
+  background: var(--surface-color);
+  border-radius: 16px;
+  padding: 28px 32px;
+  max-width: 440px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0,0,0,.25);
+  text-align: center;
+}
+.confirm-box h4 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: var(--text-primary);
+}
+.confirm-box p {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+}
+.confirm-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+.page-header h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1f2937;
+}
+.btn-primary {
+  background: #2563eb;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+}
+.btn-primary:hover {
+  background: #1d4ed8;
+}
+.table-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  overflow: hidden;
+}
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.data-table th, .data-table td {
+  padding: 16px;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+}
+.data-table th {
+  background: #f9fafb;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: capitalize;
+}
+.loading, .error-banner, .empty-state {
+  padding: 32px;
+  text-align: center;
+  color: #6b7280;
+  font-size: 16px;
+}

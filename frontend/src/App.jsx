@@ -1,36 +1,66 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import PrivateRoute from './components/PrivateRoute';
 import MainLayout from './components/Layout/MainLayout';
-import RoomTypesPage from './pages/RoomTypes/RoomTypesPage';
+import LoginPage from './pages/Login/LoginPage';
+import ForgotPasswordPage from './pages/Login/ForgotPasswordPage';
+import DashboardPage from './pages/Dashboard/DashboardPage';
+import RoomsPage from './pages/Rooms/RoomsPage';
+import BookingsPage from './pages/Bookings/BookingsPage';
+import UsersPage from './pages/Users/UsersPage';
+import InventoryPage from './pages/Inventory/InventoryPage';
+import LossesPage from './pages/Losses/LossesPage';
+import HousekeepingPage from './pages/Housekeeping/HousekeepingPage';
+import RolesPage from './pages/Roles/RolesPage';
 
 /**
- * App chính - Cấu hình routing.
- * Team thêm Route mới ở đây khi hoàn thành trang.
+ * App chính - Cấu hình routing với Auth & Private Routes.
+ * 8 menu: Dashboard | Quản lý phòng | Kho vật tư | Thất thoát & đền bù
+ *         Dọn phòng | Booking & Voucher | Danh sách nhân sự | Vai trò & phân quyền
  */
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route element={<MainLayout />}>
-          {/* Dashboard - sẽ làm sau */}
-          <Route path="/" element={<div style={{padding: '20px'}}><h2>📊 Dashboard</h2><p>Trang Dashboard sẽ được phát triển ở Sprint 4.</p></div>} />
-          
-          {/* === Trang mẫu - RoomTypes (Leader) === */}
-          <Route path="/room-types" element={<RoomTypesPage />} />
-          
-          {/* === Các trang khác - Team sẽ thêm === */}
-          {/* <Route path="/rooms" element={<RoomsPage />} />           // J1 */}
-          {/* <Route path="/bookings" element={<BookingsPage />} />     // M1 */}
-          {/* <Route path="/invoices" element={<InvoicesPage />} />     // M2 */}
-          {/* <Route path="/services" element={<ServicesPage />} />     // J2 */}
-          {/* <Route path="/amenities" element={<AmenitiesPage />} />   // J2 */}
-          {/* <Route path="/articles" element={<ArticlesPage />} />     // J3 */}
-          {/* <Route path="/reviews" element={<ReviewsPage />} />       // J3 */}
-          {/* <Route path="/users" element={<UsersPage />} />           // L  */}
-          {/* <Route path="/vouchers" element={<VouchersPage />} />     // M1 */}
-          {/* <Route path="/memberships" element={<MembershipsPage />} /> // J2 */}
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          {/* === Public Routes === */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+
+
+          {/* === Private Routes (Admin) === */}
+          <Route element={
+            <PrivateRoute>
+              <MainLayout />
+            </PrivateRoute>
+          }>
+            {/* 1. Dashboard */}
+            <Route path="/" element={<DashboardPage />} />
+
+            {/* 2. Quản lý phòng */}
+            <Route path="/rooms" element={<RoomsPage />} />
+
+            {/* 3. Kho vật tư */}
+            <Route path="/inventory" element={<InventoryPage />} />
+
+            {/* 4. Thất thoát & đền bù */}
+            <Route path="/losses" element={<LossesPage />} />
+
+            {/* 5. Dọn phòng (Housekeeping) */}
+            <Route path="/housekeeping" element={<HousekeepingPage />} />
+
+            {/* 6. Booking & Voucher */}
+            <Route path="/bookings" element={<BookingsPage />} />
+
+            {/* 7. Danh sách nhân sự */}
+            <Route path="/users" element={<UsersPage />} />
+
+            {/* 8. Vai trò & phân quyền */}
+            <Route path="/roles" element={<RolesPage />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 

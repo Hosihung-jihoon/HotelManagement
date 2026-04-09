@@ -20,6 +20,9 @@ public class RoomImage
     [Column("is_primary")]
     public bool? IsPrimary { get; set; } = false;
 
+    [Column("is_active")]
+    public bool? IsActive { get; set; } = true;
+
     // Navigation
     [ForeignKey("RoomTypeId")]
     public RoomType? RoomType { get; set; }

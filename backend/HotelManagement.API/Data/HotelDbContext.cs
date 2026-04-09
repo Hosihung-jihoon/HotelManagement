@@ -1,11 +1,18 @@
 using HotelManagement.API.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace HotelManagement.API.Data;
 
 public class HotelDbContext : DbContext
 {
-    public HotelDbContext(DbContextOptions<HotelDbContext> options) : base(options) { }
+    private readonly string _dbProvider;
+
+    public HotelDbContext(DbContextOptions<HotelDbContext> options, IConfiguration configuration) 
+        : base(options)
+    {
+        _dbProvider = configuration["DatabaseProvider"] ?? "SqlServer";
+    }
 
     // ========== DbSets ==========
     public DbSet<Amenity> Amenities { get; set; }
@@ -34,6 +41,8 @@ public class HotelDbContext : DbContext
     public DbSet<ServiceCategory> ServiceCategories { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<Voucher> Vouchers { get; set; }
+    public DbSet<Notification> Notifications { get; set; }
+    public DbSet<Equipment> Equipments { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -71,8 +80,17 @@ public class HotelDbContext : DbContext
             .IsUnique();
 
         // ===== Check Constraints =====
-        modelBuilder.Entity<Review>()
-            .ToTable(t => t.HasCheckConstraint("CK_Reviews_Rating", "[rating] >= 1 AND [rating] <= 5"));
+        // Cú pháp khác nhau giữa SQL Server ([rating]) và SQLite ("rating")
+        if (_dbProvider.Equals("Sqlite", StringComparison.OrdinalIgnoreCase))
+        {
+            modelBuilder.Entity<Review>()
+                .ToTable(t => t.HasCheckConstraint("CK_Reviews_Rating", "\"rating\" >= 1 AND \"rating\" <= 5"));
+        }
+        else
+        {
+            modelBuilder.Entity<Review>()
+                .ToTable(t => t.HasCheckConstraint("CK_Reviews_Rating", "[rating] >= 1 AND [rating] <= 5"));
+        }
 
         // ===== Seed Data: Roles =====
         modelBuilder.Entity<Role>().HasData(
