@@ -12,6 +12,12 @@ import InventoryPage from './pages/Inventory/InventoryPage';
 import LossesPage from './pages/Losses/LossesPage';
 import HousekeepingPage from './pages/Housekeeping/HousekeepingPage';
 import RolesPage from './pages/Roles/RolesPage';
+import RoomTypesPage from './pages/RoomTypes/RoomTypesPage';
+import ArticlesPage from './pages/Articles/ArticlesPage';
+import ArticleCategoriesPage from './pages/Articles/ArticleCategoriesPage';
+import LocationsPage from './pages/Locations/LocationsPage';
+import LocationMapPage from './pages/Locations/LocationMapPage';
+import MembersPage from './pages/Members/MembersPage';
 
 /**
  * App chính - Cấu hình routing với Auth & Private Routes.
@@ -57,6 +63,20 @@ function App() {
 
             {/* 8. Vai trò & phân quyền */}
             <Route path="/roles" element={<RolesPage />} />
+
+            {/* 9. Hạng phòng */}
+            <Route path="/room-types" element={<RoomTypesPage />} />
+
+            {/* 10. Địa điểm */}
+            <Route path="/locations" element={<LocationsPage />} />
+            <Route path="/locations/map" element={<LocationMapPage />} />
+
+            {/* 11. Bài viết */}
+            <Route path="/articles" element={<ArticlesPage />} />
+            <Route path="/articles/categories" element={<ArticleCategoriesPage />} />
+
+            {/* 12. Thành viên */}
+            <Route path="/members" element={<MembersPage />} />
           </Route>
         </Routes>
       </BrowserRouter>

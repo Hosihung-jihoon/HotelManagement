@@ -15,6 +15,7 @@ public class ArticleRepository : GenericRepository<Article>, IArticleRepository
         return await _dbSet
             .Include(a => a.Category)
             .Include(a => a.Author)
+            .Include(a => a.Attraction)
             .OrderByDescending(a => a.PublishedAt)
             .ToListAsync();
     }
@@ -24,6 +25,7 @@ public class ArticleRepository : GenericRepository<Article>, IArticleRepository
         return await _dbSet
             .Include(a => a.Category)
             .Include(a => a.Author)
+            .Include(a => a.Attraction)
             .FirstOrDefaultAsync(a => a.Id == id);
     }
 
@@ -32,6 +34,7 @@ public class ArticleRepository : GenericRepository<Article>, IArticleRepository
         return await _dbSet
             .Include(a => a.Category)
             .Include(a => a.Author)
+            .Include(a => a.Attraction)
             .FirstOrDefaultAsync(a => a.Slug == slug);
     }
 }

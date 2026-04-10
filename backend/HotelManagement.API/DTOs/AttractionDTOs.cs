@@ -7,6 +7,10 @@ public class AttractionDto
     public decimal? DistanceKm { get; set; }
     public string? Description { get; set; }
     public string? MapEmbedLink { get; set; }
+    public decimal? Latitude { get; set; }
+    public decimal? Longitude { get; set; }
+    public string? Address { get; set; }
+    public bool? IsActive { get; set; }
 }
 
 public class CreateAttractionDto
@@ -15,6 +19,10 @@ public class CreateAttractionDto
     public decimal? DistanceKm { get; set; }
     public string? Description { get; set; }
     public string? MapEmbedLink { get; set; }
+    public decimal? Latitude { get; set; }
+    public decimal? Longitude { get; set; }
+    public string? Address { get; set; }
+    public bool? IsActive { get; set; } = true;
 }
 
 public class UpdateAttractionDto
@@ -23,4 +31,8 @@ public class UpdateAttractionDto
     public decimal? DistanceKm { get; set; }
     public string? Description { get; set; }
     public string? MapEmbedLink { get; set; }
+    public decimal? Latitude { get; set; }
+    public decimal? Longitude { get; set; }
+    public string? Address { get; set; }
+    public bool? IsActive { get; set; }
 }

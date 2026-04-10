@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import axiosClient from '../../api/axiosClient';
+import { Plus, Pencil, Trash2, Hotel } from 'lucide-react';
 import './RoomTypesPage.css';
 
 /**
@@ -117,9 +118,9 @@ function RoomTypesPage() {
   return (
     <div className="room-types-page">
       <div className="page-header">
-        <h1>🏨 Quản Lý Loại Phòng</h1>
+        <h1><Hotel size={28} className="header-icon" /> Quản Lý Loại Phòng</h1>
         <button className="btn btn-primary" onClick={() => setShowForm(true)}>
-          + Thêm Loại Phòng
+          <Plus size={18} /> Thêm Loại Phòng
         </button>
       </div>
 
@@ -128,7 +129,7 @@ function RoomTypesPage() {
       {/* Form tạo/sửa */}
       {showForm && (
         <div className="form-card">
-          <h3>{editingId ? '✏️ Sửa Loại Phòng' : '➕ Thêm Loại Phòng Mới'}</h3>
+          <h3>{editingId ? <><Pencil size={20} /> Sửa Loại Phòng</> : <><Plus size={20} /> Thêm Loại Phòng Mới</>}</h3>
           <form onSubmit={handleSubmit}>
             <div className="form-grid">
               <div className="form-group">
@@ -230,10 +231,10 @@ function RoomTypesPage() {
                   <td className="desc-cell">{rt.description || '—'}</td>
                   <td className="action-cell">
                     <button className="btn btn-sm btn-edit" onClick={() => handleEdit(rt)}>
-                      ✏️
+                      <Pencil size={14} />
                     </button>
                     <button className="btn btn-sm btn-delete" onClick={() => handleDelete(rt.id)}>
-                      🗑️
+                      <Trash2 size={14} />
                     </button>
                   </td>
                 </tr>
