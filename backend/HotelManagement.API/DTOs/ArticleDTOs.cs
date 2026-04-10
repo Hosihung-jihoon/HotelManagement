@@ -15,10 +15,13 @@ public class ArticleDto
     public string? Slug { get; set; }
     public string? ThumbnailUrl { get; set; }
     public DateTime? PublishedAt { get; set; }
+    public bool? IsActive { get; set; }
+    public int? AttractionId { get; set; }
     
     // Additional helpful properties for listing
     public string? CategoryName { get; set; }
     public string? AuthorName { get; set; }
+    public string? AttractionName { get; set; }
 }
 
 public class ArticleDetailDto
@@ -31,10 +34,13 @@ public class ArticleDetailDto
     public string? Content { get; set; }
     public string? ThumbnailUrl { get; set; }
     public DateTime? PublishedAt { get; set; }
+    public bool? IsActive { get; set; }
+    public int? AttractionId { get; set; }
     
     // Additional helpful properties for details
     public string? CategoryName { get; set; }
     public string? AuthorName { get; set; }
+    public string? AttractionName { get; set; }
 }
 
 // ========== Request DTOs ==========
@@ -49,6 +55,8 @@ public class CreateArticleDto
     public IFormFile? ThumbnailFile { get; set; }
     public string? ThumbnailUrl { get; set; }
     public DateTime? PublishedAt { get; set; }
+    public bool? IsActive { get; set; } = true;
+    public int? AttractionId { get; set; }
 }
 
 public class UpdateArticleDto
@@ -61,4 +69,6 @@ public class UpdateArticleDto
     public IFormFile? ThumbnailFile { get; set; }
     public string? ThumbnailUrl { get; set; }
     public DateTime? PublishedAt { get; set; }
+    public bool? IsActive { get; set; }
+    public int? AttractionId { get; set; }
 }

@@ -12,4 +12,5 @@ public interface IUserService
     Task<bool> ChangePasswordAsync(int userId, ChangePasswordDto dto);
     Task<IEnumerable<UserListDto>> GetAllUsersAsync();
     Task<bool> ChangeRoleAsync(ChangeRoleDto dto);
+    Task<IEnumerable<MembershipStatDto>> GetMembershipStatsAsync();
 }
