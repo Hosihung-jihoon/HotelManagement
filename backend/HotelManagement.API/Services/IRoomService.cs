@@ -16,4 +16,5 @@ public interface IRoomService
     
     Task<(List<RoomDto> created, string? error)> BulkCreateAsync(BulkCreateRoomDto dto);
     Task<(bool success, string? error)> UpdateStatusAsync(UpdateBlockRoomStatusDto dto);
+    Task<(bool success, string? error)> UpdateCleanStatusAsync(UpdateRoomCleanStatusDto dto);
 }

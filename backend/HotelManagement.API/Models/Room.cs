@@ -25,6 +25,10 @@ public class Room
     [MaxLength(50)]
     public string? Status { get; set; } = "Available";
 
+    [Column("cleaning_status")]
+    [MaxLength(50)]
+    public string? CleanStatus { get; set; } = "clean";
+
     // Navigation
     [ForeignKey("RoomTypeId")]
     public RoomType? RoomType { get; set; }

@@ -114,4 +114,18 @@ public class RoomsController : ControllerBase
 
         return NoContent();
     }
+
+    [HttpPatch("patch-clean-status")]
+    public async Task<IActionResult> PatchCleanStatus([FromBody] UpdateRoomCleanStatusDto dto)
+    {
+        var (success, error) = await _service.UpdateCleanStatusAsync(dto);
+
+        if (error != null)
+            return Conflict(new { message = error });
+
+        if (!success)
+            return NotFound(new { message = $"KhÃ´ng tÃ¬m tháº¥y phÃ²ng vá»›i ID = {dto.RoomId}" });
+
+        return NoContent();
+    }
 }

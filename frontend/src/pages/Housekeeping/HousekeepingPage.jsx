@@ -2,7 +2,6 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { Search, X, CheckCircle, Camera, AlertTriangle, RefreshCw } from 'lucide-react';
 import { uploadToCloudinary, createLocalPreview } from '../../utils/cloudinaryUpload';
 import axiosClient from '../../api/axiosClient';
-import { getRoomCleanStatus, setRoomCleanStatus } from '../../utils/roomCleanStatus';
 import './HousekeepingPage.css';
 
 const FINE_MAP = {
@@ -219,7 +218,7 @@ function HousekeepingPage() {
       ]);
       // Chỉ lấy các phòng đang được đánh dấu cần dọn.
       // Nếu đã hoàn tất, phòng sẽ được chuyển về Available và không nên quay lại danh sách sau khi refresh.
-      const needsCleaning = roomsRes.data.filter(r => getRoomCleanStatus(r.id) === 'dirty');
+      const needsCleaning = roomsRes.data.filter(r => (r.cleanStatus || 'clean') === 'dirty');
       setRooms(needsCleaning);
       setAllInventory(invRes.data);
     } catch (err) {
@@ -241,20 +240,38 @@ function HousekeepingPage() {
     const room = rooms.find(r => r.id === roomId);
     if (!room) return;
 
-    setRoomCleanStatus(roomId, 'clean');
-    setRooms(prev => prev.filter(r => r.id !== roomId));
+    try {
+      if (reported.length > 0) {
+        await Promise.all(reported.map(item => axiosClient.post('/LossAndDamages', {
+          roomInventoryId: Number(item.id),
+          quantity: Number(item.reportData?.qty || 1),
+          penaltyAmount: Number(item.reportData?.fine || 0),
+          description: item.reportData?.note || null,
+          imageUrl: item.reportData?.imageUrl || null,
+        })));
+      }
+
+      await axiosClient.patch('/Rooms/patch-clean-status', {
+        roomId,
+        cleanStatus: reported.length > 0 ? 'loss' : 'clean',
+      });
+      setRooms(prev => prev.filter(r => r.id !== roomId));
+    } catch (err) {
+      console.error('L?i l?u d? li?u housekeeping:', err);
+      alert('Kh?ng th? l?u d? li?u d?n ph?ng. Vui l?ng th? l?i.');
+      return;
+    }
 
     if (reported.length > 0) {
       reported.forEach(item => {
-        addToast(`⚠️ Cảnh báo thất thoát — Phòng ${room?.roomNumber}\nGhi nhận hỏng/mất ${item.itemName} tại phòng ${room?.roomNumber}`);
+        addToast(`?????? C???nh b??o th???t tho??t ??? Ph??ng ${room?.roomNumber}\nGhi nh???n h???ng/m???t ${item.itemName} t???i ph??ng ${room?.roomNumber}`);
       });
     } else {
-      addToast(`✅ Hoàn tất dọn phòng ${room?.roomNumber} — Phòng đã sẵn sàng đón khách`);
+      addToast(`??? Ho??n t???t d???n ph??ng ${room?.roomNumber} ??? Ph??ng ???? s???n s??ng ????n kh??ch`);
     }
     setSelectedRoom(null);
   };
 
-  // Lấy vật tư theo phòng
   const getRoomInventory = (roomId) =>
     allInventory.filter(i => i.roomId === roomId);
 
@@ -289,7 +306,7 @@ function HousekeepingPage() {
               <div className="hk-card-top">
                 <span className="hk-room-number">P.{room.roomNumber}</span>
                 <span className="hk-badge">
-                  {room.status === 'Cleaning' ? 'Cần dọn' : 'Kiểm tra'}
+                  Cần dọn
                 </span>
               </div>
               <div className="hk-card-info">
