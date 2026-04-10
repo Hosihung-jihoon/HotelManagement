@@ -1,6 +1,8 @@
 using HotelManagement.API.DTOs;
 using HotelManagement.API.Models;
 using HotelManagement.API.Repositories;
+using HotelManagement.API.Hubs;
+using Microsoft.AspNetCore.SignalR;
 
 namespace HotelManagement.API.Services;
 
@@ -10,10 +12,12 @@ namespace HotelManagement.API.Services;
 public class NotificationService : INotificationService
 {
     private readonly INotificationRepository _repository;
+    private readonly IHubContext<NotificationHub> _hubContext;
 
-    public NotificationService(INotificationRepository repository)
+    public NotificationService(INotificationRepository repository, IHubContext<NotificationHub> hubContext)
     {
         _repository = repository;
+        _hubContext = hubContext;
     }
 
     public async Task<IEnumerable<NotificationDto>> GetAllAsync()
@@ -48,7 +52,19 @@ public class NotificationService : INotificationService
         };
 
         var created = await _repository.CreateAsync(entity);
-        return MapToDto(created);
+        var resultDto = MapToDto(created);
+
+        // Broadcast to SignalR
+        if (dto.UserId.HasValue)
+        {
+            await _hubContext.Clients.Group(dto.UserId.Value.ToString()).SendAsync("ReceiveNotification", resultDto);
+        }
+        else
+        {
+            await _hubContext.Clients.All.SendAsync("ReceiveNotification", resultDto);
+        }
+
+        return resultDto;
     }
 
     public async Task<bool> MarkAsReadAsync(int id, UpdateNotificationDto dto)

@@ -9,6 +9,7 @@ import { HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
  */
 export default function useSignalR() {
   const [notifications, setNotifications] = useState([]);
+  const [latestNotification, setLatestNotification] = useState(null);
   const [connectionState, setConnectionState] = useState('Disconnected');
   const connectionRef = useRef(null);
 
@@ -25,6 +26,7 @@ export default function useSignalR() {
 
     connection.on('ReceiveNotification', (notification) => {
       setNotifications(prev => [notification, ...prev]);
+      setLatestNotification(notification);
     });
 
     connection.onreconnecting(() => setConnectionState('Reconnecting'));
@@ -54,8 +56,10 @@ export default function useSignalR() {
 
   return {
     notifications,
+    latestNotification,
     connection: connectionRef.current,
     connectionState,
     clearNotifications,
+    setNotifications,
   };
 }

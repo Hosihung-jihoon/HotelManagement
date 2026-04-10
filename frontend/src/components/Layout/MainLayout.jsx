@@ -2,12 +2,13 @@ import { useState, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import useSignalR from '../../hooks/useSignalR';
+import axiosClient from '../../api/axiosClient';
 import './MainLayout.css';
 import { 
   LayoutDashboard, BedDouble, Package, AlertTriangle,
   Sparkles, CalendarCheck, Users, ShieldCheck,
   Menu, Bell, User as UserIcon, Sun, Moon, Hotel,
-  MapPin, FileText, Layers, Target
+  MapPin, FileText, Layers, Target, X, CheckCheck
 } from 'lucide-react';
 
 /**
@@ -19,10 +20,30 @@ function MainLayout() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
   const { user, logout } = useAuth();
-  const { notifications } = useSignalR();
+  const { notifications, setNotifications, latestNotification } = useSignalR();
   const navigate = useNavigate();
+  const [toasts, setToasts] = useState([]);
 
-  const unreadCount = notifications.length;
+  const unreadCount = notifications.filter(n => !n.isRead).length;
+
+  useEffect(() => {
+    if (latestNotification) {
+      const newToast = { ...latestNotification, toastId: Date.now() };
+      setToasts(prev => [...prev, newToast]);
+      setTimeout(() => {
+        setToasts(prev => prev.filter(t => t.toastId !== newToast.toastId));
+      }, 5000);
+    }
+  }, [latestNotification]);
+
+  const handleMarkAsRead = async (id) => {
+    try {
+      await axiosClient.put(`/Notifications/${id}`, { isRead: true });
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   useEffect(() => {
     if (theme === 'dark') {
@@ -32,6 +53,24 @@ function MainLayout() {
     }
     localStorage.setItem('theme', theme);
   }, [theme]);
+
+  // Fetch initial notifications
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const response = await axiosClient.get('/Notifications');
+        if (response.data) {
+          // Response should be ordered by CreatedAt desc from the backend
+          setNotifications(response.data);
+        }
+      } catch (err) {
+        console.error("Failed to load notifications:", err);
+      }
+    };
+    
+    // Always fetch for admin users
+    fetchNotifications();
+  }, [setNotifications]);
 
   const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
 
@@ -121,9 +160,23 @@ function MainLayout() {
                     {notifications.length === 0 ? (
                       <div className="notification-empty">Không có thông báo mới</div>
                     ) : (
-                      notifications.slice(0, 10).map((n, i) => (
-                        <div key={i} className={`notification-item type-${n.type || 'info'}`}>
-                          <strong>{n.title}</strong>
+                      notifications.slice(0, 10).map((n) => (
+                        <div key={n.id} className={`notification-item type-${n.type || 'info'} ${n.isRead ? 'read' : ''}`}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                            <strong>{n.title}</strong>
+                            {!n.isRead && (
+                              <button 
+                                className="mark-read-btn" 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleMarkAsRead(n.id);
+                                }}
+                                title="Đánh dấu đã đọc"
+                              >
+                                <CheckCheck size={16} />
+                              </button>
+                            )}
+                          </div>
                           <p>{n.message}</p>
                         </div>
                       ))
@@ -145,6 +198,21 @@ function MainLayout() {
         <main className="page-content">
           <Outlet />
         </main>
+      </div>
+
+      {/* Floating Toasts */}
+      <div className="toast-container">
+        {toasts.map(t => (
+          <div key={t.toastId} className={`toast-item type-${t.type || 'info'}`}>
+            <div className="toast-content">
+              <strong>{t.title}</strong>
+              <p>{t.message}</p>
+            </div>
+            <button className="toast-close" onClick={() => setToasts(prev => prev.filter(x => x.toastId !== t.toastId))}>
+              <X size={16} />
+            </button>
+          </div>
+        ))}
       </div>
     </div>
   );

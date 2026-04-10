@@ -3,6 +3,7 @@ using HotelManagement.API.Data;
 using HotelManagement.API.Hubs;
 using HotelManagement.API.Repositories;
 using HotelManagement.API.Services;
+using HotelManagement.API.Filters;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -96,7 +97,10 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddSignalR();
 
 // ========== Controllers ==========
-builder.Services.AddControllers();
+builder.Services.AddControllers(options => 
+{
+    options.Filters.Add<AdminNotificationFilter>();
+});
 
 // ========== Swagger (có Bearer Token) ==========
 builder.Services.AddEndpointsApiExplorer();
