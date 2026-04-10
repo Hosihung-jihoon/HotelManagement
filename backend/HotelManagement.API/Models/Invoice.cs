@@ -32,6 +32,9 @@ public class Invoice
     [MaxLength(50)]
     public string? Status { get; set; } = "Unpaid";
 
+    [Column("created_at")]
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
     // Navigation
     [ForeignKey("BookingId")]
     public Booking? Booking { get; set; }

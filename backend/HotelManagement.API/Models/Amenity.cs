@@ -18,6 +18,9 @@ public class Amenity
     [Column("icon_url")]
     public string? IconUrl { get; set; }
 
+    [Column("is_deleted")]
+    public bool IsDeleted { get; set; } = false;
+
     // Navigation
     public ICollection<RoomTypeAmenity> RoomTypeAmenities { get; set; } = new List<RoomTypeAmenity>();
 }

@@ -8,7 +8,7 @@ import axios from 'axios';
  *   const response = await axiosClient.get('/RoomTypes');
  */
 const axiosClient = axios.create({
-  baseURL: 'http://localhost:5059/api',
+  baseURL: 'http://localhost:5280/api',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -19,7 +19,7 @@ const axiosClient = axios.create({
 // Tự động gắn token vào header nếu có (dùng cho Auth sau này)
 axiosClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }

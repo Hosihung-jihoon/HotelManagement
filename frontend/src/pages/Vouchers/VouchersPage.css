@@ -1,0 +1,43 @@
+/* ====== Vouchers Page ====== */
+.vouchers-page { padding: 0; }
+
+.vouchers-header {
+  display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px;
+}
+
+/* KPI Cards */
+.voucher-kpis {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px;
+}
+.voucher-kpi-card {
+  display: flex; align-items: center; gap: 16px;
+  background: var(--surface-color); border: 1px solid var(--border-color);
+  border-radius: 14px; padding: 18px 20px; transition: box-shadow 0.2s;
+}
+.voucher-kpi-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+.kpi-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.kpi-blue  { background: #dbeafe; color: #2563eb; }
+.kpi-green { background: #dcfce7; color: #16a34a; }
+.kpi-amber { background: #fef3c7; color: #d97706; }
+.kpi-red   { background: #fee2e2; color: #dc2626; }
+
+.kpi-value { font-size: 1.6rem; font-weight: 800; color: var(--text-primary); line-height: 1; }
+.kpi-label { font-size: 0.8rem; color: var(--text-muted); margin-top: 2px; }
+
+@media (max-width: 768px) {
+  .voucher-kpis { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Buttons reused from RoomsPage */
+.btn-add {
+  display: flex; align-items: center; gap: 6px;
+  background: #2563eb; color: #fff;
+  border: none; padding: 10px 22px; border-radius: 12px; font-size: 0.9rem;
+  font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap;
+}
+.btn-add:hover { background: #1d4ed8; transform: translateY(-1px); }
+
+@keyframes spin { to { transform: rotate(360deg); } }

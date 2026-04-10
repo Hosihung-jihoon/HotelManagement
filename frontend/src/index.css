@@ -7,14 +7,111 @@
   box-sizing: border-box;
 }
 
+:root {
+  --bg-color: #f0f2f5;
+  --surface-color: #ffffff;
+  --text-primary: #333333;
+  --text-secondary: #555555;
+  --text-muted: #888888;
+  --border-color: #e5e7eb;
+  --border-light: #f5f5f5;
+  --hover-bg: #f9fafb;
+  --header-bg: #ffffff;
+  --table-header-bg: #f9fafb;
+  --sidebar-bg: #ffffff;
+  --sidebar-text: #4b5563;
+  --sidebar-hover: #f3f4f6;
+  --sidebar-active-bg: #eff6ff;
+  --sidebar-active-text: #2563eb;
+  --sidebar-border: #e5e7eb;
+}
+
+[data-theme="dark"] {
+  --bg-color: #0f111a;
+  --surface-color: #1a1d2d;
+  --text-primary: #e2e8f0;
+  --text-secondary: #9ca3af;
+  --text-muted: #6b7280;
+  --border-color: #2d334a;
+  --border-light: #202438;
+  --hover-bg: #22263d;
+  --header-bg: #1a1d2d;
+  --table-header-bg: #22263d;
+  --sidebar-bg: #11131e;
+  --sidebar-text: #9ca3af;
+  --sidebar-hover: #22263d;
+  --sidebar-active-bg: #2d334a;
+  --sidebar-active-text: #ffffff;
+  --sidebar-border: #22263d;
+}
+
 body {
   font-family: 'Segoe UI', 'Roboto', 'Oxygen', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f0f2f5;
-  color: #333;
+  background-color: var(--bg-color);
+  color: var(--text-primary);
   line-height: 1.6;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
+
+/* Global Overrides for Scaffolded Pages */
+.page-header h1 {
+  color: var(--text-primary) !important;
+}
+.table-card {
+  background: var(--surface-color) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2) !important;
+}
+.data-table th, .data-table td {
+  border-bottom: 1px solid var(--border-color) !important;
+}
+.data-table th {
+  background: var(--table-header-bg) !important;
+  color: var(--text-secondary) !important;
+}
+.data-table td {
+  color: var(--text-primary) !important;
+}
+.form-card {
+  background: var(--surface-color) !important;
+  color: var(--text-primary) !important;
+}
+.form-group label {
+  color: var(--text-secondary) !important;
+}
+.form-group input, .form-group textarea {
+  background: var(--bg-color) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color) !important;
+}
+.empty-row, .empty-state {
+  color: var(--text-muted) !important;
+}
+
+/* MainLayout Overrides */
+.layout { background-color: var(--bg-color) !important; }
+.top-header { background: var(--header-bg) !important; border-bottom: 1px solid var(--border-color); box-shadow: none !important; }
+.toggle-btn { border-color: var(--border-color) !important; color: var(--text-primary) !important; }
+.toggle-btn:hover, .notification-bell:hover, .theme-toggle-btn:hover { background: var(--hover-bg) !important; }
+.user-info, .notification-count { color: var(--text-secondary) !important; }
+.notification-dropdown { background: var(--surface-color) !important; border: 1px solid var(--border-color); box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2) !important; }
+.notification-dropdown-header { border-bottom: 1px solid var(--border-color) !important; }
+.notification-item { border-bottom: 1px solid var(--border-color) !important; }
+.notification-item:hover { background: var(--hover-bg) !important; }
+.notification-item strong { color: var(--text-primary) !important; }
+.logout-btn { color: var(--text-primary) !important; border-color: var(--border-color) !important; }
+.logout-btn:hover { background: #e94560 !important; border-color: #e94560 !important; color: #fff !important; }
+.notification-bell { color: var(--text-primary) !important; }
+.theme-toggle-btn { background: none; border: none; color: var(--text-primary); cursor: pointer; padding: 6px; border-radius: 8px; transition: background 0.2s; display: flex; align-items: center; justify-content: center; }
+
+/* Sidebar Responsive Overrides */
+.sidebar { background: var(--sidebar-bg) !important; border-right: 1px solid var(--sidebar-border) !important; color: var(--text-primary) !important; box-shadow: none !important; }
+.sidebar-logo { color: var(--text-primary) !important; }
+.sidebar-header { border-bottom: 1px solid var(--sidebar-border) !important; }
+.nav-item { color: var(--sidebar-text) !important; }
+.nav-item:hover { background: var(--sidebar-hover) !important; color: var(--text-primary) !important; }
+.nav-item.active { background: var(--sidebar-active-bg) !important; color: var(--sidebar-active-text) !important; box-shadow: none !important; }
 
 a {
   text-decoration: none;
@@ -42,3 +139,22 @@ button {
 ::-webkit-scrollbar-thumb:hover {
   background: #999;
 }
+
+/* ========== Shared Page Components (dùng chung nhiều trang) ========== */
+/* Import từ RoomsPage.css: filter-bar, table-card, rooms-table, modal-overlay, v.v. */
+/* Các shared class được define trong RoomsPage.css và được import ngầm qua file CSS riêng */
+
+/* Confirm box (dùng cho LossesPage, HousekeepingPage) */
+.confirm-box {
+  background: var(--surface-color); border-radius: 14px; padding: 28px 32px;
+  max-width: 380px; width: 100%; text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+}
+.confirm-box h4 { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
+.confirm-box p { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 20px; }
+.confirm-actions { display: flex; gap: 12px; justify-content: center; }
+.btn-delete-confirm { padding: 9px 24px; border-radius: 9px; background: #dc2626; color: #fff; border: none; font-weight: 600; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+.btn-delete-confirm:hover { background: #b91c1c; }
+
+/* Shared modal classes (modal-overlay, modal-box, etc. defined in RoomsPage.css, apply globally) */
+/* These are repeated for pages that don't import RoomsPage.css */

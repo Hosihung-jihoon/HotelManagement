@@ -35,4 +35,27 @@ public class RoomTypeRepository : GenericRepository<RoomType>, IRoomTypeReposito
             .Include(rt => rt.RoomImages)
             .ToListAsync();
     }
+
+    public async Task<RoomImage> AddImageAsync(RoomImage image)
+    {
+        await _context.Set<RoomImage>().AddAsync(image);
+        await _context.SaveChangesAsync();
+        return image;
+    }
+
+    public async Task<RoomImage?> GetImageByIdAsync(int imageId)
+    {
+        return await _context.Set<RoomImage>().FirstOrDefaultAsync(i => i.Id == imageId);
+    }
+
+    public async Task<List<RoomImage>> GetImagesByRoomTypeIdAsync(int roomTypeId)
+    {
+        return await _context.Set<RoomImage>().Where(i => i.RoomTypeId == roomTypeId).ToListAsync();
+    }
+
+    public async Task UpdateImageAsync(RoomImage image)
+    {
+        _context.Set<RoomImage>().Update(image);
+        await _context.SaveChangesAsync();
+    }
 }
