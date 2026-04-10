@@ -6,7 +6,8 @@ import './MainLayout.css';
 import { 
   LayoutDashboard, BedDouble, Package, AlertTriangle,
   Sparkles, CalendarCheck, Users, ShieldCheck,
-  Menu, Bell, User as UserIcon, Sun, Moon, Hotel
+  Menu, Bell, User as UserIcon, Sun, Moon, Hotel,
+  MapPin, FileText, Layers, Target
 } from 'lucide-react';
 
 /**
@@ -42,10 +43,14 @@ function MainLayout() {
   const menuItems = [
     { path: '/', label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
     { path: '/rooms', label: 'Quản lý phòng', icon: <BedDouble size={20} /> },
+    { path: '/room-types', label: 'Hạng phòng', icon: <Layers size={20} /> },
     { path: '/inventory', label: 'Kho vật tư', icon: <Package size={20} /> },
     { path: '/losses', label: 'Thất thoát & đền bù', icon: <AlertTriangle size={20} /> },
     { path: '/housekeeping', label: 'Dọn phòng', icon: <Sparkles size={20} /> },
     { path: '/bookings', label: 'Booking & Voucher', icon: <CalendarCheck size={20} /> },
+    { path: '/locations', label: 'Địa điểm', icon: <MapPin size={20} /> },
+    { path: '/articles', label: 'Bài viết', icon: <FileText size={20} /> },
+    { path: '/members', label: 'Khách hàng', icon: <Target size={20} /> },
     { path: '/users', label: 'Danh sách nhân sự', icon: <Users size={20} /> },
     { path: '/roles', label: 'Vai trò & phân quyền', icon: <ShieldCheck size={20} /> },
   ];

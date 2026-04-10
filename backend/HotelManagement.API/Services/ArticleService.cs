@@ -26,8 +26,11 @@ public class ArticleService : IArticleService
             Slug = e.Slug,
             ThumbnailUrl = e.ThumbnailUrl,
             PublishedAt = e.PublishedAt,
+            IsActive = e.IsActive,
+            AttractionId = e.AttractionId,
             CategoryName = e.Category?.Name,
-            AuthorName = e.Author?.FullName
+            AuthorName = e.Author?.FullName,
+            AttractionName = e.Attraction?.Name
         });
     }
 
@@ -46,8 +49,11 @@ public class ArticleService : IArticleService
             Content = entity.Content,
             ThumbnailUrl = entity.ThumbnailUrl,
             PublishedAt = entity.PublishedAt,
+            IsActive = entity.IsActive,
+            AttractionId = entity.AttractionId,
             CategoryName = entity.Category?.Name,
-            AuthorName = entity.Author?.FullName
+            AuthorName = entity.Author?.FullName,
+            AttractionName = entity.Attraction?.Name
         };
     }
 
@@ -66,8 +72,11 @@ public class ArticleService : IArticleService
             Content = entity.Content,
             ThumbnailUrl = entity.ThumbnailUrl,
             PublishedAt = entity.PublishedAt,
+            IsActive = entity.IsActive,
+            AttractionId = entity.AttractionId,
             CategoryName = entity.Category?.Name,
-            AuthorName = entity.Author?.FullName
+            AuthorName = entity.Author?.FullName,
+            AttractionName = entity.Attraction?.Name
         };
     }
 
@@ -81,7 +90,9 @@ public class ArticleService : IArticleService
             Slug = dto.Slug,
             Content = dto.Content,
             ThumbnailUrl = dto.ThumbnailUrl,
-            PublishedAt = dto.PublishedAt ?? DateTime.UtcNow
+            PublishedAt = dto.PublishedAt ?? DateTime.UtcNow,
+            IsActive = dto.IsActive,
+            AttractionId = dto.AttractionId
         };
 
         var created = await _repository.CreateAsync(entity);
@@ -102,6 +113,8 @@ public class ArticleService : IArticleService
         entity.Content = dto.Content;
         entity.ThumbnailUrl = dto.ThumbnailUrl;
         entity.PublishedAt = dto.PublishedAt;
+        entity.AttractionId = dto.AttractionId;
+        if (dto.IsActive.HasValue) entity.IsActive = dto.IsActive.Value;
 
         await _repository.UpdateAsync(entity);
         return true;
@@ -129,8 +142,11 @@ public class ArticleService : IArticleService
             Slug = fullEntity.Slug,
             ThumbnailUrl = fullEntity.ThumbnailUrl,
             PublishedAt = fullEntity.PublishedAt,
+            IsActive = fullEntity.IsActive,
+            AttractionId = fullEntity.AttractionId,
             CategoryName = fullEntity.Category?.Name,
-            AuthorName = fullEntity.Author?.FullName
+            AuthorName = fullEntity.Author?.FullName,
+            AttractionName = fullEntity.Attraction?.Name
         };
     }
 }

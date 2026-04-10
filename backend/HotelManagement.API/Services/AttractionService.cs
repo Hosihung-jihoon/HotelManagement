@@ -23,7 +23,11 @@ public class AttractionService : IAttractionService
             Name = e.Name,
             DistanceKm = e.DistanceKm,
             Description = e.Description,
-            MapEmbedLink = e.MapEmbedLink
+            MapEmbedLink = e.MapEmbedLink,
+            Latitude = e.Latitude,
+            Longitude = e.Longitude,
+            Address = e.Address,
+            IsActive = e.IsActive
         });
     }
 
@@ -38,7 +42,11 @@ public class AttractionService : IAttractionService
             Name = e.Name,
             DistanceKm = e.DistanceKm,
             Description = e.Description,
-            MapEmbedLink = e.MapEmbedLink
+            MapEmbedLink = e.MapEmbedLink,
+            Latitude = e.Latitude,
+            Longitude = e.Longitude,
+            Address = e.Address,
+            IsActive = e.IsActive
         };
     }
 
@@ -49,7 +57,11 @@ public class AttractionService : IAttractionService
             Name = dto.Name,
             DistanceKm = dto.DistanceKm,
             Description = dto.Description,
-            MapEmbedLink = dto.MapEmbedLink
+            MapEmbedLink = dto.MapEmbedLink,
+            Latitude = dto.Latitude,
+            Longitude = dto.Longitude,
+            Address = dto.Address,
+            IsActive = dto.IsActive ?? true
         };
 
         var created = await _repository.CreateAsync(entity);
@@ -60,7 +72,11 @@ public class AttractionService : IAttractionService
             Name = created.Name,
             DistanceKm = created.DistanceKm,
             Description = created.Description,
-            MapEmbedLink = created.MapEmbedLink
+            MapEmbedLink = created.MapEmbedLink,
+            Latitude = created.Latitude,
+            Longitude = created.Longitude,
+            Address = created.Address,
+            IsActive = created.IsActive
         };
     }
 
@@ -73,6 +89,10 @@ public class AttractionService : IAttractionService
         entity.DistanceKm = dto.DistanceKm;
         entity.Description = dto.Description;
         entity.MapEmbedLink = dto.MapEmbedLink;
+        entity.Latitude = dto.Latitude;
+        entity.Longitude = dto.Longitude;
+        entity.Address = dto.Address;
+        if (dto.IsActive.HasValue) entity.IsActive = dto.IsActive.Value;
 
         await _repository.UpdateAsync(entity);
         return true;

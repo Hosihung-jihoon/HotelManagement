@@ -16,6 +16,10 @@ public class Article
     [Column("author_id")]
     public int? AuthorId { get; set; }
 
+    [Column("attraction_id")]
+    public int? AttractionId { get; set; }
+
+
     [Required]
     [Column("title")]
     public string Title { get; set; } = string.Empty;
@@ -33,10 +37,16 @@ public class Article
     [Column("published_at")]
     public DateTime? PublishedAt { get; set; }
 
+    [Column("is_active")]
+    public bool? IsActive { get; set; } = true;
+
     // Navigation
     [ForeignKey("CategoryId")]
     public ArticleCategory? Category { get; set; }
 
     [ForeignKey("AuthorId")]
     public User? Author { get; set; }
+
+    [ForeignKey("AttractionId")]
+    public Attraction? Attraction { get; set; }
 }

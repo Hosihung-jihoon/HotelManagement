@@ -81,6 +81,7 @@ public class UserService : IUserService
     {
         return await _context.Users
             .Include(u => u.Role)
+            .Include(u => u.Membership)
             .Select(u => new UserListDto
             {
                 Id = u.Id,
@@ -88,7 +89,8 @@ public class UserService : IUserService
                 Email = u.Email,
                 Phone = u.Phone,
                 Status = u.Status,
-                RoleName = u.Role != null ? u.Role.Name : null
+                RoleName = u.Role != null ? u.Role.Name : null,
+                MembershipName = u.Membership != null ? u.Membership.TierName : null
             })
             .ToListAsync();
     }
@@ -109,5 +111,22 @@ public class UserService : IUserService
         user.RoleId = dto.NewRoleId;
         await _context.SaveChangesAsync();
         return true;
+    }
+
+    /// <summary>
+    /// Thống kê phân bổ Membership
+    /// </summary>
+    public async Task<IEnumerable<MembershipStatDto>> GetMembershipStatsAsync()
+    {
+        return await _context.Users
+            .Where(u => u.MembershipId != null)
+            .GroupBy(u => new { u.MembershipId, u.Membership.TierName })
+            .Select(g => new MembershipStatDto
+            {
+                MembershipId = g.Key.MembershipId.Value,
+                TierName = g.Key.TierName,
+                MemberCount = g.Count()
+            })
+            .ToListAsync();
     }
 }
