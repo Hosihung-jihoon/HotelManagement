@@ -255,3 +255,84 @@
   padding: 24px;
   flex: 1;
 }
+
+/* ========== Toasts ========== */
+.toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 9999;
+}
+
+.toast-item {
+  background: #fff;
+  border-left: 4px solid #3b82f6;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 12px 16px;
+  width: 320px;
+  animation: slideInRight 0.3s ease forwards;
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.toast-item.type-success { border-color: #2ecc71; }
+.toast-item.type-warning { border-color: #f39c12; }
+.toast-item.type-error { border-color: #e94560; }
+.toast-item.type-info { border-color: #3b82f6; }
+
+.toast-content strong {
+  display: block;
+  font-size: 0.9rem;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.toast-content p {
+  font-size: 0.8rem;
+  color: #666;
+  margin: 0;
+}
+
+.toast-close {
+  background: none;
+  border: none;
+  color: #999;
+  cursor: pointer;
+  padding: 4px;
+  margin-left: 8px;
+  transition: color 0.2s;
+}
+
+.toast-close:hover {
+  color: #333;
+}
+
+/* ========== Mark Read Button ========== */
+.mark-read-btn {
+  background: none;
+  border: none;
+  color: #3b82f6;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.mark-read-btn:hover {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+.notification-item.read {
+  opacity: 0.6;
+  background: #fdfdfd;
+}
