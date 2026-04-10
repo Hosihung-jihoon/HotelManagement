@@ -2,7 +2,6 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { AlertTriangle, TriangleAlert, Calendar, Pencil, Trash2, Plus, X, Image as ImageIcon, RefreshCw, CheckCircle, XCircle } from 'lucide-react';
 import { uploadToCloudinary, createLocalPreview } from '../../utils/cloudinaryUpload';
 import axiosClient from '../../api/axiosClient';
-import { setRoomCleanStatus } from '../../utils/roomCleanStatus';
 import './LossesPage.css';
 
 const emptyForm = { roomId: '', roomInventoryId: '', quantity: 1, penaltyAmount: 0, description: '', imageUrl: '' };
@@ -164,22 +163,20 @@ function LossesPage() {
   const handleToggleStatus = async (id) => {
     try {
       await axiosClient.patch(`/LossAndDamages/${id}/toggle-status`);
-      setLosses(prev => prev.map(l => {
-        if (l.id !== id) return l;
 
-        const nextLoss = { ...l, isPaid: !l.isPaid };
-        const roomId = getRoomIdFromLoss(nextLoss);
-        if (nextLoss.isPaid && roomId) {
-          setRoomCleanStatus(roomId, 'clean');
-        }
-        return nextLoss;
-      }));
+      const currentLoss = losses.find(l => l.id === id);
+      const nextIsPaid = !currentLoss?.isPaid;
+      const roomId = getRoomIdFromLoss({ ...currentLoss, isPaid: nextIsPaid });
+      if (nextIsPaid && roomId) {
+        await axiosClient.patch('/Rooms/patch-clean-status', { roomId, cleanStatus: 'clean' });
+      }
+
+      setLosses(prev => prev.map(l => l.id === id ? { ...l, isPaid: !l.isPaid } : l));
     } catch (err) {
-      alert('Lỗi cập nhật trạng thái: ' + (err.response?.data?.message || err.message));
+      alert('L???i c???p nh???t tr???ng th??i: ' + (err.response?.data?.message || err.message));
     }
   };
 
-  // Khi chọn vật tư → tự điền tiền phạt
   const handleInventoryChange = (id) => {
     const item = inventory.find(i => String(i.id) === String(id));
     setForm(prev => ({

@@ -32,6 +32,16 @@ public class BookingsController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("{id}/detail")]
+    public async Task<ActionResult<BookingFullDetailDto>> GetFullDetail(int id)
+    {
+        var result = await _service.GetFullDetailAsync(id);
+        if (result == null)
+            return NotFound(new { message = $"Không tìm thấy đơn đặt phòng với ID = {id}" });
+
+        return Ok(result);
+    }
+
     [HttpPost]
     public async Task<ActionResult<BookingDto>> Create([FromBody] CreateBookingDto dto)
     {
@@ -81,5 +91,15 @@ public class BookingsController : ControllerBase
         {
             return BadRequest(new { message = ex.Message });
         }
+    }
+
+    [HttpPost("{id}/payments")]
+    public async Task<IActionResult> AddPayment(int id, [FromBody] AddBookingPaymentDto dto)
+    {
+        var success = await _service.AddPaymentAsync(id, dto);
+        if (!success)
+            return NotFound(new { message = $"Không tìm thấy đơn đặt phòng với ID = {id}" });
+
+        return Ok(new { message = "Ghi nhận thanh toán thành công" });
     }
 }

@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Plus, X, ChevronRight, ChevronLeft, Upload, Search, RotateCcw, RefreshCw, Pencil, Layers, AlertCircle, Trash2, Eye } from 'lucide-react';
 import { uploadToCloudinary, createLocalPreview } from '../../utils/cloudinaryUpload';
 import axiosClient from '../../api/axiosClient';
-import { readRoomCleanStatus, setRoomCleanStatus } from '../../utils/roomCleanStatus';
 import './RoomsPage.css';
 
 // Map status API (tiếng Anh) → nhãn tiếng Việt
@@ -249,6 +248,7 @@ function RoomModal({ onClose, onSaved, roomTypes, editRoom, rooms }) {
         floor: Number(form.floor),
         roomTypeId: Number(form.roomTypeId),
         status: editRoom ? form.status : 'Available',
+        cleanStatus: editRoom?.cleanStatus ?? 'clean',
       };
       if (editRoom) {
         await axiosClient.put(`/Rooms/${editRoom.id}`, payload);
@@ -677,8 +677,6 @@ function RoomsPage() {
   const [showBulk, setShowBulk]         = useState(false);   // bulk
   const [lossRoom, setLossRoom]         = useState(null);
   const [editRoom, setEditRoom]         = useState(null);
-  // Trạng thái vệ sinh local synced with localStorage
-  const [cleanStatus, setCleanStatus] = useState(() => readRoomCleanStatus());
 
   const fetchAll = useCallback(async () => {
     try {
@@ -692,7 +690,6 @@ function RoomsPage() {
       setRooms(roomsRes.data);
       setRoomTypes(typesRes.data);
       setAllInventory(inventoryRes.data);
-      setCleanStatus(readRoomCleanStatus());
     } catch (err) {
       console.error('Lỗi tải phòng:', err);
       setLoadError(`Lỗi kết nối API: ${err.response?.status ?? err.message}`);
@@ -726,19 +723,30 @@ function RoomsPage() {
     }
   };
 
-  const handleCleanStatusChange = (roomId, value) => {
+  const handleCleanStatusChange = async (roomId, value) => {
     if (value === 'loss') {
       const room = rooms.find(r => r.id === roomId);
       if (!room) return;
       setLossRoom(room);
       return;
     }
-    setCleanStatus(setRoomCleanStatus(roomId, value));
+
+    try {
+      await axiosClient.patch('/Rooms/patch-clean-status', { roomId, cleanStatus: value });
+      setRooms(prev => prev.map(r => r.id === roomId ? { ...r, cleanStatus: value } : r));
+    } catch (err) {
+      alert('L?i c?p nh?t tr?ng th?i v? sinh: ' + (err.response?.data?.message || err.message));
+    }
   };
 
-  const handleLossSaved = (roomId) => {
-    setCleanStatus(setRoomCleanStatus(roomId, 'loss'));
-    setLossRoom(null);
+  const handleLossSaved = async (roomId) => {
+    try {
+      await axiosClient.patch('/Rooms/patch-clean-status', { roomId, cleanStatus: 'loss' });
+      setRooms(prev => prev.map(r => r.id === roomId ? { ...r, cleanStatus: 'loss' } : r));
+      setLossRoom(null);
+    } catch (err) {
+      alert('L?i c?p nh?t tr?ng th?i v? sinh: ' + (err.response?.data?.message || err.message));
+    }
   };
 
   const getRoomInventory = (roomId) =>
@@ -751,6 +759,7 @@ function RoomsPage() {
         floor: room.floor,
         roomTypeId: room.roomTypeId,
         status: newStatus,
+        cleanStatus: room.cleanStatus ?? 'clean',
       });
       setRooms(prev => prev.map(r => r.id === room.id ? { ...r, status: newStatus } : r));
     } catch (err) {
@@ -857,7 +866,7 @@ function RoomsPage() {
                   {rooms.length === 0 ? 'Chưa có phòng nào trong hệ thống' : 'Không tìm thấy phòng phù hợp'}
                 </td></tr>
               ) : filtered.map(room => {
-                const roomClean = cleanStatus[room.id] || 'clean';
+                const roomClean = room.cleanStatus || 'clean';
                 return (
                   <tr key={room.id} className={roomClean === 'dirty' ? 'row-needs-cleaning' : ''}>
                     <td><span className="room-number-cell">P.{room.roomNumber}</span></td>

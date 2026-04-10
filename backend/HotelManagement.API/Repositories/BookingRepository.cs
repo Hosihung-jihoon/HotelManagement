@@ -15,6 +15,46 @@ public class BookingRepository : GenericRepository<Booking>, IBookingRepository
         return await _dbSet.FirstOrDefaultAsync(b => b.BookingCode == bookingCode);
     }
 
+    public async Task<Booking?> GetFullDetailAsync(int id)
+    {
+        return await _dbSet
+            .Include(b => b.User)
+            .Include(b => b.Voucher)
+            .Include(b => b.BookingDetails)
+                .ThenInclude(bd => bd.Room)
+                    .ThenInclude(r => r!.RoomType)
+            .Include(b => b.BookingDetails)
+                .ThenInclude(bd => bd.RoomType)
+            .Include(b => b.Invoice)
+                .ThenInclude(inv => inv!.Payments)
+            .FirstOrDefaultAsync(b => b.Id == id);
+    }
+
+    public async Task<IEnumerable<AuditLog>> GetAuditLogsAsync(int bookingId)
+    {
+        return await _context.AuditLogs
+            .Include(al => al.User)
+            .Where(al => al.TableName == "Bookings" && al.RecordId == bookingId)
+            .OrderByDescending(al => al.CreatedAt)
+            .ToListAsync();
+    }
+
+    public async Task AddAuditLogAsync(int bookingId, string action, string? oldValue = null, string? newValue = null, int? userId = null)
+    {
+        var log = new AuditLog
+        {
+            RecordId = bookingId,
+            TableName = "Bookings",
+            Action = action,
+            OldValue = oldValue,
+            NewValue = newValue,
+            UserId = userId,
+            CreatedAt = DateTime.UtcNow
+        };
+        await _context.AuditLogs.AddAsync(log);
+        await _context.SaveChangesAsync();
+    }
+
     public async Task<IEnumerable<Room>> FindAvailableRoomsAsync(DateTime checkIn, DateTime checkOut, int? adults, int? children)
     {
         // 1. Get Room IDs that are currently booked and overlap with the requested dates

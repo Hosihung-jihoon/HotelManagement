@@ -11,6 +11,7 @@ public class RoomDto
     public string RoomNumber { get; set; } = string.Empty;
     public int? Floor { get; set; }
     public string? Status { get; set; }
+    public string? CleanStatus { get; set; }
     public int? RoomTypeId { get; set; }
     public string? RoomTypeName { get; set; }
 }
@@ -24,6 +25,7 @@ public class RoomDetailDto
     public string RoomNumber { get; set; } = string.Empty;
     public int? Floor { get; set; }
     public string? Status { get; set; }
+    public string? CleanStatus { get; set; }
     public int? RoomTypeId { get; set; }
     public string? RoomTypeName { get; set; }
     public decimal? BasePrice { get; set; }
@@ -42,6 +44,7 @@ public class CreateRoomDto
     public string RoomNumber { get; set; } = string.Empty;
     public int? Floor { get; set; }
     public string? Status { get; set; } = "Available";
+    public string? CleanStatus { get; set; } = "clean";
     public int? RoomTypeId { get; set; }
 }
 
@@ -53,6 +56,7 @@ public class UpdateRoomDto
     public string RoomNumber { get; set; } = string.Empty;
     public int? Floor { get; set; }
     public string? Status { get; set; }
+    public string? CleanStatus { get; set; }
     public int? RoomTypeId { get; set; }
 }
 
@@ -74,4 +78,10 @@ public class UpdateBlockRoomStatusDto
 {
     public int RoomId { get; set; }
     public string Status { get; set; } = string.Empty;
+}
+
+public class UpdateRoomCleanStatusDto
+{
+    public int RoomId { get; set; }
+    public string CleanStatus { get; set; } = string.Empty;
 }
