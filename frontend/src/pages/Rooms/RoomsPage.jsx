@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Plus, X, ChevronRight, ChevronLeft, Upload, Search, RotateCcw, RefreshCw, Pencil, Layers, AlertCircle, Trash2, Eye } from 'lucide-react';
+import { Plus, X, ChevronRight, ChevronLeft, Upload, Search, RotateCcw, RefreshCw, Pencil, Layers, AlertCircle, Trash2, Eye, BedDouble, Box, Wrench, AlertTriangle, CheckCircle } from 'lucide-react';
 import { uploadToCloudinary, createLocalPreview } from '../../utils/cloudinaryUpload';
 import axiosClient from '../../api/axiosClient';
+import CustomSelect from '../../components/Common/CustomSelect';
 import './RoomsPage.css';
 
 // Map status API (tiếng Anh) → nhãn tiếng Việt
@@ -731,11 +732,77 @@ function RoomsPage() {
       return;
     }
 
+    const room = rooms.find(r => r.id === roomId);
+    if (!room) return;
+
+    // Khi chuyển sang 'cần dọn' → tự động set trạng thái kinh doanh = 'Cleaning'
+    // Khi chuyển từ 'dirty' sang 'clean' → tự động set trạng thái kinh doanh = 'Available'
+    let newBusinessStatus = room.status;
+    if (value === 'dirty' && room.status !== 'Cleaning') {
+      newBusinessStatus = 'Cleaning';
+    } else if (value === 'clean' && (room.status === 'Cleaning' || room.status === 'Available')) {
+      // Bất kể đang dọn dẹp hay gì, nếu đã sạch sẽ thì là Available (trừ đang có khách chờ)
+      newBusinessStatus = 'Available';
+    }
+
     try {
       await axiosClient.patch('/Rooms/patch-clean-status', { roomId, cleanStatus: value });
-      setRooms(prev => prev.map(r => r.id === roomId ? { ...r, cleanStatus: value } : r));
+      if (newBusinessStatus !== room.status) {
+        await axiosClient.put(`/Rooms/${roomId}`, {
+          roomNumber: room.roomNumber,
+          floor: room.floor,
+          roomTypeId: room.roomTypeId,
+          status: newBusinessStatus,
+          cleanStatus: value,
+        });
+      }
+      setRooms(prev => prev.map(r =>
+        r.id === roomId ? { ...r, cleanStatus: value, status: newBusinessStatus } : r
+      ));
     } catch (err) {
-      alert('L?i c?p nh?t tr?ng th?i v? sinh: ' + (err.response?.data?.message || err.message));
+      alert('Lỗi cập nhật trạng thái vệ sinh: ' + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const handleCleanAll = async () => {
+    // Bỏ qua phòng đang có khách (Occupied) và bảo trì (Maintenance)
+    const eligibleRooms = rooms.filter(r => r.status !== 'Occupied' && r.status !== 'Maintenance');
+    if (eligibleRooms.length === 0) {
+      alert('Không có phòng nào có thể yêu cầu dọn (tất cả đang có khách hoặc bảo trì).');
+      return;
+    }
+    if (!window.confirm(
+      `Yêu cầu dọn toàn bộ ${eligibleRooms.length} phòng?\n` +
+      `(Bỏ qua phòng đang có khách hoặc bảo trì)\n\n` +
+      `Tất cả phòng đủ điều kiện sẽ được đặt về:\n` +
+      `• Vệ sinh: Cần dọn\n• Kinh doanh: Dọn phòng`
+    )) return;
+
+    try {
+      await Promise.all(
+        eligibleRooms.map(room =>
+          Promise.all([
+            axiosClient.patch('/Rooms/patch-clean-status', { roomId: room.id, cleanStatus: 'dirty' }),
+            axiosClient.put(`/Rooms/${room.id}`, {
+              roomNumber: room.roomNumber,
+              floor: room.floor,
+              roomTypeId: room.roomTypeId,
+              status: 'Cleaning',
+              cleanStatus: 'dirty',
+            }),
+          ])
+        )
+      );
+      setRooms(prev =>
+        prev.map(r =>
+          eligibleRooms.find(e => e.id === r.id)
+            ? { ...r, cleanStatus: 'dirty', status: 'Cleaning' }
+            : r
+        )
+      );
+    } catch (err) {
+      alert('Lỗi yêu cầu dọn phòng: ' + (err.response?.data?.message || err.message));
+      fetchAll();
     }
   };
 
@@ -795,10 +862,22 @@ function RoomsPage() {
             {rooms.length} phòng · {rooms.filter(r => r.status === 'Available').length} trống · {rooms.filter(r => r.status === 'Occupied').length} có khách
           </p>
         </div>
-        <div style={{ display: 'flex', gap: 10 }}>
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
           <button onClick={fetchAll} disabled={loading}
             style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 14px', border: '1px solid var(--border-color)', borderRadius: 8, background: 'var(--surface-color)', cursor: 'pointer', fontSize: '0.85rem', color: 'var(--text-primary)' }}>
             <RefreshCw size={14} style={loading ? { animation: 'spin 1s linear infinite' } : {}} /> Làm mới
+          </button>
+          {/* Clean all rooms */}
+          <button
+            onClick={handleCleanAll}
+            title="Đánh dấu toàn bộ phòng (trừ đang có khách / bảo trì) là sạch sẽ & sẵn sàng"
+            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 14px', border: '1px solid #16a34a', borderRadius: 8, background: '#f0fdf4', cursor: 'pointer', fontSize: '0.85rem', color: '#15803d', fontWeight: 600 }}>
+            ✓ Dọn tất cả phòng
+            {rooms.filter(r => (r.cleanStatus || 'clean') === 'dirty').length > 0 && (
+              <span style={{ background: '#16a34a', color: '#fff', borderRadius: 12, padding: '1px 7px', fontSize: '0.75rem', fontWeight: 700 }}>
+                {rooms.filter(r => (r.cleanStatus || 'clean') === 'dirty').length}
+              </span>
+            )}
           </button>
           {/* Bulk create */}
           <button
@@ -826,18 +905,39 @@ function RoomsPage() {
           <Search size={16} className="search-icon" />
           <input className="search-input" placeholder="Tìm số phòng, hạng phòng..." value={search} onChange={e => setSearch(e.target.value)} />
         </div>
-        <select className="filter-select" value={filterFloor} onChange={e => setFilterFloor(e.target.value)}>
-          <option value="">Tất cả tầng</option>
-          {uniqueFloors.map(f => <option key={f} value={f}>Tầng {f}</option>)}
-        </select>
-        <select className="filter-select" value={filterTypeId} onChange={e => setFilterTypeId(e.target.value)}>
-          <option value="">Tất cả hạng</option>
-          {roomTypes.map(rt => <option key={rt.id} value={rt.id}>{rt.name}</option>)}
-        </select>
-        <select className="filter-select" value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
-          <option value="">Tất cả trạng thái</option>
-          {ALL_STATUSES.map(s => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}
-        </select>
+        <div style={{ width: 140 }}>
+          <CustomSelect 
+            value={filterFloor} 
+            onChange={val => setFilterFloor(val)} 
+            placeholder="Tất cả tầng"
+            options={[
+              { value: '', label: 'Tất cả tầng' },
+              ...uniqueFloors.map(f => ({ value: f, label: `Tầng ${f}` }))
+            ]}
+          />
+        </div>
+        <div style={{ width: 160 }}>
+          <CustomSelect 
+            value={filterTypeId} 
+            onChange={val => setFilterTypeId(val)} 
+            placeholder="Tất cả hạng"
+            options={[
+              { value: '', label: 'Tất cả hạng' },
+              ...roomTypes.map(rt => ({ value: rt.id, label: rt.name }))
+            ]}
+          />
+        </div>
+        <div style={{ width: 180 }}>
+          <CustomSelect 
+            value={filterStatus} 
+            onChange={val => setFilterStatus(val)} 
+            placeholder="Tất cả trạng thái"
+            options={[
+              { value: '', label: 'Tất cả trạng thái' },
+              ...ALL_STATUSES.map(s => ({ value: s, label: STATUS_LABEL[s] }))
+            ]}
+          />
+        </div>
         <button className="btn-reset" onClick={handleReset} title="Xóa bộ lọc"><RotateCcw size={16} /></button>
       </div>
 
@@ -873,26 +973,24 @@ function RoomsPage() {
                     <td>Tầng {room.floor ?? '—'}</td>
                     <td>{room.roomTypeName ?? '—'}</td>
                     <td>
-                      <select
+                      <CustomSelect
                         className={`status-select ${STATUS_BADGE[room.status] ?? ''}`}
                         value={room.status}
-                        onChange={e => handleStatusChange(room, e.target.value)}
-                      >
-                        {ALL_STATUSES.map(s => (
-                          <option key={s} value={s}>{STATUS_LABEL[s]}</option>
-                        ))}
-                      </select>
+                        onChange={val => handleStatusChange(room, val)}
+                        options={ALL_STATUSES.map(s => ({ value: s, label: STATUS_LABEL[s] }))}
+                      />
                     </td>
                     <td>
-                      <select
+                      <CustomSelect
                         className={`clean-select ${roomClean === 'dirty' ? 'clean-dirty' : roomClean === 'loss' ? 'clean-loss' : 'clean-ok'}`}
                         value={roomClean}
-                        onChange={e => handleCleanStatusChange(room.id, e.target.value)}
-                      >
-                        <option value="clean">Sạch sẽ</option>
-                        <option value="dirty">Cần dọn</option>
-                        <option value="loss">{'Th\u1ea5t tho\u00e1t & \u0111\u1ec1n b\u00f9'}</option>
-                      </select>
+                        onChange={val => handleCleanStatusChange(room.id, val)}
+                        options={[
+                          { value: 'clean', label: 'Sạch sẽ' },
+                          { value: 'dirty', label: 'Cần dọn' },
+                          { value: 'loss', label: 'Thất thoát & đền bù' }
+                        ]}
+                      />
                     </td>
                     <td style={{ textAlign: 'center' }}>
                       <button

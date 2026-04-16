@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react';
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import useSignalR from '../../hooks/useSignalR';
 import axiosClient from '../../api/axiosClient';
 import './MainLayout.css';
-import { 
+import {
   LayoutDashboard, BedDouble, Package, AlertTriangle,
   Sparkles, CalendarCheck, Users, ShieldCheck,
   Menu, Bell, User as UserIcon, Sun, Moon, Hotel,
-  MapPin, FileText, Layers, Target, X, CheckCheck
+  MapPin, FileText, Layers, Target, X, CheckCheck,
+  ConciergeBell, UserCheck, LogOut, History, Tag, ChevronDown,
 } from 'lucide-react';
 
 /**
@@ -19,13 +20,23 @@ function MainLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showNotifications, setShowNotifications] = useState(false);
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
+  const [receptionOpen, setReceptionOpen] = useState(false);
   const { user, logout } = useAuth();
   const { notifications, setNotifications, latestNotification } = useSignalR();
   const navigate = useNavigate();
+  const location = useLocation();
   const [toasts, setToasts] = useState([]);
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
+  // Auto-expand reception group when on front-desk routes
+  useEffect(() => {
+    if (location.pathname.startsWith('/front-desk')) {
+      setReceptionOpen(true);
+    }
+  }, [location.pathname]);
+
+  // Hiện toast khi có thông báo SignalR mới
   useEffect(() => {
     if (latestNotification) {
       const newToast = { ...latestNotification, toastId: Date.now() };
@@ -40,6 +51,17 @@ function MainLayout() {
     try {
       await axiosClient.put(`/Notifications/${id}`, { isRead: true });
       setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    const unread = notifications.filter(n => !n.isRead);
+    if (unread.length === 0) return;
+    try {
+      await Promise.all(unread.map(n => axiosClient.put(`/Notifications/${n.id}`, { isRead: true })));
+      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
     } catch (err) {
       console.error(err);
     }
@@ -60,15 +82,12 @@ function MainLayout() {
       try {
         const response = await axiosClient.get('/Notifications');
         if (response.data) {
-          // Response should be ordered by CreatedAt desc from the backend
           setNotifications(response.data);
         }
       } catch (err) {
         console.error("Failed to load notifications:", err);
       }
     };
-    
-    // Always fetch for admin users
     fetchNotifications();
   }, [setNotifications]);
 
@@ -79,20 +98,38 @@ function MainLayout() {
     navigate('/login');
   };
 
+  // Front-desk sub-items
+  const receptionItems = [
+    { path: '/front-desk/bookings', label: 'Quản lý đặt phòng', icon: <CalendarCheck size={16} /> },
+    { path: '/front-desk/today-arrivals', label: 'Khách đến hôm nay', icon: <UserCheck size={16} /> },
+    { path: '/front-desk/current-guests', label: 'Khách đang lưu trú', icon: <Users size={16} /> },
+    { path: '/front-desk/checkout', label: 'Thủ tục trả phòng', icon: <LogOut size={16} /> },
+  ];
+
   const menuItems = [
     { path: '/', label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
+    // Reception group (accordion)
+    {
+      type: 'group',
+      label: 'Quầy lễ tân',
+      icon: <ConciergeBell size={20} />,
+      items: receptionItems,
+    },
     { path: '/rooms', label: 'Quản lý phòng', icon: <BedDouble size={20} /> },
     { path: '/room-types', label: 'Hạng phòng', icon: <Layers size={20} /> },
     { path: '/inventory', label: 'Kho vật tư', icon: <Package size={20} /> },
     { path: '/losses', label: 'Thất thoát & đền bù', icon: <AlertTriangle size={20} /> },
     { path: '/housekeeping', label: 'Dọn phòng', icon: <Sparkles size={20} /> },
-    { path: '/bookings', label: 'Booking & Voucher', icon: <CalendarCheck size={20} /> },
+    { path: '/vouchers', label: 'Voucher', icon: <Tag size={20} /> },
     { path: '/locations', label: 'Địa điểm', icon: <MapPin size={20} /> },
     { path: '/articles', label: 'Bài viết', icon: <FileText size={20} /> },
     { path: '/members', label: 'Khách hàng', icon: <Target size={20} /> },
     { path: '/users', label: 'Danh sách nhân sự', icon: <Users size={20} /> },
     { path: '/roles', label: 'Vai trò & phân quyền', icon: <ShieldCheck size={20} /> },
+    { path: '/audit-logs', label: 'Nhật ký hệ thống', icon: <History size={20} /> },
   ];
+
+  const isReceptionActive = location.pathname.startsWith('/front-desk');
 
   return (
     <div className="layout">
@@ -105,19 +142,62 @@ function MainLayout() {
           </h2>
         </div>
         <nav className="sidebar-nav">
-          {menuItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={({ isActive }) =>
-                `nav-item ${isActive ? 'active' : ''}`
-              }
-              end={item.path === '/'}
-            >
-              <span className="nav-icon">{item.icon}</span>
-              {sidebarOpen && <span className="nav-label">{item.label}</span>}
-            </NavLink>
-          ))}
+          {menuItems.map((item, idx) => {
+            if (item.type === 'group') {
+              return (
+                <div key={`group-${idx}`} className="nav-group">
+                  {/* Group header */}
+                  <button
+                    className={`nav-group-header ${isReceptionActive ? 'group-active' : ''}`}
+                    onClick={() => setReceptionOpen(o => !o)}
+                    title={!sidebarOpen ? item.label : undefined}
+                  >
+                    <span className="nav-icon">{item.icon}</span>
+                    {sidebarOpen && (
+                      <>
+                        <span className="nav-label">{item.label}</span>
+                        <ChevronDown
+                          size={15}
+                          className={`nav-chevron ${receptionOpen ? 'rotated' : ''}`}
+                        />
+                      </>
+                    )}
+                  </button>
+                  {/* Sub-items */}
+                  {(receptionOpen || isReceptionActive) && sidebarOpen && (
+                    <div className="nav-group-body">
+                      {item.items.map(sub => (
+                        <NavLink
+                          key={sub.path}
+                          to={sub.path}
+                          className={({ isActive }) =>
+                            `nav-sub-item ${isActive ? 'active' : ''}`
+                          }
+                        >
+                          <span className="nav-sub-icon">{sub.icon}</span>
+                          <span className="nav-label">{sub.label}</span>
+                        </NavLink>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
+            return (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                className={({ isActive }) =>
+                  `nav-item ${isActive ? 'active' : ''}`
+                }
+                end={item.path === '/'}
+              >
+                <span className="nav-icon">{item.icon}</span>
+                {sidebarOpen && <span className="nav-label">{item.label}</span>}
+              </NavLink>
+            );
+          })}
         </nav>
       </aside>
 
@@ -134,12 +214,12 @@ function MainLayout() {
           <div className="header-right">
             {/* Theme Toggle */}
             <button className="theme-toggle-btn" onClick={toggleTheme} title={theme === 'dark' ? "Chuyển giao diện Sáng" : "Chuyển giao diện Tối"}>
-               {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+              {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
             </button>
 
             {/* Notification Bell */}
             <div className="notification-wrapper">
-              <button 
+              <button
                 className="notification-bell"
                 onClick={() => setShowNotifications(!showNotifications)}
                 style={{ position: 'relative', display: 'flex', alignItems: 'center' }}
@@ -149,12 +229,23 @@ function MainLayout() {
                   <span className="notification-badge">{unreadCount > 9 ? '9+' : unreadCount}</span>
                 )}
               </button>
-              
+
               {showNotifications && (
                 <div className="notification-dropdown">
                   <div className="notification-dropdown-header">
                     <strong>Thông báo</strong>
-                    <span className="notification-count">{unreadCount} mới</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      {unreadCount > 0 && (
+                        <button
+                          className="mark-all-read-btn"
+                          onClick={handleMarkAllAsRead}
+                          title="Đánh dấu tất cả đã đọc"
+                        >
+                          <CheckCheck size={14} /> Đọc tất cả
+                        </button>
+                      )}
+                      <span className="notification-count">{unreadCount} mới</span>
+                    </div>
                   </div>
                   <div className="notification-list">
                     {notifications.length === 0 ? (
@@ -165,8 +256,8 @@ function MainLayout() {
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                             <strong>{n.title}</strong>
                             {!n.isRead && (
-                              <button 
-                                className="mark-read-btn" 
+                              <button
+                                className="mark-read-btn"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleMarkAsRead(n.id);
@@ -200,7 +291,7 @@ function MainLayout() {
         </main>
       </div>
 
-      {/* Floating Toasts */}
+      {/* Floating Toasts — góc trên phải */}
       <div className="toast-container">
         {toasts.map(t => (
           <div key={t.toastId} className={`toast-item type-${t.type || 'info'}`}>

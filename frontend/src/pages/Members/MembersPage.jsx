@@ -8,6 +8,7 @@ export default function MembersPage() {
   const [stats, setStats] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState('guests');
 
   useEffect(() => {
     fetchData();
@@ -134,9 +135,30 @@ export default function MembersPage() {
         )}
       </div>
 
+      {/* Tabs */}
+      <div style={{ display: 'flex', gap: '10px', marginTop: '30px', marginBottom: '-10px' }}>
+        <button 
+          onClick={() => setActiveTab('guests')}
+          style={{
+            padding: '10px 20px', background: activeTab === 'guests' ? 'var(--primary-color, #2563eb)' : '#f1f5f9',
+            color: activeTab === 'guests' ? '#fff' : '#64748b', border: 'none', borderRadius: '8px 8px 0 0',
+            cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem'
+          }}>
+          Khách hàng
+        </button>
+        <button 
+          onClick={() => setActiveTab('staff')}
+          style={{
+            padding: '10px 20px', background: activeTab === 'staff' ? 'var(--primary-color, #2563eb)' : '#f1f5f9',
+            color: activeTab === 'staff' ? '#fff' : '#64748b', border: 'none', borderRadius: '8px 8px 0 0',
+            cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem'
+          }}>
+          Nhân viên
+        </button>
+      </div>
+
       {/* User Data Table */}
-      <div className="table-card" style={{ marginTop: '20px' }}>
-        <h3 style={{ padding: '20px', margin: 0, borderBottom: '1px solid #eee' }}>Danh sách khách hàng</h3>
+      <div className="table-card" style={{ marginTop: '0', borderRadius: '0 8px 8px 8px' }}>
         <table className="data-table">
           <thead>
             <tr>
@@ -149,10 +171,16 @@ export default function MembersPage() {
             </tr>
           </thead>
           <tbody>
-            {users.length === 0 ? (
-              <tr><td colSpan="6" className="empty-row">Không tìm thấy khách hàng.</td></tr>
-            ) : (
-              users.map(u => (
+            {(() => {
+              const displayedUsers = activeTab === 'guests' 
+                ? users.filter(u => !u.roleName || u.roleName.toLowerCase() === 'guest')
+                : users.filter(u => u.roleName && u.roleName.toLowerCase() !== 'guest');
+              
+              if (displayedUsers.length === 0) {
+                 return <tr><td colSpan="6" className="empty-row">Không tìm thấy dữ liệu.</td></tr>;
+              }
+              
+              return displayedUsers.map(u => (
                 <tr key={u.id}>
                   <td>{u.id}</td>
                   <td><strong>{u.fullName}</strong></td>
@@ -183,8 +211,8 @@ export default function MembersPage() {
                     )}
                   </td>
                 </tr>
-              ))
-            )}
+              ));
+            })()}
           </tbody>
         </table>
       </div>

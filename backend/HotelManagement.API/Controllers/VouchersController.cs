@@ -52,6 +52,16 @@ public class VouchersController : ControllerBase
         return NoContent();
     }
 
+    [HttpPatch("{id}/toggle")]
+    public async Task<IActionResult> ToggleActive(int id)
+    {
+        var success = await _service.ToggleActiveAsync(id);
+        if (!success)
+            return NotFound(new { message = $"Không tìm thấy voucher với ID = {id}" });
+
+        return Ok(new { message = "Đã thay đổi trạng thái voucher" });
+    }
+
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {

@@ -14,6 +14,13 @@ public class HotelDbContext : DbContext
         _dbProvider = configuration["DatabaseProvider"] ?? "SqlServer";
     }
 
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        // Suppress PendingModelChangesWarning caused by EF tools version mismatch
+        optionsBuilder.ConfigureWarnings(w =>
+            w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+    }
+
     // ========== DbSets ==========
     public DbSet<Amenity> Amenities { get; set; }
     public DbSet<ArticleCategory> ArticleCategories { get; set; }

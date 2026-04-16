@@ -41,6 +41,7 @@ builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<IOrderServiceRepository, OrderServiceRepository>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
 
 // ========== Services (DI) ==========
 builder.Services.AddScoped<IRoomTypeService, RoomTypeService>();
@@ -69,6 +70,7 @@ builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<ILossAndDamageService, LossAndDamageService>();
 builder.Services.AddScoped<IPasswordResetService, PasswordResetService>();
 builder.Services.AddScoped<IEquipmentService, EquipmentService>();
+builder.Services.AddScoped<IAuditLogService, AuditLogService>();
 
 // ========== JWT Authentication ==========
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
