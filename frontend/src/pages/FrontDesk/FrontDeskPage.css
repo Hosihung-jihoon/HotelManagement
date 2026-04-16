@@ -1,0 +1,191 @@
+/* ===== Front Desk Pages Shared CSS ===== */
+
+.frontdesk-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.fd-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.fd-refresh-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 10px;
+  background: var(--surface-color, #fff);
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--text-primary, #333);
+  transition: all 0.2s;
+}
+
+.fd-refresh-btn:hover {
+  background: #f0f4ff;
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
+.fd-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 60px 0;
+  color: var(--text-secondary, #888);
+}
+
+.fd-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 80px 0;
+  color: var(--text-secondary, #888);
+  font-size: 1rem;
+}
+
+/* ===== Guest Cards Grid ===== */
+.fd-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.fd-guest-card {
+  background: var(--surface-color, #fff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.fd-guest-card:hover {
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.1);
+  transform: translateY(-2px);
+}
+
+.checkout-card {
+  border-left: 4px solid #f59e0b;
+}
+
+.fd-card-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.fd-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.fd-avatar.sm {
+  width: 32px;
+  height: 32px;
+}
+
+.checkout-avatar {
+  background: #f59e0b;
+}
+
+.fd-guest-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.fd-guest-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text-primary, #1e293b);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fd-booking-code {
+  font-family: monospace;
+  font-size: 0.78rem;
+  color: #2563eb;
+  margin-top: 2px;
+}
+
+.fd-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 14px;
+  background: var(--bg-color, #f8fafc);
+  border-radius: 10px;
+}
+
+.fd-info-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--text-secondary, #64748b);
+}
+
+.fd-checkin-btn {
+  width: 100%;
+  padding: 11px 0;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.3px;
+}
+
+.fd-checkin-btn:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.fd-checkout-btn {
+  width: 100%;
+  padding: 11px 0;
+  background: #f59e0b;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.fd-checkout-btn:hover:not(:disabled) {
+  background: #d97706;
+  transform: translateY(-1px);
+}
+
+.fd-checkout-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

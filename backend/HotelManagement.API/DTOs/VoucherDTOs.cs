@@ -12,6 +12,10 @@ public class VoucherDto
     public DateTime? ValidFrom { get; set; }
     public DateTime? ValidTo { get; set; }
     public int? UsageLimit { get; set; }
+    public bool IsActive { get; set; }
+    public string VoucherType { get; set; } = "General";
+    public string? HolidayName { get; set; }
+    public string? MembershipTier { get; set; }
 }
 
 public class CreateVoucherDto
@@ -31,6 +35,10 @@ public class CreateVoucherDto
     public DateTime? ValidFrom { get; set; }
     public DateTime? ValidTo { get; set; }
     public int? UsageLimit { get; set; }
+    public bool IsActive { get; set; } = true;
+    public string VoucherType { get; set; } = "General";
+    public string? HolidayName { get; set; }
+    public string? MembershipTier { get; set; }
 }
 
 public class UpdateVoucherDto
@@ -46,4 +54,8 @@ public class UpdateVoucherDto
     public DateTime? ValidFrom { get; set; }
     public DateTime? ValidTo { get; set; }
     public int? UsageLimit { get; set; }
+    public bool IsActive { get; set; } = true;
+    public string VoucherType { get; set; } = "General";
+    public string? HolidayName { get; set; }
+    public string? MembershipTier { get; set; }
 }

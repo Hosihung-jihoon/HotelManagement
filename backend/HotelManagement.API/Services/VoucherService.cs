@@ -16,44 +16,20 @@ public class VoucherService : IVoucherService
     public async Task<IEnumerable<VoucherDto>> GetAllAsync()
     {
         var vouchers = await _repository.GetAllAsync();
-        return vouchers.Select(v => new VoucherDto
-        {
-            Id = v.Id,
-            Code = v.Code,
-            DiscountType = v.DiscountType,
-            DiscountValue = v.DiscountValue,
-            MinBookingValue = v.MinBookingValue,
-            ValidFrom = v.ValidFrom,
-            ValidTo = v.ValidTo,
-            UsageLimit = v.UsageLimit
-        });
+        return vouchers.Select(MapToDto);
     }
 
     public async Task<VoucherDto?> GetByIdAsync(int id)
     {
         var voucher = await _repository.GetByIdAsync(id);
-        if (voucher == null) return null;
-
-        return new VoucherDto
-        {
-            Id = voucher.Id,
-            Code = voucher.Code,
-            DiscountType = voucher.DiscountType,
-            DiscountValue = voucher.DiscountValue,
-            MinBookingValue = voucher.MinBookingValue,
-            ValidFrom = voucher.ValidFrom,
-            ValidTo = voucher.ValidTo,
-            UsageLimit = voucher.UsageLimit
-        };
+        return voucher == null ? null : MapToDto(voucher);
     }
 
     public async Task<VoucherDto?> CreateAsync(CreateVoucherDto dto)
     {
         var existingVoucher = await _repository.GetByCodeAsync(dto.Code);
         if (existingVoucher != null)
-        {
             return null; // Code already exists
-        }
 
         var entity = new Voucher
         {
@@ -63,22 +39,15 @@ public class VoucherService : IVoucherService
             MinBookingValue = dto.MinBookingValue,
             ValidFrom = dto.ValidFrom,
             ValidTo = dto.ValidTo,
-            UsageLimit = dto.UsageLimit
+            UsageLimit = dto.UsageLimit,
+            IsActive = dto.IsActive,
+            VoucherType = dto.VoucherType ?? "General",
+            HolidayName = dto.HolidayName,
+            MembershipTier = dto.MembershipTier,
         };
 
         var created = await _repository.CreateAsync(entity);
-
-        return new VoucherDto
-        {
-            Id = created.Id,
-            Code = created.Code,
-            DiscountType = created.DiscountType,
-            DiscountValue = created.DiscountValue,
-            MinBookingValue = created.MinBookingValue,
-            ValidFrom = created.ValidFrom,
-            ValidTo = created.ValidTo,
-            UsageLimit = created.UsageLimit
-        };
+        return MapToDto(created);
     }
 
     public async Task<bool> UpdateAsync(int id, UpdateVoucherDto dto)
@@ -92,6 +61,10 @@ public class VoucherService : IVoucherService
         entity.ValidFrom = dto.ValidFrom;
         entity.ValidTo = dto.ValidTo;
         entity.UsageLimit = dto.UsageLimit;
+        entity.IsActive = dto.IsActive;
+        entity.VoucherType = dto.VoucherType ?? "General";
+        entity.HolidayName = dto.HolidayName;
+        entity.MembershipTier = dto.MembershipTier;
 
         await _repository.UpdateAsync(entity);
         return true;
@@ -100,8 +73,33 @@ public class VoucherService : IVoucherService
     public async Task<bool> DeleteAsync(int id)
     {
         if (!await _repository.ExistsAsync(id)) return false;
-
         await _repository.DeleteAsync(id);
         return true;
     }
+
+    public async Task<bool> ToggleActiveAsync(int id)
+    {
+        var entity = await _repository.GetByIdAsync(id);
+        if (entity == null) return false;
+
+        entity.IsActive = !entity.IsActive;
+        await _repository.UpdateAsync(entity);
+        return true;
+    }
+
+    private static VoucherDto MapToDto(Voucher v) => new()
+    {
+        Id = v.Id,
+        Code = v.Code,
+        DiscountType = v.DiscountType,
+        DiscountValue = v.DiscountValue,
+        MinBookingValue = v.MinBookingValue,
+        ValidFrom = v.ValidFrom,
+        ValidTo = v.ValidTo,
+        UsageLimit = v.UsageLimit,
+        IsActive = v.IsActive,
+        VoucherType = v.VoucherType,
+        HolidayName = v.HolidayName,
+        MembershipTier = v.MembershipTier,
+    };
 }

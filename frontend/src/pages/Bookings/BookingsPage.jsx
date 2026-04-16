@@ -3,10 +3,12 @@ import {
   Search, RotateCcw, Plus, X, RefreshCw,
   CalendarCheck, Clock, CheckCircle, XCircle,
   Eye, ChevronLeft, User, Phone, Mail, CreditCard,
-  BedDouble, Tag, Calendar, Hash, AlertCircle, DoorOpen,
+  BedDouble, Tag, Calendar, Hash, AlertCircle, DoorOpen, ChevronDown,
 } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import axiosClient from '../../api/axiosClient';
 import BookingDetailPage from './BookingDetailPage';
+import CustomSelect from '../../components/Common/CustomSelect';
 import './BookingsPage.css';
 
 const STATUS_LABEL = {
@@ -25,6 +27,7 @@ const STATUS_BADGE = {
   'Cancelled':  { cls: 'badge-cancelled',  icon: <XCircle size={12} /> },
 };
 
+
 const today = () => {
   const d = new Date();
   return d.toISOString().slice(0, 10);
@@ -37,7 +40,7 @@ const tomorrow = () => {
 
 const emptyCreateForm = {
   guestName: '', guestPhone: '', guestEmail: '',
-  prePayment: '',
+  prePayment: '', paymentMethod: 'Cash',
   selectedRoomTypeId: '',
   selectedRoomId: '',
   checkIn: today(),
@@ -49,6 +52,7 @@ const emptyCreateForm = {
 function CreateBookingPage({ onBack, onSaved, vouchers, roomTypes }) {
   const [form, setForm] = useState(emptyCreateForm);
   const [saving, setSaving] = useState(false);
+  const [successToast, setSuccessToast] = useState(false);
 
   // Available rooms search
   const [availableRooms, setAvailableRooms] = useState([]);
@@ -73,7 +77,7 @@ function CreateBookingPage({ onBack, onSaved, vouchers, roomTypes }) {
   };
 
   // Tìm kiếm phòng trống theo ngày check-in/out
-  const handleSearchRooms = async () => {
+  const handleSearchRooms = useCallback(async () => {
     if (!form.checkIn || !form.checkOut) {
       setRoomsError('Vui lòng chọn ngày check-in và check-out!');
       return;
@@ -86,7 +90,6 @@ function CreateBookingPage({ onBack, onSaved, vouchers, roomTypes }) {
     setRoomsError('');
     setRoomsSearched(false);
     setAvailableRooms([]);
-    f('selectedRoomId', '');
     try {
       const res = await axiosClient.post('/Bookings/search', {
         checkInDate: new Date(form.checkIn).toISOString(),
@@ -99,7 +102,13 @@ function CreateBookingPage({ onBack, onSaved, vouchers, roomTypes }) {
     } finally {
       setSearchingRooms(false);
     }
-  };
+  }, [form.checkIn, form.checkOut]);
+
+  useEffect(() => {
+    if (form.checkIn && form.checkOut && new Date(form.checkIn) < new Date(form.checkOut)) {
+      handleSearchRooms();
+    }
+  }, [handleSearchRooms]);
 
   const handleSave = async () => {
     if (!form.guestName.trim()) return alert('Vui lòng nhập tên khách hàng!');
@@ -116,6 +125,8 @@ function CreateBookingPage({ onBack, onSaved, vouchers, roomTypes }) {
         guestPhone: form.guestPhone.trim() || null,
         guestEmail: form.guestEmail.trim() || null,
         voucherId:  form.selectedVoucherId ? Number(form.selectedVoucherId) : null,
+        prePayment: Number(form.prePayment) || 0,
+        paymentMethod: form.paymentMethod || 'Cash',
         details: [{
           roomId: Number(form.selectedRoomId),
           checkInDate: new Date(form.checkIn).toISOString(),
@@ -124,7 +135,8 @@ function CreateBookingPage({ onBack, onSaved, vouchers, roomTypes }) {
         }],
       };
       await axiosClient.post('/Bookings/advanced-create', payload);
-      alert('✅ Tạo đơn thành công!');
+      setSuccessToast(true);
+      setTimeout(() => setSuccessToast(false), 3000);
       onSaved();
     } catch (err) {
       alert('Lỗi tạo đơn: ' + (err.response?.data?.message || err.message));
@@ -197,24 +209,24 @@ function CreateBookingPage({ onBack, onSaved, vouchers, roomTypes }) {
             {/* Voucher Dropdown */}
             <div className="form-group">
               <label><Tag size={13} style={{ marginRight: 5 }} />Voucher giảm giá</label>
-              <select
-                className="form-input"
+              <CustomSelect
                 value={form.selectedVoucherId}
-                onChange={e => f('selectedVoucherId', e.target.value)}
-              >
-                <option value="">-- Không dùng voucher --</option>
-                {vouchers.map(v => {
-                  const expired = v.validTo && new Date(v.validTo) < new Date();
-                  const label = v.discountType === 'Percentage'
-                    ? `Giảm ${v.discountValue}%`
-                    : `Giảm ${Number(v.discountValue).toLocaleString('vi-VN')}đ`;
-                  return (
-                    <option key={v.id} value={v.id} disabled={expired}>
-                      {v.code} — {label}{expired ? ' (hết hạn)' : ''}
-                    </option>
-                  );
-                })}
-              </select>
+                onChange={v => f('selectedVoucherId', v)}
+                placeholder="-- Không dùng voucher --"
+                options={[
+                  { value: '', label: '-- Không dùng voucher --' },
+                  ...vouchers.filter(v => v.isActive).map(v => {
+                    const expired = v.validTo && new Date(v.validTo) < new Date();
+                    const label = v.discountType === 'Percentage'
+                      ? `Giảm ${v.discountValue}%`
+                      : `Giảm ${Number(v.discountValue).toLocaleString('vi-VN')}đ`;
+                    return {
+                       value: v.id,
+                       label: expired ? `${v.code} — ${label} (hết hạn)` : `${v.code} — ${label}`
+                    };
+                  })
+                ]}
+              />
               {activeDbVoucher && (
                 <div className="voucher-preview" style={{ marginTop: 8 }}>
                   <Tag size={14} />
@@ -239,9 +251,76 @@ function CreateBookingPage({ onBack, onSaved, vouchers, roomTypes }) {
                   <span>Giá/đêm</span>
                   <strong>{Number(selectedRoomObj.pricePerNight).toLocaleString('vi-VN')}đ</strong>
                 </div>
+                <div className="booking-summary-row">
+                  <span>Giảm giá Voucher</span>
+                  <strong style={{ color: '#e94560' }}>
+                    {activeDbVoucher ? (activeDbVoucher.discountType === 'Percentage' ? `-${activeDbVoucher.discountValue}%` : `-${Number(activeDbVoucher.discountValue).toLocaleString('vi-VN')}đ`) : '0đ'}
+                  </strong>
+                </div>
+                {/* Tính toán tổng tạm tính để báo Deposit */}
                 <div className="booking-summary-row booking-summary-total">
-                  <span>Tổng cộng</span>
-                  <strong style={{ color: '#2563eb' }}>{Number(totalPrice).toLocaleString('vi-VN')}đ</strong>
+                  <span>Tổng tiền</span>
+                  {(() => {
+                     let finalSum = totalPrice;
+                     if (activeDbVoucher) {
+                       if (activeDbVoucher.discountType === 'Percentage') {
+                         finalSum = finalSum - (finalSum * (activeDbVoucher.discountValue / 100));
+                       } else {
+                         finalSum = finalSum - activeDbVoucher.discountValue;
+                       }
+                     }
+                     if (finalSum < 0) finalSum = 0;
+                     return <strong style={{ color: '#2563eb' }}>{Number(finalSum).toLocaleString('vi-VN')}đ</strong>;
+                  })()}
+                </div>
+
+                {/* Phần cọc thanh toán trả trước */}
+                <div className="prepayment-section" style={{ marginTop: 16, paddingTop: 16, borderTop: '1px dashed #cce7ff' }}>
+                  <div className="form-row">
+                      <div className="form-col">
+                          <label style={{ display: 'block', fontSize: '0.85rem', color: '#1e3a8a', fontWeight: 600, marginBottom: 8 }}>
+                            <CreditCard size={14} style={{ marginRight: 4, verticalAlign: 'middle' }}/>
+                            Khách cọc tiền / trả trước
+                          </label>
+                          <div className="input-icon-wrap">
+                            <span className="input-icon" style={{ left: 12 }}>đ</span>
+                            <input className="form-input" style={{ paddingLeft: 30 }} type="number" min="0" value={form.prePayment}
+                              onChange={e => f('prePayment', e.target.value)} placeholder="0" />
+                          </div>
+                      </div>
+                      <div className="form-col">
+                          <label style={{ display: 'block', fontSize: '0.85rem', color: '#1e3a8a', fontWeight: 600, marginBottom: 8 }}>
+                            Phương thức thanh toán
+                          </label>
+                          <CustomSelect
+                            value={form.paymentMethod}
+                            onChange={v => f('paymentMethod', v)}
+                            options={[
+                              { value: 'Cash', label: 'Tiền mặt' },
+                              { value: 'Transfer', label: 'Chuyển khoản' }
+                            ]}
+                            placeholder="Chọn PT Thanh Toán"
+                          />
+                      </div>
+                  </div>
+                  {(() => {
+                     let finalSum = totalPrice;
+                     if (activeDbVoucher) {
+                       if (activeDbVoucher.discountType === 'Percentage') finalSum -= finalSum * (activeDbVoucher.discountValue / 100);
+                       else finalSum -= activeDbVoucher.discountValue;
+                     }
+                     if (finalSum < 0) finalSum = 0;
+                     
+                     const isEnoughDeposit = Number(form.prePayment || 0) >= (finalSum * 0.3);
+                     if (finalSum > 0) {
+                         return (
+                            <div style={{ marginTop: 8, fontSize: '0.8rem', color: isEnoughDeposit ? '#2ecc71' : '#f39c12', display: 'flex', alignItems: 'center', gap: 4 }}>
+                               {isEnoughDeposit ? <CheckCircle size={14} /> : <AlertCircle size={14} />} 
+                               {isEnoughDeposit ? 'Thu cọc hợp lệ (>= 30%). Booking sẽ tự động Xác Nhận.' : `Mức yêu cầu cọc 30% (${Number(finalSum * 0.3).toLocaleString('vi-VN')}đ). Đơn sẽ chuyển Chờ xác nhận.`}
+                            </div>
+                         );
+                     }
+                  })()}
                 </div>
               </div>
             )}
@@ -266,9 +345,15 @@ function CreateBookingPage({ onBack, onSaved, vouchers, roomTypes }) {
                   value={form.checkIn}
                   min={today()}
                   onChange={e => {
-                    f('checkIn', e.target.value);
-                    setRoomsSearched(false);
-                    setAvailableRooms([]);
+                    const newCheckIn = e.target.value;
+                    f('checkIn', newCheckIn);
+                    
+                    // Auto push checkout forward if checkIn >= checkOut
+                    if (form.checkOut && newCheckIn >= form.checkOut) {
+                        let d = new Date(newCheckIn);
+                        d.setDate(d.getDate() + 1);
+                        f('checkOut', d.toISOString().slice(0,10));
+                    }
                     f('selectedRoomId', '');
                   }}
                 />
@@ -281,9 +366,13 @@ function CreateBookingPage({ onBack, onSaved, vouchers, roomTypes }) {
                   value={form.checkOut}
                   min={form.checkIn || today()}
                   onChange={e => {
-                    f('checkOut', e.target.value);
-                    setRoomsSearched(false);
-                    setAvailableRooms([]);
+                    let nextDate = e.target.value;
+                    if (nextDate && form.checkIn && nextDate <= form.checkIn) {
+                       let d = new Date(form.checkIn);
+                       d.setDate(d.getDate() + 1);
+                       nextDate = d.toISOString().slice(0,10);
+                    }
+                    f('checkOut', nextDate);
                     f('selectedRoomId', '');
                   }}
                 />
@@ -327,17 +416,7 @@ function CreateBookingPage({ onBack, onSaved, vouchers, roomTypes }) {
               )}
             </div>
 
-            {/* Nút kiểm tra phòng trống */}
-            <button
-              className="btn-check-availability"
-              onClick={handleSearchRooms}
-              disabled={searchingRooms || !form.checkIn || !form.checkOut}
-            >
-              {searchingRooms
-                ? <><RefreshCw size={15} style={{ animation: 'spin 1s linear infinite' }} /> Đang tìm phòng trống...</>
-                : <><Search size={15} /> Kiểm tra phòng còn trống</>
-              }
-            </button>
+
 
             {/* Lỗi */}
             {roomsError && (
@@ -407,6 +486,13 @@ function CreateBookingPage({ onBack, onSaved, vouchers, roomTypes }) {
           {saving ? 'Đang tạo...' : '✓ Xác nhận tạo đơn'}
         </button>
       </div>
+
+      {successToast && (
+         <div style={{ position: 'fixed', top: 20, right: 20, background: '#10b981', color: 'white', padding: '16px 20px', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 10px 25px rgba(0,0,0,0.2)', animation: 'slideInRight 0.3s ease-out', zIndex: 9999 }}>
+            <CheckCircle size={24} />
+            <strong style={{ fontSize: '1rem', letterSpacing: '0.3px' }}>Tạo đơn thành toán thành công!</strong>
+         </div>
+      )}
     </div>
   );
 }
@@ -423,6 +509,9 @@ function BookingsPage() {
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [confirmDelete, setConfirmDelete]     = useState(null);
 
+  const location = useLocation();
+  const navigate = useNavigate();
+
   const fetchAll = useCallback(async () => {
     try {
       setLoading(true);
@@ -434,12 +523,19 @@ function BookingsPage() {
       setBookings(bookRes.data);
       setVouchers(voucherRes.data);
       setRoomTypes(typeRes.data);
+
+      if (location.state?.bookingId) {
+        setSelectedBooking(bookRes.data.find(b => b.id === location.state.bookingId));
+        setView('detail');
+        // Clear state to avoid reopening on refresh
+        navigate(location.pathname, { replace: true, state: {} });
+      }
     } catch (err) {
       console.error('Lỗi tải bookings:', err);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [location.state, location.pathname, navigate]);
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
 

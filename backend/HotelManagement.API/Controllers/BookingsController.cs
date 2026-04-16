@@ -52,11 +52,18 @@ public class BookingsController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateBookingDto dto)
     {
-        var success = await _service.UpdateAsync(id, dto);
-        if (!success)
-            return NotFound(new { message = $"Không tìm thấy đơn đặt phòng với ID = {id}" });
+        try
+        {
+            var success = await _service.UpdateAsync(id, dto);
+            if (!success)
+                return NotFound(new { message = $"Không tìm thấy đơn đặt phòng với ID = {id}" });
 
-        return NoContent();
+            return NoContent();
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [HttpDelete("{id}")]

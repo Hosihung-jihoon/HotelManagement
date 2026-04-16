@@ -13,6 +13,7 @@ public class BookingDto
     public int? VoucherId { get; set; }
     public string? Status { get; set; }
     public DateTime CreatedAt { get; set; }
+    public List<string> RoomNumbers { get; set; } = new();
 }
 
 // DTO for booking detail items (rooms booked)
@@ -154,6 +155,10 @@ public class CreateAdvancedBookingDto
     public string? GuestEmail { get; set; }
 
     public int? VoucherId { get; set; }
+
+    public decimal PrePayment { get; set; }
+    
+    public string PaymentMethod { get; set; } = "Cash";
 
     [Required]
     [MinLength(1, ErrorMessage = "At least one room must be booked.")]
