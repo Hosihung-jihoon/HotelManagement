@@ -1,16 +1,37 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, X, RefreshCw, Tag, Percent, DollarSign, Calendar, AlertCircle } from 'lucide-react';
+import {
+  Plus, X, RefreshCw, Tag, Percent, DollarSign, Calendar,
+  AlertCircle, ToggleLeft, ToggleRight, Gift, Star, PartyPopper, Sparkles,
+} from 'lucide-react';
 import axiosClient from '../../api/axiosClient';
+import CustomSelect from '../../components/Common/CustomSelect';
 import './VouchersPage.css';
 
 const DISCOUNT_TYPE_LABEL = {
   'Percentage': 'Phần trăm (%)',
-  'Fixed':      'Số tiền cố định (đ)',
+  'Fixed': 'Số tiền cố định (đ)',
 };
+
+const VOUCHER_TYPE_CONFIG = {
+  General:       { label: 'Chung',        icon: <Tag size={14} />,        color: '#2563eb', bg: '#dbeafe' },
+  MembershipTier:{ label: 'Theo hạng thành viên', icon: <Star size={14} />,  color: '#7c3aed', bg: '#ede9fe' },
+  Birthday:      { label: 'Sinh nhật',    icon: <PartyPopper size={14} />, color: '#db2777', bg: '#fce7f3' },
+  Holiday:       { label: 'Ngày lễ',      icon: <Sparkles size={14} />,   color: '#d97706', bg: '#fef3c7' },
+};
+
+const TABS = [
+  { key: 'all',           label: 'Tất cả' },
+  { key: 'General',       label: 'Chung' },
+  { key: 'MembershipTier',label: 'Theo hạng' },
+  { key: 'Birthday',      label: 'Sinh nhật' },
+  { key: 'Holiday',       label: 'Ngày lễ' },
+  { key: 'inactive',      label: 'Đã tắt' },
+];
 
 const emptyForm = {
   code: '', discountType: 'Percentage', discountValue: '',
   minBookingValue: '', validFrom: '', validTo: '', usageLimit: '',
+  isActive: true, voucherType: 'General', holidayName: '', membershipTier: '',
 };
 
 function formatDiscount(v) {
@@ -24,22 +45,39 @@ function isExpired(v) {
 }
 
 function isActive(v) {
+  if (!v.isActive) return false;
   const now = new Date();
   const from = v.validFrom ? new Date(v.validFrom) : null;
-  const to   = v.validTo   ? new Date(v.validTo)   : null;
+  const to = v.validTo ? new Date(v.validTo) : null;
   if (from && now < from) return false;
-  if (to   && now > to)   return false;
+  if (to && now > to) return false;
   return true;
 }
 
+function VoucherTypeBadge({ type }) {
+  const cfg = VOUCHER_TYPE_CONFIG[type] ?? VOUCHER_TYPE_CONFIG.General;
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 5,
+      padding: '3px 10px', borderRadius: 20,
+      fontSize: '0.75rem', fontWeight: 700,
+      background: cfg.bg, color: cfg.color,
+    }}>
+      {cfg.icon} {cfg.label}
+    </span>
+  );
+}
+
 function VouchersPage() {
-  const [vouchers, setVouchers]   = useState([]);
-  const [loading, setLoading]     = useState(true);
+  const [vouchers, setVouchers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [editItem, setEditItem]   = useState(null);
-  const [form, setForm]           = useState(emptyForm);
-  const [saving, setSaving]       = useState(false);
+  const [editItem, setEditItem] = useState(null);
+  const [form, setForm] = useState(emptyForm);
+  const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [activeTab, setActiveTab] = useState('all');
+  const [toggling, setToggling] = useState(null);
 
   const fetchAll = useCallback(async () => {
     try {
@@ -64,19 +102,33 @@ function VouchersPage() {
       discountValue: String(v.discountValue),
       minBookingValue: v.minBookingValue != null ? String(v.minBookingValue) : '',
       validFrom: v.validFrom ? v.validFrom.slice(0, 10) : '',
-      validTo:   v.validTo   ? v.validTo.slice(0, 10)   : '',
+      validTo: v.validTo ? v.validTo.slice(0, 10) : '',
       usageLimit: v.usageLimit != null ? String(v.usageLimit) : '',
+      isActive: v.isActive,
+      voucherType: v.voucherType || 'General',
+      holidayName: v.holidayName || '',
+      membershipTier: v.membershipTier || '',
     });
     setShowModal(true);
   };
   const closeModal = () => { setShowModal(false); setEditItem(null); };
-
   const field = (k, val) => setForm(p => ({ ...p, [k]: val }));
+
+  const handleToggle = async (v) => {
+    setToggling(v.id);
+    try {
+      await axiosClient.patch(`/Vouchers/${v.id}/toggle`);
+      setVouchers(prev => prev.map(x => x.id === v.id ? { ...x, isActive: !x.isActive } : x));
+    } catch (err) {
+      alert('Lỗi thay đổi trạng thái: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setToggling(null);
+    }
+  };
 
   const handleSave = async () => {
     if (!form.code.trim()) return alert('Vui lòng nhập mã voucher!');
     if (!form.discountValue || isNaN(Number(form.discountValue))) return alert('Giá trị giảm giá không hợp lệ!');
-
     setSaving(true);
     try {
       const payload = {
@@ -85,10 +137,13 @@ function VouchersPage() {
         discountValue: Number(form.discountValue),
         minBookingValue: form.minBookingValue ? Number(form.minBookingValue) : null,
         validFrom: form.validFrom || null,
-        validTo:   form.validTo   || null,
+        validTo: form.validTo || null,
         usageLimit: form.usageLimit ? Number(form.usageLimit) : null,
+        isActive: form.isActive,
+        voucherType: form.voucherType,
+        holidayName: form.voucherType === 'Holiday' ? form.holidayName : null,
+        membershipTier: form.voucherType === 'MembershipTier' ? form.membershipTier : null,
       };
-
       if (editItem) {
         await axiosClient.put(`/Vouchers/${editItem.id}`, payload);
       } else {
@@ -113,9 +168,17 @@ function VouchersPage() {
     }
   };
 
-  const activeCount   = vouchers.filter(v => isActive(v)).length;
-  const expiredCount  = vouchers.filter(v => isExpired(v)).length;
-  const pctCount      = vouchers.filter(v => v.discountType === 'Percentage').length;
+  // Filter by tab
+  const tabFilteredVouchers = vouchers.filter(v => {
+    if (activeTab === 'all') return true;
+    if (activeTab === 'inactive') return !v.isActive;
+    return v.voucherType === activeTab;
+  });
+
+  const activeCount = vouchers.filter(v => isActive(v)).length;
+  const expiredCount = vouchers.filter(v => isExpired(v)).length;
+  const pctCount = vouchers.filter(v => v.discountType === 'Percentage').length;
+  const inactiveCount = vouchers.filter(v => !v.isActive).length;
 
   return (
     <div className="vouchers-page">
@@ -123,7 +186,7 @@ function VouchersPage() {
       <div className="vouchers-header">
         <div>
           <h1 className="page-title">Quản lý Voucher</h1>
-          <p className="page-subtitle">{vouchers.length} voucher · {activeCount} đang hoạt động · {expiredCount} hết hạn</p>
+          <p className="page-subtitle">{vouchers.length} voucher · {activeCount} đang hoạt động · {expiredCount} hết hạn · {inactiveCount} đã tắt</p>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
           <button onClick={fetchAll} disabled={loading}
@@ -156,6 +219,24 @@ function VouchersPage() {
         </div>
       </div>
 
+      {/* Tabs */}
+      <div className="voucher-tabs">
+        {TABS.map(tab => (
+          <button
+            key={tab.key}
+            className={`voucher-tab ${activeTab === tab.key ? 'active' : ''}`}
+            onClick={() => setActiveTab(tab.key)}
+          >
+            {tab.label}
+            <span className="tab-count">
+              {tab.key === 'all' ? vouchers.length
+               : tab.key === 'inactive' ? inactiveCount
+               : vouchers.filter(v => v.voucherType === tab.key).length}
+            </span>
+          </button>
+        ))}
+      </div>
+
       {/* Table */}
       <div className="table-card">
         {loading ? (
@@ -168,42 +249,46 @@ function VouchersPage() {
             <thead>
               <tr>
                 <th>Mã voucher</th>
-                <th>Loại giảm</th>
-                <th>Giá trị</th>
+                <th>Loại</th>
+                <th>Giảm giá</th>
                 <th>Đơn tối thiểu</th>
                 <th>Thời hạn</th>
                 <th>Giới hạn dùng</th>
                 <th>Trạng thái</th>
+                <th style={{ textAlign: 'center' }}>Bật/Tắt</th>
                 <th style={{ textAlign: 'center' }}>Thao tác</th>
               </tr>
             </thead>
             <tbody>
-              {vouchers.length === 0 ? (
-                <tr><td colSpan={8} className="empty-row">
+              {tabFilteredVouchers.length === 0 ? (
+                <tr><td colSpan={9} className="empty-row">
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
                     <Tag size={32} style={{ opacity: 0.3 }} />
-                    <span>Chưa có voucher nào — nhấn "Tạo voucher mới" để bắt đầu</span>
+                    <span>Không có voucher nào trong tab này</span>
                   </div>
                 </td></tr>
-              ) : vouchers.map(v => {
+              ) : tabFilteredVouchers.map(v => {
                 const expired = isExpired(v);
-                const active  = isActive(v);
+                const active = isActive(v);
                 return (
-                  <tr key={v.id} style={{ opacity: expired ? 0.6 : 1 }}>
+                  <tr key={v.id} style={{ opacity: !v.isActive ? 0.5 : expired ? 0.7 : 1 }}>
                     <td>
                       <span style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '0.9rem', color: 'var(--primary, #2563eb)', background: '#eff6ff', padding: '3px 8px', borderRadius: 6 }}>
                         {v.code}
                       </span>
                     </td>
+                    <td><VoucherTypeBadge type={v.voucherType || 'General'} /></td>
                     <td>
-                      <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-                        {v.discountType === 'Percentage' ? '📊 Phần trăm' : '💰 Cố định'}
-                      </span>
-                    </td>
-                    <td>
-                      <span style={{ fontWeight: 700, fontSize: '1rem', color: v.discountType === 'Percentage' ? '#0369a1' : '#065f46' }}>
-                        {formatDiscount(v)}
-                      </span>
+                      <div>
+                        <span style={{ fontWeight: 700, fontSize: '1rem', color: v.discountType === 'Percentage' ? '#0369a1' : '#065f46' }}>
+                          {formatDiscount(v)}
+                        </span>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                          {v.discountType === 'Percentage' ? 'Phần trăm' : 'Cố định'}
+                        </div>
+                        {v.holidayName && <div style={{ fontSize: '0.72rem', color: '#d97706' }}>🎉 {v.holidayName}</div>}
+                        {v.membershipTier && <div style={{ fontSize: '0.72rem', color: '#7c3aed' }}>⭐ {v.membershipTier}</div>}
+                      </div>
                     </td>
                     <td style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
                       {v.minBookingValue ? `${Number(v.minBookingValue).toLocaleString('vi-VN')}đ` : '—'}
@@ -224,11 +309,23 @@ function VouchersPage() {
                     <td>
                       <span style={{
                         display: 'inline-block', padding: '4px 12px', borderRadius: 20, fontSize: '0.78rem', fontWeight: 700,
-                        background: expired ? '#fee2e2' : active ? '#dcfce7' : '#fef3c7',
-                        color:      expired ? '#dc2626' : active ? '#15803d' : '#b45309',
+                        background: !v.isActive ? '#f1f5f9' : expired ? '#fee2e2' : active ? '#dcfce7' : '#fef3c7',
+                        color: !v.isActive ? '#64748b' : expired ? '#dc2626' : active ? '#15803d' : '#b45309',
                       }}>
-                        {expired ? 'Hết hạn' : active ? 'Đang dùng' : 'Chưa kích hoạt'}
+                        {!v.isActive ? 'Đã tắt' : expired ? 'Hết hạn' : active ? 'Đang dùng' : 'Chưa kích hoạt'}
                       </span>
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      <button
+                        className="toggle-switch-btn"
+                        onClick={() => handleToggle(v)}
+                        disabled={toggling === v.id}
+                        title={v.isActive ? 'Tắt voucher' : 'Bật voucher'}
+                      >
+                        {v.isActive
+                          ? <ToggleRight size={28} style={{ color: '#22c55e' }} />
+                          : <ToggleLeft size={28} style={{ color: '#94a3b8' }} />}
+                      </button>
                     </td>
                     <td style={{ textAlign: 'center' }}>
                       <div className="action-btns" style={{ justifyContent: 'center' }}>
@@ -246,7 +343,7 @@ function VouchersPage() {
             </tbody>
           </table>
         )}
-        {!loading && <div className="table-footer">Hiển thị {vouchers.length} voucher</div>}
+        {!loading && <div className="table-footer">Hiển thị {tabFilteredVouchers.length} / {vouchers.length} voucher</div>}
       </div>
 
       {/* Delete confirm */}
@@ -266,7 +363,7 @@ function VouchersPage() {
       {/* Add / Edit Modal */}
       {showModal && (
         <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: 560 }}>
+          <div className="modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: 600 }}>
             <div className="modal-header">
               <h3>{editItem ? 'Cập nhật voucher' : 'Tạo voucher mới'}</h3>
               <button className="modal-close" onClick={closeModal}><X size={20} /></button>
@@ -283,13 +380,70 @@ function VouchersPage() {
                 {!editItem && <small style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>Mã sẽ được tự động viết hoa.</small>}
               </div>
 
+              {/* Loại voucher */}
+              <div className="form-group">
+                <label>Loại voucher</label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+                  {Object.entries(VOUCHER_TYPE_CONFIG).map(([key, cfg]) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => field('voucherType', key)}
+                      style={{
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
+                        padding: '10px 6px', borderRadius: 10, cursor: 'pointer',
+                        border: `2px solid ${form.voucherType === key ? cfg.color : '#e2e8f0'}`,
+                        background: form.voucherType === key ? cfg.bg : '#fff',
+                        color: form.voucherType === key ? cfg.color : 'var(--text-secondary)',
+                        fontWeight: form.voucherType === key ? 700 : 400,
+                        fontSize: '0.75rem', transition: 'all 0.2s',
+                      }}
+                    >
+                      {cfg.icon} {cfg.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Extra field theo loại */}
+              {form.voucherType === 'Holiday' && (
+                <div className="form-group">
+                  <label>Tên ngày lễ</label>
+                  <input className="form-input" value={form.holidayName}
+                    onChange={e => field('holidayName', e.target.value)}
+                    placeholder="VD: Tết Nguyên Đán, Giáng Sinh..." />
+                </div>
+              )}
+              {form.voucherType === 'MembershipTier' && (
+                <div className="form-group">
+                  <label>Hạng thành viên áp dụng</label>
+                  <CustomSelect 
+                    value={form.membershipTier} 
+                    onChange={val => field('membershipTier', val)}
+                    options={[
+                      { value: '', label: '-- Chọn hạng thành viên --' },
+                      { value: 'Khách mới', label: 'Khách mới' },
+                      { value: 'Đồng', label: 'Đồng' },
+                      { value: 'Bạc', label: 'Bạc' },
+                      { value: 'Vàng', label: 'Vàng' },
+                      { value: 'Bạch kim', label: 'Bạch kim' }
+                    ]}
+                  />
+                </div>
+              )}
+
               {/* Loại + Giá trị */}
               <div className="form-row">
                 <div className="form-col">
                   <label>Loại giảm giá <span className="required">*</span></label>
-                  <select className="form-input" value={form.discountType} onChange={e => field('discountType', e.target.value)}>
-                    {Object.entries(DISCOUNT_TYPE_LABEL).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-                  </select>
+                  <CustomSelect 
+                    value={form.discountType} 
+                    onChange={val => field('discountType', val)}
+                    options={[
+                      { value: 'Percentage', label: 'Theo phần trăm (%)' },
+                      { value: 'Fixed', label: 'Số tiền cố định (đ)' }
+                    ]}
+                  />
                 </div>
                 <div className="form-col">
                   <label>
@@ -306,7 +460,7 @@ function VouchersPage() {
                 </div>
               </div>
 
-              {/* Preview tổng số tiền giảm */}
+              {/* Preview */}
               {form.discountValue && (
                 <div style={{ padding: '10px 14px', background: '#eff6ff', borderRadius: 10, fontSize: '0.88rem', color: '#1e40af', display: 'flex', alignItems: 'center', gap: 8 }}>
                   <AlertCircle size={16} />
@@ -344,6 +498,20 @@ function VouchersPage() {
                   <input className="form-input" type="date" value={form.validTo}
                     onChange={e => field('validTo', e.target.value)} />
                 </div>
+              </div>
+
+              {/* Bật/Tắt */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <label style={{ fontSize: '0.9rem', fontWeight: 600 }}>Trạng thái:</label>
+                <button type="button" onClick={() => field('isActive', !form.isActive)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.88rem' }}>
+                  {form.isActive
+                    ? <><ToggleRight size={28} style={{ color: '#22c55e' }} /> <span style={{ color: '#22c55e', fontWeight: 700 }}>Bật</span></>
+                    : <><ToggleLeft size={28} style={{ color: '#94a3b8' }} /> <span style={{ color: '#94a3b8' }}>Tắt</span></>}
+                </button>
+                {!form.isActive && (
+                  <span style={{ fontSize: '0.78rem', color: '#94a3b8' }}>Voucher tắt sẽ không xuất hiện khi đặt phòng</span>
+                )}
               </div>
 
             </div>

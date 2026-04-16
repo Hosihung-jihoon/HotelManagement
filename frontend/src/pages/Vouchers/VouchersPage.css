@@ -41,3 +41,76 @@
 .btn-add:hover { background: #1d4ed8; transform: translateY(-1px); }
 
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ===== Tabs ===== */
+.voucher-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.voucher-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 10px;
+  background: var(--surface-color, #fff);
+  cursor: pointer;
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: var(--text-secondary, #64748b);
+  transition: all 0.2s;
+}
+
+.voucher-tab:hover {
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
+.voucher-tab.active {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #fff;
+  font-weight: 700;
+}
+
+.tab-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 99px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: rgba(0,0,0,0.08);
+}
+
+.voucher-tab.active .tab-count {
+  background: rgba(255,255,255,0.25);
+}
+
+/* ===== Toggle Switch ===== */
+.toggle-switch-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  transition: background 0.15s;
+}
+
+.toggle-switch-btn:hover {
+  background: #f1f5f9;
+}
+
+.toggle-switch-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

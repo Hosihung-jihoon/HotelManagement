@@ -157,7 +157,7 @@ function RoomPanel({ room, roomInventory, onClose, onFinish }) {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((item, idx) => {
+                {filtered.map((item) => {
                   const realIdx = inventoryState.findIndex(i => i.id === item.id);
                   return (
                     <tr key={item.id} className={item.reported ? 'reported-row' : ''}>
@@ -207,7 +207,6 @@ function HousekeepingPage() {
   const [allInventory, setAllInventory] = useState([]);
   const [loading, setLoading]       = useState(true);
   const [selectedRoom, setSelectedRoom] = useState(null);
-  const [toasts, setToasts]         = useState([]);
 
   const fetchData = useCallback(async () => {
     try {
@@ -217,7 +216,6 @@ function HousekeepingPage() {
         axiosClient.get('/RoomInventories'),
       ]);
       // Chỉ lấy các phòng đang được đánh dấu cần dọn.
-      // Nếu đã hoàn tất, phòng sẽ được chuyển về Available và không nên quay lại danh sách sau khi refresh.
       const needsCleaning = roomsRes.data.filter(r => (r.cleanStatus || 'clean') === 'dirty');
       setRooms(needsCleaning);
       setAllInventory(invRes.data);
@@ -229,12 +227,6 @@ function HousekeepingPage() {
   }, []);
 
   useEffect(() => { fetchData(); }, [fetchData]);
-
-  const addToast = (msg) => {
-    const id = Date.now();
-    setToasts(prev => [...prev, { id, msg }]);
-    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 6000);
-  };
 
   const handleFinish = async (roomId, reported) => {
     const room = rooms.find(r => r.id === roomId);
@@ -257,17 +249,15 @@ function HousekeepingPage() {
       });
       setRooms(prev => prev.filter(r => r.id !== roomId));
     } catch (err) {
-      console.error('L?i l?u d? li?u housekeeping:', err);
-      alert('Kh?ng th? l?u d? li?u d?n ph?ng. Vui l?ng th? l?i.');
+      console.error('Lỗi lưu dữ liệu housekeeping:', err);
+      alert('Không thể lưu dữ liệu dọn phòng. Vui lòng thử lại.');
       return;
     }
 
     if (reported.length > 0) {
       reported.forEach(item => {
-        addToast(`?????? C???nh b??o th???t tho??t ??? Ph??ng ${room?.roomNumber}\nGhi nh???n h???ng/m???t ${item.itemName} t???i ph??ng ${room?.roomNumber}`);
+        console.info(`⚠️ Cảnh báo thất thoát — Phòng ${room?.roomNumber}: ${item.itemName}`);
       });
-    } else {
-      addToast(`??? Ho??n t???t d???n ph??ng ${room?.roomNumber} ??? Ph??ng ???? s???n s??ng ????n kh??ch`);
     }
     setSelectedRoom(null);
   };
@@ -305,9 +295,7 @@ function HousekeepingPage() {
             <div key={room.id} className="hk-card" onClick={() => setSelectedRoom(room)}>
               <div className="hk-card-top">
                 <span className="hk-room-number">P.{room.roomNumber}</span>
-                <span className="hk-badge">
-                  Cần dọn
-                </span>
+                <span className="hk-badge">Cần dọn</span>
               </div>
               <div className="hk-card-info">
                 <div>Tầng {room.floor}</div>
@@ -331,19 +319,6 @@ function HousekeepingPage() {
         />
       )}
 
-      {/* Toast realtime */}
-      <div className="toast-container">
-        {toasts.map(t => (
-          <div key={t.id} className="toast-item">
-            <AlertTriangle size={18} style={{ flexShrink: 0, color: '#f59e0b' }} />
-            <div className="toast-text">
-              {t.msg.split('\n').map((line, i) => (
-                <div key={i} className={i === 0 ? 'toast-title' : 'toast-body'}>{line}</div>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }

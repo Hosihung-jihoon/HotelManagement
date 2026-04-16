@@ -14,15 +14,20 @@ import HousekeepingPage from './pages/Housekeeping/HousekeepingPage';
 import RolesPage from './pages/Roles/RolesPage';
 import RoomTypesPage from './pages/RoomTypes/RoomTypesPage';
 import ArticlesPage from './pages/Articles/ArticlesPage';
+import ArticleEditorPage from './pages/Articles/ArticleEditorPage';
 import ArticleCategoriesPage from './pages/Articles/ArticleCategoriesPage';
 import LocationsPage from './pages/Locations/LocationsPage';
 import LocationMapPage from './pages/Locations/LocationMapPage';
 import MembersPage from './pages/Members/MembersPage';
+import VouchersPage from './pages/Vouchers/VouchersPage';
+import AuditLogPage from './pages/AuditLog/AuditLogPage';
+// Front Desk pages
+import TodayArrivalsPage from './pages/FrontDesk/TodayArrivalsPage';
+import CurrentGuestsPage from './pages/FrontDesk/CurrentGuestsPage';
+import CheckoutPage from './pages/FrontDesk/CheckoutPage';
 
 /**
  * App chính - Cấu hình routing với Auth & Private Routes.
- * 8 menu: Dashboard | Quản lý phòng | Kho vật tư | Thất thoát & đền bù
- *         Dọn phòng | Booking & Voucher | Danh sách nhân sự | Vai trò & phân quyền
  */
 function App() {
   return (
@@ -32,7 +37,6 @@ function App() {
           {/* === Public Routes === */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-
 
           {/* === Private Routes (Admin) === */}
           <Route element={
@@ -55,7 +59,7 @@ function App() {
             {/* 5. Dọn phòng (Housekeeping) */}
             <Route path="/housekeeping" element={<HousekeepingPage />} />
 
-            {/* 6. Booking & Voucher */}
+            {/* 6. Booking */}
             <Route path="/bookings" element={<BookingsPage />} />
 
             {/* 7. Danh sách nhân sự */}
@@ -74,9 +78,23 @@ function App() {
             {/* 11. Bài viết */}
             <Route path="/articles" element={<ArticlesPage />} />
             <Route path="/articles/categories" element={<ArticleCategoriesPage />} />
+            <Route path="/articles/editor" element={<ArticleEditorPage />} />
+            <Route path="/articles/editor/:id" element={<ArticleEditorPage />} />
 
             {/* 12. Thành viên */}
             <Route path="/members" element={<MembersPage />} />
+
+            {/* 13. Voucher */}
+            <Route path="/vouchers" element={<VouchersPage />} />
+
+            {/* 14. Nhật ký hệ thống */}
+            <Route path="/audit-logs" element={<AuditLogPage />} />
+
+            {/* 15. Quầy lễ tân */}
+            <Route path="/front-desk/today-arrivals" element={<TodayArrivalsPage />} />
+            <Route path="/front-desk/current-guests" element={<CurrentGuestsPage />} />
+            <Route path="/front-desk/checkout" element={<CheckoutPage />} />
+            <Route path="/front-desk/bookings" element={<BookingsPage />} />
           </Route>
         </Routes>
       </BrowserRouter>

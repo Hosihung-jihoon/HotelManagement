@@ -170,6 +170,15 @@ public class RoomService : IRoomService
         if (entity == null) return (false, null);
 
         entity.CleanStatus = dto.CleanStatus;
+        if (dto.CleanStatus == "clean" && entity.Status != "Occupied")
+        {
+            entity.Status = "Available";
+        }
+        else if (dto.CleanStatus == "dirty" && entity.Status != "Occupied")
+        {
+            entity.Status = "Cleaning";
+        }
+
         await _repository.UpdateAsync(entity);
         return (true, null);
     }

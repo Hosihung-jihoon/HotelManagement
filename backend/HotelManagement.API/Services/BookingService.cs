@@ -2,20 +2,25 @@ using HotelManagement.API.DTOs;
 using HotelManagement.API.Models;
 using HotelManagement.API.Repositories;
 
+using HotelManagement.API.Data;
+using Microsoft.EntityFrameworkCore;
+
 namespace HotelManagement.API.Services;
 
 public class BookingService : IBookingService
 {
     private readonly IBookingRepository _repository;
+    private readonly HotelDbContext _context;
 
-    public BookingService(IBookingRepository repository)
+    public BookingService(IBookingRepository repository, HotelDbContext context)
     {
         _repository = repository;
+        _context = context;
     }
 
     public async Task<IEnumerable<BookingDto>> GetAllAsync()
     {
-        var bookings = await _repository.GetAllAsync();
+        var bookings = await _repository.GetAllWithRoomsAsync();
         return bookings.Select(b => new BookingDto
         {
             Id = b.Id,
@@ -25,7 +30,8 @@ public class BookingService : IBookingService
             GuestEmail = b.GuestEmail,
             BookingCode = b.BookingCode,
             VoucherId = b.VoucherId,
-            Status = b.Status
+            Status = b.Status,
+            RoomNumbers = b.BookingDetails.Where(d => d.Room != null).Select(d => d.Room!.RoomNumber).ToList()
         });
     }
 
@@ -121,11 +127,45 @@ public class BookingService : IBookingService
 
     public async Task<BookingDto> CreateAsync(CreateBookingDto dto)
     {
-        string newBookingCode = "BKG" + DateTime.Now.ToString("yyyyMMddHHmmss");
+        string newBookingCode = "BKG" + Guid.NewGuid().ToString("N").Substring(0, 6).ToUpper();
+
+        // 1. Auto Create Account if User doesn't exist but Email/Phone is provided
+        int? finalUserId = dto.UserId;
+        if (finalUserId == null && (!string.IsNullOrEmpty(dto.GuestEmail) || !string.IsNullOrEmpty(dto.GuestPhone)))
+        {
+            var existingUser = await _context.Users
+                .FirstOrDefaultAsync(u => u.Email == dto.GuestEmail || u.Phone == dto.GuestPhone);
+
+            if (existingUser != null)
+            {
+                finalUserId = existingUser.Id;
+            }
+            else
+            {
+                var roleGuest = await _context.Roles.FirstOrDefaultAsync(r => r.Name.ToLower() == "guest") 
+                                ?? await _context.Roles.FirstOrDefaultAsync();
+                var tierNew = await _context.Memberships.FirstOrDefaultAsync(m => m.TierName.Contains("Khách mới"));
+                
+                var newUser = new User
+                {
+                    FullName = dto.GuestName,
+                    Email = string.IsNullOrEmpty(dto.GuestEmail) ? $"guest-{Guid.NewGuid():N}@hotel.com" : dto.GuestEmail,
+                    Phone = dto.GuestPhone,
+                    PasswordHash = "DUMMY_AUTO_" + Guid.NewGuid().ToString(),
+                    RoleId = roleGuest?.Id,
+                    MembershipId = tierNew?.Id,
+                    Status = true
+                };
+                
+                _context.Users.Add(newUser);
+                await _context.SaveChangesAsync();
+                finalUserId = newUser.Id;
+            }
+        }
 
         var entity = new Booking
         {
-            UserId = dto.UserId,
+            UserId = finalUserId,
             GuestName = dto.GuestName,
             GuestPhone = dto.GuestPhone,
             GuestEmail = dto.GuestEmail,
@@ -156,10 +196,33 @@ public class BookingService : IBookingService
         if (entity == null) return false;
 
         string? oldStatus = entity.Status;
-        entity.GuestName = dto.GuestName;
-        entity.GuestPhone = dto.GuestPhone;
-        entity.GuestEmail = dto.GuestEmail;
-        entity.Status = dto.Status;
+
+        // Xử lý ràng buộc Checkout trước khi gán và lưu DB
+        if (oldStatus != dto.Status && dto.Status == "CheckedOut")
+        {
+            // Strict Checkout Constraint: Customer must pay fully
+            decimal amountPaid = entity.Invoice?.Payments.Sum(p => p.AmountPaid) ?? 0m;
+            decimal discountAmount = entity.Invoice?.DiscountAmount ?? 0m;
+            decimal finalTotal = entity.Invoice?.FinalTotal ?? 0m;
+            if (entity.Invoice == null) {
+                decimal manualTotal = entity.BookingDetails.Sum(bd => {
+                    var nights = (bd.CheckOutDate - bd.CheckInDate).Days;
+                    return bd.PricePerNight * Math.Max(nights, 1);
+                });
+                finalTotal = manualTotal;
+            }
+            
+            decimal remainingAmount = finalTotal - amountPaid;
+            if (remainingAmount > 0)
+            {
+                throw new ArgumentException($"Không thể trả phòng. Khách còn nợ {remainingAmount:N0}đ.");
+            }
+        }
+
+        entity.GuestName = dto.GuestName ?? entity.GuestName;
+        entity.GuestPhone = dto.GuestPhone ?? entity.GuestPhone;
+        entity.GuestEmail = dto.GuestEmail ?? entity.GuestEmail;
+        entity.Status = dto.Status ?? entity.Status;
 
         await _repository.UpdateAsync(entity);
 
@@ -228,17 +291,60 @@ public class BookingService : IBookingService
 
     public async Task<BookingDto> CreateAdvancedAsync(CreateAdvancedBookingDto dto)
     {
-        string newBookingCode = "BKG" + DateTime.Now.ToString("yyyyMMddHHmmss");
+        string newBookingCode = "BKG" + Guid.NewGuid().ToString("N").Substring(0, 6).ToUpper();
+
+        // 1. Auto Create Account if User doesn't exist but Email/Phone is provided
+        int? finalUserId = dto.UserId;
+        if (finalUserId == null && (!string.IsNullOrEmpty(dto.GuestEmail) || !string.IsNullOrEmpty(dto.GuestPhone)))
+        {
+            var existingUser = await _context.Users
+                .FirstOrDefaultAsync(u => u.Email == dto.GuestEmail || u.Phone == dto.GuestPhone);
+
+            if (existingUser != null)
+            {
+                finalUserId = existingUser.Id;
+            }
+            else
+            {
+                var roleGuest = await _context.Roles.FirstOrDefaultAsync(r => r.Name.ToLower() == "guest") 
+                                ?? await _context.Roles.FirstOrDefaultAsync();
+                var tierNew = await _context.Memberships.FirstOrDefaultAsync(m => m.TierName.Contains("Khách mới"));
+                
+                var newUser = new User
+                {
+                    FullName = dto.GuestName,
+                    Email = string.IsNullOrEmpty(dto.GuestEmail) ? $"guest-{Guid.NewGuid():N}@hotel.com" : dto.GuestEmail,
+                    Phone = dto.GuestPhone,
+                    PasswordHash = "DUMMY_AUTO_" + Guid.NewGuid().ToString(),
+                    RoleId = roleGuest?.Id,
+                    MembershipId = tierNew?.Id,
+                    Status = true
+                };
+                
+                _context.Users.Add(newUser);
+                await _context.SaveChangesAsync();
+                finalUserId = newUser.Id;
+            }
+        }
+
+        // Check if pre-payment makes it confirmed (>= 30%)
+        decimal totalRoomAmount = dto.Details.Sum(d => 
+        {
+            var nights = (d.CheckOutDate - d.CheckInDate).Days;
+            return d.PricePerNight * Math.Max(nights, 1);
+        });
+        
+        string initialStatus = (dto.PrePayment > 0 && dto.PrePayment >= totalRoomAmount * 0.3m) ? "Confirmed" : "Pending";
 
         var booking = new Booking
         {
-            UserId = dto.UserId,
+            UserId = finalUserId,
             GuestName = dto.GuestName,
             GuestPhone = dto.GuestPhone,
             GuestEmail = dto.GuestEmail,
             VoucherId = dto.VoucherId,
             BookingCode = newBookingCode,
-            Status = "Pending"
+            Status = initialStatus
         };
 
         var details = dto.Details.Select(d => new BookingDetail
@@ -250,7 +356,19 @@ public class BookingService : IBookingService
         }).ToList();
 
         var created = await _repository.CreateWithLockAsync(booking, details);
-        await _repository.AddAuditLogAsync(created.Id, "Tạo mới (Nâng cao)", null, $"Mã: {created.BookingCode}, {details.Count} phòng", dto.UserId);
+
+        // If prepayment exists, add it to invoice
+        if (dto.PrePayment > 0)
+        {
+            await AddPaymentAsync(created.Id, new AddBookingPaymentDto
+            {
+                Amount = dto.PrePayment,
+                PaymentMethod = dto.PaymentMethod ?? "Cash",
+                TransactionCode = "DEPOSIT"
+            });
+        }
+
+        await _repository.AddAuditLogAsync(created.Id, "Tạo mới (Nâng cao)", null, $"Mã: {created.BookingCode}, Trạng thái: {initialStatus}, Cọc: {dto.PrePayment}đ", dto.UserId);
 
         return new BookingDto
         {
@@ -315,6 +433,40 @@ public class BookingService : IBookingService
 
         await _repository.UpdateAsync(booking);
         await _repository.AddAuditLogAsync(bookingId, "Thu tiền", null, $"{dto.Amount.ToString("N0")}đ ({dto.PaymentMethod})");
+
+        // 2. Auto-scale Membership Tier
+        if (booking.UserId.HasValue)
+        {
+            var user = await _context.Users.FindAsync(booking.UserId.Value);
+            if (user != null)
+            {
+                // Calculate life-time paid amount
+                decimal lifeTimePaid = await _context.Payments
+                    .Where(p => p.Invoice != null && p.Invoice.Booking != null && p.Invoice.Booking.UserId == user.Id)
+                    .SumAsync(p => p.AmountPaid);
+
+                // Additional new payment (since Context might not have flushed the current one to SumAsync yet)
+                lifeTimePaid += dto.Amount;
+
+                string newTierName = null;
+                if (lifeTimePaid >= 50_000_000m) newTierName = "Bạch kim";
+                else if (lifeTimePaid >= 20_000_000m) newTierName = "Vàng";
+                else if (lifeTimePaid >= 10_000_000m) newTierName = "Bạc";
+                else if (lifeTimePaid >= 5_000_000m) newTierName = "Đồng";
+
+                if (newTierName != null)
+                {
+                    var newTier = await _context.Memberships.FirstOrDefaultAsync(m => m.TierName.Contains(newTierName));
+                    if (newTier != null && user.MembershipId != newTier.Id)
+                    {
+                        // Check if new tier is higher. We assume IDs or logical names. 
+                        // To be simple, we just set the new tier if thresholds are met (upgrades only).
+                        user.MembershipId = newTier.Id;
+                        await _context.SaveChangesAsync();
+                    }
+                }
+            }
+        }
 
         return true;
     }

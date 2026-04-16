@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Search, X, RefreshCw, Users } from 'lucide-react';
 import axiosClient from '../../api/axiosClient';
 import { useAuth } from '../../context/AuthContext';
+import CustomSelect from '../../components/Common/CustomSelect';
 import './UsersPage.css';
 
 const AVATAR_COLORS = ['#2563eb', '#0ea5e9', '#10b981', '#f59e0b', '#ef4444', '#7c3aed', '#ec4899', '#14b8a6'];
@@ -122,15 +123,29 @@ function UsersPage() {
             onChange={e => setSearch(e.target.value)}
           />
         </div>
-        <select className="filter-select" value={filterRole} onChange={e => setFilterRole(e.target.value)}>
-          <option value="">Tất cả vai trò</option>
-          {uniqueRoles.map(r => <option key={r} value={r}>{r}</option>)}
-        </select>
-        <select className="filter-select" value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
-          <option value="">Tất cả trạng thái</option>
-          <option value="active">Đang hoạt động</option>
-          <option value="inactive">Bị khóa</option>
-        </select>
+        <div style={{ width: 180 }}>
+          <CustomSelect 
+            value={filterRole} 
+            onChange={val => setFilterRole(val)} 
+            placeholder="Tất cả vai trò"
+            options={[
+              { value: '', label: 'Tất cả vai trò' },
+              ...uniqueRoles.map(r => ({ value: r, label: r }))
+            ]}
+          />
+        </div>
+        <div style={{ width: 180 }}>
+          <CustomSelect 
+            value={filterStatus} 
+            onChange={val => setFilterStatus(val)} 
+            placeholder="Tất cả trạng thái"
+            options={[
+              { value: '', label: 'Tất cả trạng thái' },
+              { value: 'active', label: 'Đang hoạt động' },
+              { value: 'inactive', label: 'Bị khóa' }
+            ]}
+          />
+        </div>
       </div>
 
       {/* Table */}
@@ -188,16 +203,14 @@ function UsersPage() {
                   </td>
                   {isAdmin && (
                     <td style={{ textAlign: 'center' }}>
-                      <select
+                      <CustomSelect
                         className="filter-select"
-                        style={{ fontSize: '0.8rem', padding: '5px 8px', minWidth: 120 }}
                         value={roles.find(r => r.name === user.roleName)?.id ?? ''}
-                        onChange={e => handleChangeRole(user.id, e.target.value)}
+                        onChange={val => handleChangeRole(user.id, val)}
                         disabled={savingId === user.id}
-                      >
-                        <option value="">-- Chọn --</option>
-                        {roles.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
-                      </select>
+                        placeholder="-- Chọn --"
+                        options={roles.map(r => ({ value: r.id, label: r.name }))}
+                      />
                       {savingId === user.id && <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginLeft: 4 }}>Đang lưu...</span>}
                     </td>
                   )}

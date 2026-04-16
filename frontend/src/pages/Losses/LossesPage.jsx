@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { AlertTriangle, TriangleAlert, Calendar, Pencil, Trash2, Plus, X, Image as ImageIcon, RefreshCw, CheckCircle, XCircle } from 'lucide-react';
 import { uploadToCloudinary, createLocalPreview } from '../../utils/cloudinaryUpload';
 import axiosClient from '../../api/axiosClient';
+import CustomSelect from '../../components/Common/CustomSelect';
 import './LossesPage.css';
 
 const emptyForm = { roomId: '', roomInventoryId: '', quantity: 1, penaltyAmount: 0, description: '', imageUrl: '' };
@@ -335,27 +336,35 @@ function LossesPage() {
               <div style={{ display: 'flex', gap: 10 }}>
                 <div className="form-group" style={{ flex: 1 }}>
                   <label>Phòng</label>
-                  <select className="form-input" value={form.roomId || ''} onChange={e => {
-                    handleChange('roomId', e.target.value);
-                    handleChange('roomInventoryId', ''); // reset item when room changes
-                    handleChange('penaltyAmount', 0);
-                  }}>
-                    <option value="">-- Chọn phòng --</option>
-                    {rooms.map(r => (
-                      <option key={r.id} value={r.id}>Phòng {r.roomNumber}</option>
-                    ))}
-                  </select>
+                  <CustomSelect
+                    value={form.roomId || ''}
+                    onChange={val => {
+                      handleChange('roomId', val);
+                      handleChange('roomInventoryId', ''); // reset item when room changes
+                      handleChange('penaltyAmount', 0);
+                    }}
+                    placeholder="-- Chọn phòng --"
+                    options={[
+                      { value: '', label: '-- Chọn phòng --' },
+                      ...rooms.map(r => ({ value: r.id, label: `Phòng ${r.roomNumber}` }))
+                    ]}
+                  />
                 </div>
                 <div className="form-group" style={{ flex: 2 }}>
                   <label>Vật tư lỗi / hỏng</label>
-                  <select className="form-input" value={form.roomInventoryId} onChange={e => handleInventoryChange(e.target.value)} disabled={!form.roomId}>
-                    <option value="">-- Chọn vật tư --</option>
-                    {inventory.filter(i => String(i.roomId) === String(form.roomId)).map(i => (
-                      <option key={i.id} value={i.id}>
-                        {i.itemName} {i.priceIfLost ? `(${Number(i.priceIfLost).toLocaleString('vi-VN')}đ/cái)` : ''}
-                      </option>
-                    ))}
-                  </select>
+                  <CustomSelect
+                    value={form.roomInventoryId}
+                    onChange={val => handleInventoryChange(val)}
+                    disabled={!form.roomId}
+                    placeholder="-- Chọn vật tư --"
+                    options={[
+                      { value: '', label: '-- Chọn vật tư --' },
+                      ...inventory.filter(i => String(i.roomId) === String(form.roomId)).map(i => ({
+                        value: i.id,
+                        label: `${i.itemName} ${i.priceIfLost ? `(${Number(i.priceIfLost).toLocaleString('vi-VN')}đ/cái)` : ''}`
+                      }))
+                    ]}
+                  />
                 </div>
               </div>
               <div className="form-row">

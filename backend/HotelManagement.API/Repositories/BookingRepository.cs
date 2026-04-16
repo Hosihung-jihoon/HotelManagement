@@ -136,4 +136,13 @@ public class BookingRepository : GenericRepository<Booking>, IBookingRepository
             throw;
         }
     }
+
+    public async Task<IEnumerable<Booking>> GetAllWithRoomsAsync()
+    {
+        return await _dbSet
+            .Include(b => b.BookingDetails)
+                .ThenInclude(bd => bd.Room)
+            .OrderByDescending(b => b.CreatedAt)
+            .ToListAsync();
+    }
 }
