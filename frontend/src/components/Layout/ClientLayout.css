@@ -1,0 +1,258 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&family=Noto+Serif:ital,wght@0,400;0,700;1,400&display=swap');
+
+:root {
+  --client-primary: #00193c;
+  --client-primary-container: #002d62;
+  --client-secondary-fixed: #cee5ff;
+  --client-surface: #f7fafc;
+  --client-surface-lowest: #ffffff;
+  --client-surface-highest: #e0e3e5;
+  --client-on-surface: #181c1e;
+  --client-on-surface-variant: #4a5568;
+  --client-outline-variant: rgba(196, 198, 209, 0.15); /* Ghost Border */
+}
+
+/* Base resets for client area */
+.client-layout {
+  font-family: 'Manrope', sans-serif;
+  background-color: var(--client-surface);
+  color: var(--client-on-surface);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.client-layout h1, .client-layout h2, .client-layout h3, .client-layout h4, .client-layout h5, .client-layout h6,
+.client-layout .font-serif {
+  font-family: 'Noto Serif', serif;
+  color: var(--client-primary);
+}
+
+.client-layout p {
+  color: var(--client-on-surface-variant);
+  line-height: 1.8;
+}
+
+/* Typography Scale */
+.client-layout .display-lg { font-size: 3.5rem; letter-spacing: -0.02em; line-height: 1.1; font-family: 'Noto Serif', serif; }
+.client-layout .headline-lg { font-size: 2.5rem; line-height: 1.2; font-family: 'Noto Serif', serif; }
+.client-layout .body-lg { font-size: 1.125rem; line-height: 1.8; font-family: 'Manrope', sans-serif; font-weight: 300; }
+
+/* Buttons */
+.client-layout .btn-primary {
+  background: linear-gradient(135deg, var(--client-primary), var(--client-primary-container));
+  color: #fff;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.client-layout .btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(0, 25, 60, 0.15);
+}
+
+.client-layout .btn-secondary {
+  background: transparent;
+  color: var(--client-primary);
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  border: 1px solid var(--client-outline-variant);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.client-layout .btn-secondary:hover {
+  background: var(--client-outline-variant);
+}
+
+/* Glassmorphism Navigation */
+.client-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  transition: all 0.4s ease;
+  padding: 1.5rem 0;
+  background: transparent;
+}
+
+.client-nav.scrolled {
+  background: rgba(247, 250, 252, 0.85); /* surface at 85% */
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  padding: 1rem 0;
+  box-shadow: 0 4px 40px rgba(24, 28, 30, 0.06); /* Ambient shadow */
+}
+
+.nav-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.brand-logo {
+  font-family: 'Noto Serif', serif;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--client-primary);
+  text-decoration: none;
+  letter-spacing: -0.02em;
+}
+
+.nav-links {
+  display: flex;
+  gap: 2.5rem;
+}
+
+.nav-links a {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 500;
+  color: var(--client-on-surface);
+  text-decoration: none;
+  position: relative;
+  transition: color 0.3s ease;
+}
+
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0%;
+  height: 1px;
+  background-color: var(--client-primary);
+  transition: width 0.3s ease;
+}
+
+.nav-links a:hover::after, .nav-links a.active::after {
+  width: 100%;
+}
+
+.nav-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+/* Mobile Menu */
+.mobile-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--client-primary);
+  cursor: pointer;
+}
+
+.mobile-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background: var(--client-surface-lowest);
+  padding: 2rem;
+  flex-direction: column;
+  gap: 1.5rem;
+  box-shadow: 0 20px 40px rgba(24, 28, 30, 0.06);
+}
+
+.mobile-menu.open {
+  display: flex;
+}
+
+.mobile-menu a {
+  font-size: 1.125rem;
+  text-decoration: none;
+  color: var(--client-on-surface);
+  font-weight: 500;
+}
+
+/* Main Content */
+.client-main {
+  flex-grow: 1;
+}
+
+/* Footer */
+.client-footer {
+  background-color: var(--client-surface-highest);
+  padding: 6rem 2rem 2rem;
+  margin-top: 4rem;
+}
+
+.footer-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4rem;
+  justify-content: space-between;
+}
+
+.footer-brand {
+  max-width: 300px;
+}
+
+.footer-brand h2 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.footer-links {
+  display: flex;
+  gap: 4rem;
+  flex-wrap: wrap;
+}
+
+.link-group h3 {
+  font-family: 'Manrope', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 1.5rem;
+  color: var(--client-primary);
+}
+
+.link-group a {
+  display: block;
+  text-decoration: none;
+  color: var(--client-on-surface-variant);
+  margin-bottom: 0.75rem;
+  transition: color 0.2s ease;
+}
+
+.link-group a:hover {
+  color: var(--client-primary);
+}
+
+.footer-bottom {
+  max-width: 1400px;
+  margin: 4rem auto 0;
+  padding-top: 2rem;
+  border-top: 1px solid var(--client-outline-variant);
+  text-align: center;
+  color: var(--client-on-surface-variant);
+  font-size: 0.875rem;
+}
+
+@media (max-width: 900px) {
+  .desktop-only { display: none; }
+  .mobile-toggle { display: block; }
+}

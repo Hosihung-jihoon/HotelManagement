@@ -1,0 +1,44 @@
+/* StaticPages.css */
+.static-page {
+  background-color: var(--client-surface);
+  min-height: calc(100vh - 200px);
+  padding: 8rem 2rem;
+}
+
+.static-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.static-container .display-lg {
+  margin-bottom: 4rem;
+  text-align: center;
+}
+
+.static-content {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+  color: var(--client-on-surface-variant);
+}
+
+.static-content h3 {
+  font-family: 'Noto Serif', serif;
+  font-size: 1.5rem;
+  color: var(--client-primary);
+  margin-bottom: 1rem;
+}
+
+.static-content p {
+  margin-bottom: 1.5rem;
+  line-height: 1.8;
+}
+
+.faq-item {
+  border-bottom: 1px solid var(--client-outline-variant);
+  padding-bottom: 2rem;
+}
+
+.faq-item:last-child {
+  border-bottom: none;
+}

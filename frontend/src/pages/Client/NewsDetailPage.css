@@ -1,0 +1,132 @@
+/* NewsDetailPage.css */
+.news-detail-page {
+  background-color: var(--client-surface);
+  padding-bottom: 8rem;
+}
+
+.article-hero {
+  position: relative;
+  min-height: 80vh;
+  display: flex;
+  align-items: flex-end;
+  padding-bottom: 5rem;
+}
+
+.article-hero-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+.article-hero-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Dark gradient overlay so text is readable */
+.article-hero-image::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to top, rgba(24, 28, 30, 0.9) 0%, rgba(24, 28, 30, 0.4) 50%, rgba(24, 28, 30, 0.1) 100%);
+}
+
+.article-header-content {
+  position: relative;
+  z-index: 1;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  width: 100%;
+  color: #ffffff;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  font-family: 'Manrope', sans-serif;
+  margin-bottom: 3rem;
+  transition: color 0.2s ease;
+}
+
+.back-link:hover {
+  color: #ffffff;
+}
+
+.article-header-content .display-lg {
+  color: #ffffff; /* Override global primary color for hero */
+  margin-top: 1.5rem;
+}
+
+.article-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-family: 'Manrope', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.875rem;
+}
+
+.article-category {
+  color: var(--client-secondary-fixed);
+  font-weight: 700;
+}
+
+.article-body {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 5rem 2rem 0;
+  background-color: var(--client-surface);
+}
+
+.article-author-info {
+  margin-bottom: 3rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--client-outline-variant);
+  font-family: 'Manrope', sans-serif;
+  color: var(--client-on-surface-variant);
+}
+
+.article-html-content p {
+  margin-bottom: 2rem;
+}
+
+.article-html-content h3 {
+  margin-top: 4rem;
+  margin-bottom: 1.5rem;
+  font-size: 1.75rem;
+  color: var(--client-primary);
+}
+
+.article-html-content blockquote {
+  margin: 4rem 0;
+  padding: 0 3rem;
+  font-family: 'Noto Serif', serif;
+  font-size: 1.75rem;
+  line-height: 1.4;
+  color: var(--client-primary);
+  text-align: center;
+  position: relative;
+}
+
+.article-html-content blockquote::before {
+  content: '“';
+  font-size: 6rem;
+  color: var(--client-outline-variant);
+  position: absolute;
+  top: -3rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: -1;
+}

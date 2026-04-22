@@ -30,19 +30,19 @@ function MainLayout() {
   ];
 
   const menuItems = [
-    { path: '/', label: 'Dashboard', icon: '📊' },
-    { path: '/room-types', label: 'Loại Phòng', icon: '🏨' },
-    { path: '/rooms', label: 'Phòng', icon: '🚪' },
-    { path: '/bookings', label: 'Đặt Phòng', icon: '📅' },
-    { path: '/invoices', label: 'Hóa Đơn', icon: '💰' },
-    { path: '/services', label: 'Dịch Vụ', icon: '🍽️' },
-    { path: '/amenities', label: 'Tiện Nghi', icon: '✨' },
-    { path: '/articles', label: 'Bài Viết', icon: '📰' },
-    { path: '/attractions', label: 'Địa Điểm', icon: '🗺️' },
-    { path: '/reviews', label: 'Đánh Giá', icon: '⭐' },
-    { path: '/users', label: 'Người Dùng', icon: '👥' },
-    { path: '/vouchers', label: 'Voucher', icon: '🎟️' },
-    { path: '/memberships', label: 'Membership', icon: '💎' },
+    { path: '/admin', label: 'Dashboard', icon: '📊' },
+    { path: '/admin/room-types', label: 'Loại Phòng', icon: '🏨' },
+    { path: '/admin/rooms', label: 'Phòng', icon: '🚪' },
+    { path: '/admin/bookings', label: 'Đặt Phòng', icon: '📅' },
+    { path: '/admin/invoices', label: 'Hóa Đơn', icon: '💰' },
+    { path: '/admin/services', label: 'Dịch Vụ', icon: '🍽️' },
+    { path: '/admin/amenities', label: 'Tiện Nghi', icon: '✨' },
+    { path: '/admin/articles', label: 'Bài Viết', icon: '📰' },
+    { path: '/admin/attractions', label: 'Địa Điểm', icon: '🗺️' },
+    { path: '/admin/reviews', label: 'Đánh Giá', icon: '⭐' },
+    { path: '/admin/users', label: 'Người Dùng', icon: '👥' },
+    { path: '/admin/vouchers', label: 'Voucher', icon: '🎟️' },
+    { path: '/admin/memberships', label: 'Membership', icon: '💎' },
   ];
 
   return (
@@ -59,6 +59,7 @@ function MainLayout() {
             <NavLink
               key={item.path}
               to={item.path}
+              end={item.path === '/admin'}
               className={({ isActive }) =>
                 `nav-item ${isActive ? 'active' : ''}`
               }
@@ -112,7 +113,7 @@ function MainLayout() {
                       className="view-all-btn" 
                       onClick={() => {
                         setNotifOpen(false);
-                        navigate('/notifications');
+                        navigate('/admin/notifications');
                       }}
                     >
                       View All Notifications

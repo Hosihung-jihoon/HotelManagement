@@ -1,0 +1,119 @@
+/* NewsPage.css */
+.news-page {
+  padding-bottom: 6rem;
+  background-color: var(--client-surface);
+}
+
+.page-hero {
+  padding: 10rem 2rem 5rem;
+  background-color: var(--client-surface-highest);
+  margin-bottom: 6rem;
+}
+
+.hero-text-container {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.news-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 8rem;
+}
+
+.news-card {
+  display: flex;
+  gap: 6rem;
+  align-items: center;
+}
+
+.news-card-reverse {
+  flex-direction: row-reverse;
+}
+
+.news-image-wrapper {
+  flex: 1.2;
+  position: relative;
+}
+
+.news-image-wrapper img {
+  width: 100%;
+  aspect-ratio: 4/5;
+  object-fit: cover;
+  border-radius: 2px;
+  box-shadow: 0 30px 60px rgba(24, 28, 30, 0.08);
+  transition: transform 0.5s ease;
+}
+
+.news-image-wrapper:hover img {
+  transform: scale(1.02);
+}
+
+/* Offset background for asymmetry */
+.news-image-wrapper::after {
+  content: '';
+  position: absolute;
+  top: -2rem;
+  left: 2rem;
+  width: 100%;
+  height: 100%;
+  background-color: var(--client-surface-lowest);
+  z-index: -1;
+}
+
+.news-card-reverse .news-image-wrapper::after {
+  left: -2rem;
+}
+
+.news-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.news-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--client-on-surface-variant);
+}
+
+.news-category {
+  color: var(--client-primary);
+  font-weight: 700;
+}
+
+.news-title-link {
+  text-decoration: none;
+}
+
+.news-content .headline-lg {
+  font-size: 2.25rem;
+  transition: color 0.3s ease;
+}
+
+.news-title-link:hover .headline-lg {
+  color: var(--client-primary-container);
+}
+
+@media (max-width: 900px) {
+  .news-card, .news-card-reverse {
+    flex-direction: column;
+    gap: 3rem;
+  }
+  .news-image-wrapper::after {
+    display: none;
+  }
+}

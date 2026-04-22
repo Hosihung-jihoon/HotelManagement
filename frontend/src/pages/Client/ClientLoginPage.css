@@ -1,0 +1,129 @@
+/* ClientLoginPage.css */
+.client-login-page {
+  min-height: 100vh;
+  background-color: var(--client-surface);
+  display: flex;
+  align-items: stretch;
+}
+
+.login-split-container {
+  display: flex;
+  width: 100%;
+}
+
+.login-image-side {
+  flex: 1.2;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  padding: 4rem;
+}
+
+.login-image-side img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+
+/* Atmospheric gradient overlay */
+.login-image-side::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to right, rgba(24, 28, 30, 0.6) 0%, rgba(24, 28, 30, 0.2) 100%);
+  z-index: 1;
+}
+
+.image-overlay-text {
+  position: relative;
+  z-index: 2;
+  color: #ffffff;
+  max-width: 500px;
+}
+
+.image-overlay-text .display-lg {
+  color: #ffffff;
+  margin-bottom: 1.5rem;
+}
+
+.login-form-side {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--client-surface-lowest);
+  padding: 2rem;
+}
+
+.form-wrapper {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-wrapper .headline-lg {
+  margin-bottom: 0.5rem;
+  color: var(--client-primary);
+}
+
+.subtitle {
+  margin-bottom: 3rem;
+}
+
+.client-auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -1rem;
+}
+
+.forgot-link {
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.875rem;
+  color: var(--client-on-surface-variant);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.forgot-link:hover {
+  color: var(--client-primary);
+}
+
+.full-width {
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.register-prompt {
+  margin-top: 3rem;
+  text-align: center;
+  font-family: 'Manrope', sans-serif;
+  color: var(--client-on-surface-variant);
+}
+
+.register-prompt a {
+  color: var(--client-primary);
+  font-weight: 700;
+  text-decoration: none;
+  border-bottom: 1px solid var(--client-primary);
+  padding-bottom: 2px;
+}
+
+@media (max-width: 900px) {
+  .login-image-side {
+    display: none;
+  }
+}
