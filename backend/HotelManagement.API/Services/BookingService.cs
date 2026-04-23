@@ -148,9 +148,9 @@ public class BookingService : IBookingService
                 
                 var newUser = new User
                 {
-                    FullName = dto.GuestName,
+                    FullName = dto.GuestName ?? "Khách hàng",
                     Email = string.IsNullOrEmpty(dto.GuestEmail) ? $"guest-{Guid.NewGuid():N}@hotel.com" : dto.GuestEmail,
-                    Phone = dto.GuestPhone,
+                    Phone = dto.GuestPhone ?? "",
                     PasswordHash = "DUMMY_AUTO_" + Guid.NewGuid().ToString(),
                     RoleId = roleGuest?.Id,
                     MembershipId = tierNew?.Id,
@@ -312,9 +312,9 @@ public class BookingService : IBookingService
                 
                 var newUser = new User
                 {
-                    FullName = dto.GuestName,
+                    FullName = dto.GuestName ?? "Khách hàng",
                     Email = string.IsNullOrEmpty(dto.GuestEmail) ? $"guest-{Guid.NewGuid():N}@hotel.com" : dto.GuestEmail,
-                    Phone = dto.GuestPhone,
+                    Phone = dto.GuestPhone ?? "",
                     PasswordHash = "DUMMY_AUTO_" + Guid.NewGuid().ToString(),
                     RoleId = roleGuest?.Id,
                     MembershipId = tierNew?.Id,
@@ -448,7 +448,7 @@ public class BookingService : IBookingService
                 // Additional new payment (since Context might not have flushed the current one to SumAsync yet)
                 lifeTimePaid += dto.Amount;
 
-                string newTierName = null;
+                string? newTierName = null;
                 if (lifeTimePaid >= 50_000_000m) newTierName = "Bạch kim";
                 else if (lifeTimePaid >= 20_000_000m) newTierName = "Vàng";
                 else if (lifeTimePaid >= 10_000_000m) newTierName = "Bạc";

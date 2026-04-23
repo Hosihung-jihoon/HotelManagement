@@ -212,11 +212,11 @@ public class UserService : IUserService
     public async Task<IEnumerable<MembershipStatDto>> GetMembershipStatsAsync()
     {
         return await _context.Users
-            .Where(u => u.MembershipId != null)
-            .GroupBy(u => new { u.MembershipId, u.Membership.TierName })
+            .Where(u => u.MembershipId != null && u.Membership != null)
+            .GroupBy(u => new { u.MembershipId, u.Membership!.TierName })
             .Select(g => new MembershipStatDto
             {
-                MembershipId = g.Key.MembershipId.Value,
+                MembershipId = g.Key.MembershipId!.Value,
                 TierName = g.Key.TierName,
                 MemberCount = g.Count()
             })

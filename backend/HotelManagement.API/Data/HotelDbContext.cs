@@ -140,5 +140,90 @@ public class HotelDbContext : DbContext
             // Guest
             new RolePermission { RoleId = 4, PermissionId = 8 }
         );
+
+        // ===== Seed Data: Users =====
+        modelBuilder.Entity<User>().HasData(
+            new User 
+            { 
+                Id = 1, 
+                FullName = "Admin System", 
+                Email = "vibecoding209@gmail.com", 
+                PasswordHash = "$2a$11$VQ8eIzRm2MjRl2gjFZWon.YQkCGooN1pMFhNEn6Yaf/PLq.nqkXIG", // admin
+                RoleId = 1, 
+                Status = true 
+            },
+            new User 
+            { 
+                Id = 2, 
+                FullName = "Hotel Manager", 
+                Email = "manager@hotel.com", 
+                PasswordHash = "$2a$11$w0a9bylqBIL4UxKAX1DzLeHzGGcyv703ndlrU5eGKzey3jei38sP6", // manager
+                RoleId = 1, 
+                Status = true 
+            },
+            new User 
+            { 
+                Id = 3, 
+                FullName = "Receptionist 1", 
+                Email = "reception1@hotel.com", 
+                PasswordHash = "$2a$11$moigqG6DqvHapVXW50MJ5.W1UeoELEqFL/nDBgIgbakaW.mG7DRoW", // 123456
+                RoleId = 2, 
+                Status = true 
+            },
+            new User 
+            { 
+                Id = 4, 
+                FullName = "Receptionist 2", 
+                Email = "reception2@hotel.com", 
+                PasswordHash = "$2a$11$moigqG6DqvHapVXW50MJ5.W1UeoELEqFL/nDBgIgbakaW.mG7DRoW", // 123456
+                RoleId = 2, 
+                Status = true 
+            },
+            new User 
+            { 
+                Id = 5, 
+                FullName = "Accountant", 
+                Email = "accountant@hotel.com", 
+                PasswordHash = "$2a$11$moigqG6DqvHapVXW50MJ5.W1UeoELEqFL/nDBgIgbakaW.mG7DRoW", // 123456
+                RoleId = 1, 
+                Status = true 
+            },
+            new User 
+            { 
+                Id = 6, 
+                FullName = "Hung Le", 
+                Email = "hunglm@vaa.edu.vn", 
+                PasswordHash = "$2a$11$moigqG6DqvHapVXW50MJ5.W1UeoELEqFL/nDBgIgbakaW.mG7DRoW", // 123456
+                RoleId = 4, 
+                Status = true 
+            },
+            new User 
+            { 
+                Id = 7, 
+                FullName = "Manh Hung", 
+                Email = "manhung08062@gmail.com", 
+                PasswordHash = "$2a$11$moigqG6DqvHapVXW50MJ5.W1UeoELEqFL/nDBgIgbakaW.mG7DRoW", // 123456
+                RoleId = 4, 
+                Status = true 
+            },
+            new User 
+            { 
+                Id = 8, 
+                FullName = "Dai Nguyen", 
+                Email = "dainguyen1254@gmail.com", 
+                PasswordHash = "$2a$11$moigqG6DqvHapVXW50MJ5.W1UeoELEqFL/nDBgIgbakaW.mG7DRoW", // 123456
+                RoleId = 4, 
+                Status = true 
+            },
+            new User 
+            { 
+                Id = 9, 
+                FullName = "An Nguyen", 
+                Email = "nguyenbinhan2707@gmail.com", 
+                PasswordHash = "$2a$11$moigqG6DqvHapVXW50MJ5.W1UeoELEqFL/nDBgIgbakaW.mG7DRoW", // 123456
+                RoleId = 4, 
+                Status = true 
+            }
+        );
     }
 }
