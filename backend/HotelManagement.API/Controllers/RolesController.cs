@@ -23,7 +23,7 @@ public class RolesController : ControllerBase
 
     /// <summary>Lấy danh sách tất cả roles</summary>
     [HttpGet]
-    [PermissionAuthorize("manage_roles")]
+    [PermissionAuthorize("manage_roles", "view_roles", "edit_roles")]
     public async Task<ActionResult<IEnumerable<RoleDto>>> GetAll()
     {
         var result = await _roleService.GetAllRolesAsync();
@@ -32,7 +32,7 @@ public class RolesController : ControllerBase
 
     /// <summary>Lấy role kèm danh sách permissions</summary>
     [HttpGet("{id}/permissions")]
-    [PermissionAuthorize("manage_roles")]
+    [PermissionAuthorize("manage_roles", "view_roles", "edit_roles")]
     public async Task<ActionResult<RoleWithPermissionsDto>> GetRoleWithPermissions(int id)
     {
         var result = await _roleService.GetRoleWithPermissionsAsync(id);
@@ -43,7 +43,7 @@ public class RolesController : ControllerBase
 
     /// <summary>Lấy tất cả permissions (để hiển thị khi gán)</summary>
     [HttpGet("all-permissions")]
-    [PermissionAuthorize("manage_roles")]
+    [PermissionAuthorize("manage_roles", "view_roles", "edit_roles")]
     public async Task<ActionResult<IEnumerable<PermissionDto>>> GetAllPermissions()
     {
         var result = await _roleService.GetAllPermissionsAsync();

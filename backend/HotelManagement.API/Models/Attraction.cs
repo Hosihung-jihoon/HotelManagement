@@ -23,4 +23,17 @@ public class Attraction
 
     [Column("map_embed_link")]
     public string? MapEmbedLink { get; set; }
+
+    [Column("latitude", TypeName = "decimal(10,8)")]
+    public decimal? Latitude { get; set; }
+
+    [Column("longitude", TypeName = "decimal(11,8)")]
+    public decimal? Longitude { get; set; }
+
+    [Column("address")]
+    [MaxLength(500)]
+    public string? Address { get; set; }
+
+    [Column("is_active")]
+    public bool? IsActive { get; set; } = true;
 }

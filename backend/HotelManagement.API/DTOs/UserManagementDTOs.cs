@@ -17,6 +17,15 @@ public class UserListDto
     public bool? Status { get; set; }
     public int? RoleId { get; set; }
     public string? RoleName { get; set; }
+    public string? MembershipName { get; set; }
+}
+
+// ========== Membership Stats ==========
+public class MembershipStatDto
+{
+    public int MembershipId { get; set; }
+    public string TierName { get; set; } = string.Empty;
+    public int MemberCount { get; set; }
 }
 
 // ========== Create User (Admin) ==========

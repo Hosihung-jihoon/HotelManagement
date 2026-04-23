@@ -26,6 +26,7 @@ public class RoomService : IRoomService
             RoomNumber = r.RoomNumber,
             Floor = r.Floor,
             Status = r.Status,
+            CleanStatus = r.CleanStatus,
             RoomTypeId = r.RoomTypeId,
             RoomTypeName = r.RoomType?.Name
         });
@@ -42,6 +43,7 @@ public class RoomService : IRoomService
             RoomNumber = room.RoomNumber,
             Floor = room.Floor,
             Status = room.Status,
+            CleanStatus = room.CleanStatus,
             RoomTypeId = room.RoomTypeId,
             RoomTypeName = room.RoomType?.Name,
             BasePrice = room.RoomType?.BasePrice,
@@ -62,6 +64,7 @@ public class RoomService : IRoomService
             RoomNumber = dto.RoomNumber,
             Floor = dto.Floor,
             Status = dto.Status ?? "Available",
+            CleanStatus = dto.CleanStatus ?? "clean",
             RoomTypeId = dto.RoomTypeId
         };
 
@@ -73,6 +76,7 @@ public class RoomService : IRoomService
             RoomNumber = created.RoomNumber,
             Floor = created.Floor,
             Status = created.Status,
+            CleanStatus = created.CleanStatus,
             RoomTypeId = created.RoomTypeId
         };
 
@@ -91,6 +95,7 @@ public class RoomService : IRoomService
         entity.RoomNumber = dto.RoomNumber;
         entity.Floor = dto.Floor;
         entity.Status = dto.Status;
+        entity.CleanStatus = dto.CleanStatus ?? entity.CleanStatus ?? "clean";
         entity.RoomTypeId = dto.RoomTypeId;
 
         await _repository.UpdateAsync(entity);
@@ -129,6 +134,7 @@ public class RoomService : IRoomService
                 RoomNumber = roomNumber,
                 Floor = dto.Floor,
                 Status = "Available",
+                CleanStatus = "clean",
                 RoomTypeId = dto.RoomTypeId
             };
 
@@ -139,6 +145,7 @@ public class RoomService : IRoomService
                 RoomNumber = created.RoomNumber,
                 Floor = created.Floor,
                 Status = created.Status,
+                CleanStatus = created.CleanStatus,
                 RoomTypeId = created.RoomTypeId
             });
             baseIndex++;
@@ -153,6 +160,25 @@ public class RoomService : IRoomService
         if (entity == null) return (false, null);
 
         entity.Status = dto.Status;
+        await _repository.UpdateAsync(entity);
+        return (true, null);
+    }
+
+    public async Task<(bool success, string? error)> UpdateCleanStatusAsync(UpdateRoomCleanStatusDto dto)
+    {
+        var entity = await _repository.GetByIdAsync(dto.RoomId);
+        if (entity == null) return (false, null);
+
+        entity.CleanStatus = dto.CleanStatus;
+        if (dto.CleanStatus == "clean" && entity.Status != "Occupied")
+        {
+            entity.Status = "Available";
+        }
+        else if (dto.CleanStatus == "dirty" && entity.Status != "Occupied")
+        {
+            entity.Status = "Cleaning";
+        }
+
         await _repository.UpdateAsync(entity);
         return (true, null);
     }

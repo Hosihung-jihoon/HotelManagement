@@ -19,4 +19,5 @@ public interface IUserService
     Task<bool> ToggleStatusAsync(int userId, bool status);
     Task<bool> DeleteUserAsync(int userId);
     Task<bool> ChangeRoleAsync(ChangeRoleDto dto);
+    Task<IEnumerable<MembershipStatDto>> GetMembershipStatsAsync();
 }

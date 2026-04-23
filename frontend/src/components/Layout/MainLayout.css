@@ -67,10 +67,9 @@
 }
 
 .nav-item.active {
-  background: linear-gradient(135deg, #0f3460 0%, #533483 100%);
-  color: #fff;
+  background: #dbeafe;
+  color: #2563eb;
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(83, 52, 131, 0.3);
 }
 
 .nav-icon {
@@ -78,6 +77,95 @@
   min-width: 24px;
   text-align: center;
 }
+
+/* ========== Nav Group (Accordion) ========== */
+.nav-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-group-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  color: #4b5563;
+  background: none;
+  border: none;
+  font-size: 0.9rem;
+  cursor: pointer;
+  white-space: nowrap;
+  width: 100%;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.nav-group-header.group-active {
+  background: rgba(37, 99, 235, 0.15);
+  color: #60a5fa;
+}
+
+.nav-chevron {
+  margin-left: auto;
+  transition: transform 0.2s ease;
+  opacity: 0.6;
+}
+
+.nav-chevron.rotated {
+  transform: rotate(180deg);
+}
+
+.nav-group-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-left: 8px;
+  padding-left: 8px;
+  border-left: 2px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  animation: slideDown 0.2s ease forwards;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.nav-sub-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 6px;
+  color: #4b5563;
+  text-decoration: none;
+  font-size: 0.84rem;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.nav-sub-item.active {
+  background: #1e3a8a;
+  color: #93c5fd;
+  font-weight: 600;
+}
+
+.nav-sub-icon {
+  min-width: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.8;
+}
+
 
 /* ========== Main Content ========== */
 .main-content {
@@ -88,7 +176,7 @@
   flex-direction: column;
 }
 
-.sidebar.collapsed ~ .main-content {
+.sidebar.collapsed~.main-content {
   margin-left: 70px;
 }
 
@@ -133,8 +221,256 @@
   font-weight: 500;
 }
 
+/* ========== Notification Bell ========== */
+.notification-wrapper {
+  position: relative;
+}
+
+.notification-bell {
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  cursor: pointer;
+  position: relative;
+  padding: 6px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.notification-bell:hover {
+  background: #f0f0f0;
+}
+
+.notification-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: #e94560;
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fff;
+}
+
+.notification-dropdown {
+  position: absolute;
+  top: 48px;
+  right: 0;
+  width: 340px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  z-index: 200;
+  overflow: hidden;
+}
+
+.notification-dropdown-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  border-bottom: 1px solid #eee;
+}
+
+.notification-count {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.notification-list {
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.notification-empty {
+  padding: 32px 16px;
+  text-align: center;
+  color: #aaa;
+  font-size: 0.9rem;
+}
+
+.notification-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid #f5f5f5;
+  cursor: default;
+  transition: background 0.15s;
+}
+
+.notification-item:hover {
+  background: #fafafa;
+}
+
+.notification-item strong {
+  font-size: 0.85rem;
+  color: #333;
+}
+
+.notification-item p {
+  font-size: 0.8rem;
+  color: #777;
+  margin-top: 3px;
+}
+
+.notification-item.type-warning strong {
+  color: #f39c12;
+}
+
+.notification-item.type-error strong {
+  color: #e94560;
+}
+
+.notification-item.type-success strong {
+  color: #2ecc71;
+}
+
+/* ========== Logout Button ========== */
+.logout-btn {
+  background: none;
+  border: 1px solid #ddd;
+  padding: 6px 14px;
+  border-radius: 6px;
+  color: #666;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.logout-btn:hover {
+  background: #e94560;
+  border-color: #e94560;
+  color: #fff;
+}
+
 /* ========== Page Content ========== */
 .page-content {
   padding: 24px;
   flex: 1;
+}
+
+/* ========== Toasts ========== */
+.toast-container {
+  position: fixed;
+  top: 80px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 9999;
+  max-width: 360px;
+  width: 360px;
+}
+
+.toast-item {
+  background: #fff;
+  border-left: 4px solid #3b82f6;
+  border-radius: 10px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 14px 16px;
+  animation: slideInRight 0.3s ease forwards;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.toast-item.type-success {
+  border-color: #2ecc71;
+}
+
+.toast-item.type-warning {
+  border-color: #f39c12;
+}
+
+.toast-item.type-error {
+  border-color: #e94560;
+}
+
+.toast-item.type-info {
+  border-color: #3b82f6;
+}
+
+.toast-content strong {
+  display: block;
+  font-size: 0.9rem;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.toast-content p {
+  font-size: 0.8rem;
+  color: #666;
+  margin: 0;
+}
+
+.toast-close {
+  background: none;
+  border: none;
+  color: #999;
+  cursor: pointer;
+  padding: 4px;
+  margin-left: 8px;
+  transition: color 0.2s;
+}
+
+.toast-close:hover {
+  color: #333;
+}
+
+/* ========== Mark Read Button ========== */
+.mark-read-btn {
+  background: none;
+  border: none;
+  color: #3b82f6;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.mark-read-btn:hover {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+.mark-all-read-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: 1px solid #bfdbfe;
+  color: #2563eb;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.mark-all-read-btn:hover {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #fff;
+}
+
+.notification-item.read {
+  opacity: 0.6;
+  background: #fdfdfd;
 }

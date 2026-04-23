@@ -1,357 +1,229 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
+import { Search, X, RefreshCw, Users } from 'lucide-react';
 import axiosClient from '../../api/axiosClient';
+import { useAuth } from '../../context/AuthContext';
+import CustomSelect from '../../components/Common/CustomSelect';
 import './UsersPage.css';
 
-/**
- * UsersPage - Quản lý nhân viên
- * API: /api/user-management + /api/roles
- */
+const AVATAR_COLORS = ['#2563eb', '#0ea5e9', '#10b981', '#f59e0b', '#ef4444', '#7c3aed', '#ec4899', '#14b8a6'];
+
+const ROLE_COLOR_MAP = {
+  'admin': 'role-admin',
+  'manager': 'role-manager',
+  'receptionist': 'role-receptionist',
+  'lễ tân': 'role-receptionist',
+  'housekeeping': 'role-housekeeping',
+  'dọn phòng': 'role-housekeeping',
+  'accountant': 'role-manager',
+  'kế toán': 'role-manager',
+};
+
+function getRoleColorClass(roleName) {
+  if (!roleName) return '';
+  return ROLE_COLOR_MAP[roleName.toLowerCase()] || '';
+}
+
+function getInitials(name) {
+  if (!name) return '?';
+  const parts = name.trim().split(' ');
+  return parts.length >= 2 ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase() : name.slice(0, 2).toUpperCase();
+}
+
 function UsersPage() {
-  const [users, setUsers] = useState([]);
-  const [roles, setRoles] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [showForm, setShowForm] = useState(false);
-  const [editingUser, setEditingUser] = useState(null);
-  const [searchText, setSearchText] = useState('');
-  const [filterRole, setFilterRole] = useState('');
+  const { user: currentUser }     = useAuth();
+  const isAdmin = currentUser?.roleName?.toLowerCase() === 'admin';
+
+  const [users, setUsers]         = useState([]);
+  const [roles, setRoles]         = useState([]);
+  const [loading, setLoading]     = useState(true);
+  const [search, setSearch]       = useState('');
+  const [filterRole, setFilterRole]     = useState('');
   const [filterStatus, setFilterStatus] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [savingId, setSavingId]   = useState(null);
 
-  const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    phone: '',
-    password: '',
-    roleId: '',
-  });
-
-  // ========== Fetch ==========
-  const fetchUsers = useCallback(async () => {
+  const fetchUsers = async () => {
     try {
       setLoading(true);
-      const res = await axiosClient.get('/user-management');
-      setUsers(res.data);
-      setError(null);
+      const [usersRes, rolesRes] = await Promise.all([
+        axiosClient.get('/user-management'),
+        axiosClient.get('/Roles'),
+      ]);
+      setUsers(usersRes.data);
+      setRoles(rolesRes.data);
     } catch (err) {
-      setError('Không thể tải danh sách nhân viên. Kiểm tra Backend và quyền truy cập.');
-      console.error(err);
+      console.error('Lỗi tải danh sách nhân sự:', err);
+      if (err.response?.status === 403) {
+        alert('Bạn không có quyền xem danh sách nhân sự (cần quyền manage_users).');
+      }
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
-  const fetchRoles = useCallback(async () => {
+  useEffect(() => { fetchUsers(); }, []);
+
+  const handleChangeRole = async (userId, newRoleId) => {
+    setSavingId(userId);
     try {
-      const res = await axiosClient.get('/roles');
-      setRoles(res.data);
-    } catch {
-      // Roles failed silently – still show users
+      await axiosClient.put('/user-management/change-role', { userId, newRoleId: Number(newRoleId) });
+      // Cập nhật local state
+      setUsers(prev => prev.map(u => {
+        if (u.id !== userId) return u;
+        const role = roles.find(r => r.id === Number(newRoleId));
+        return { ...u, roleName: role?.name ?? u.roleName };
+      }));
+    } catch (err) {
+      alert('Lỗi đổi vai trò: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setSavingId(null);
     }
-  }, []);
+  };
 
-  useEffect(() => {
-    fetchUsers();
-    fetchRoles();
-  }, [fetchUsers, fetchRoles]);
-
-  // ========== Filter ==========
-  const filtered = users.filter((u) => {
-    const matchSearch =
-      !searchText ||
-      u.fullName.toLowerCase().includes(searchText.toLowerCase()) ||
-      u.email.toLowerCase().includes(searchText.toLowerCase());
-    const matchRole = !filterRole || String(u.roleId) === filterRole;
-    const matchStatus =
-      filterStatus === '' ||
-      (filterStatus === 'active' && u.status === true) ||
-      (filterStatus === 'inactive' && u.status === false);
+  const filtered = users.filter(u => {
+    const q = search.toLowerCase();
+    const matchSearch = !q || u.fullName.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || (u.phone || '').includes(q);
+    const matchRole   = !filterRole   || u.roleName === filterRole;
+    const matchStatus = !filterStatus || (filterStatus === 'active' ? u.status : !u.status);
     return matchSearch && matchRole && matchStatus;
   });
 
-  // ========== Form ==========
-  const resetForm = () => {
-    setShowForm(false);
-    setEditingUser(null);
-    setFormData({ fullName: '', email: '', phone: '', password: '', roleId: '' });
-  };
-
-  const openCreate = () => {
-    resetForm();
-    setShowForm(true);
-  };
-
-  const openEdit = (user) => {
-    setEditingUser(user);
-    setFormData({
-      fullName: user.fullName,
-      email: user.email,
-      phone: user.phone || '',
-      password: '',
-      roleId: user.roleId ? String(user.roleId) : '',
-    });
-    setShowForm(true);
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      if (editingUser) {
-        await axiosClient.put(`/user-management/${editingUser.id}`, {
-          fullName: formData.fullName,
-          phone: formData.phone || null,
-          roleId: formData.roleId ? parseInt(formData.roleId) : null,
-        });
-      } else {
-        await axiosClient.post('/user-management', {
-          fullName: formData.fullName,
-          email: formData.email,
-          phone: formData.phone || null,
-          password: formData.password,
-          roleId: formData.roleId ? parseInt(formData.roleId) : null,
-        });
-      }
-      resetForm();
-      fetchUsers();
-    } catch (err) {
-      alert('Lỗi: ' + (err.response?.data?.message || err.message));
-    }
-  };
-
-  // ========== Actions ==========
-  const handleToggleStatus = async (user) => {
-    const newStatus = !user.status;
-    const confirm = window.confirm(
-      `${newStatus ? 'Kích hoạt' : 'Vô hiệu hóa'} tài khoản "${user.fullName}"?`
-    );
-    if (!confirm) return;
-    try {
-      await axiosClient.put(`/user-management/${user.id}/toggle-status`, { status: newStatus });
-      fetchUsers();
-    } catch (err) {
-      alert('Lỗi: ' + (err.response?.data?.message || err.message));
-    }
-  };
-
-  const handleDelete = async (user) => {
-    if (!window.confirm(`Xóa tài khoản "${user.fullName}"? Hành động này không thể hoàn tác.`)) return;
-    try {
-      await axiosClient.delete(`/user-management/${user.id}`);
-      fetchUsers();
-    } catch (err) {
-      alert('Lỗi: ' + (err.response?.data?.message || err.message));
-    }
-  };
-
-  // ========== Render ==========
-  if (loading) return <div className="loading-state">⏳ Đang tải dữ liệu nhân viên...</div>;
+  const uniqueRoles = [...new Set(users.map(u => u.roleName).filter(Boolean))];
 
   return (
     <div className="users-page">
-      {/* Header */}
-      <div className="page-header">
-        <div className="header-left">
-          <h1>👥 Quản Lý Nhân Viên</h1>
-          <span className="badge-count">{filtered.length} người dùng</span>
+      <div className="inv-header">
+        <div>
+          <h1 className="page-title">Danh sách nhân sự</h1>
+          <p className="page-subtitle">
+            {users.length} tài khoản · {users.filter(u => u.status).length} đang hoạt động
+          </p>
         </div>
-        <button className="btn btn-primary" onClick={openCreate}>
-          + Thêm Nhân Viên
-        </button>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button
+            className="btn-add"
+            onClick={fetchUsers}
+            disabled={loading}
+            style={{ background: 'var(--surface-color)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}
+          >
+            <RefreshCw size={16} style={loading ? { animation: 'spin 1s linear infinite' } : {}} />
+            Làm mới
+          </button>
+        </div>
       </div>
 
-      {error && <div className="error-banner">⚠️ {error}</div>}
-
-      {/* Filters */}
+      {/* Filter bar */}
       <div className="filter-bar">
-        <div className="search-box">
-          <span className="search-icon">🔍</span>
+        <div className="search-wrap" style={{ flex: 2 }}>
+          <Search size={16} className="search-icon" />
           <input
-            type="text"
-            placeholder="Tìm theo tên hoặc email..."
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
+            className="search-input"
+            placeholder="Tìm theo tên, email, số điện thoại..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
           />
         </div>
-        <select value={filterRole} onChange={(e) => setFilterRole(e.target.value)}>
-          <option value="">Tất cả vai trò</option>
-          {roles.map((r) => (
-            <option key={r.id} value={String(r.id)}>
-              {r.name}
-            </option>
-          ))}
-        </select>
-        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
-          <option value="">Tất cả trạng thái</option>
-          <option value="active">Đang hoạt động</option>
-          <option value="inactive">Đã vô hiệu hóa</option>
-        </select>
-        {(searchText || filterRole || filterStatus) && (
-          <button
-            className="btn btn-ghost"
-            onClick={() => { setSearchText(''); setFilterRole(''); setFilterStatus(''); }}
-          >
-            ✕ Xóa lọc
-          </button>
-        )}
-      </div>
-
-      {/* Form Modal */}
-      {showForm && (
-        <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && resetForm()}>
-          <div className="modal-card">
-            <div className="modal-header">
-              <h3>{editingUser ? '✏️ Sửa Nhân Viên' : '➕ Thêm Nhân Viên Mới'}</h3>
-              <button className="btn-close" onClick={resetForm}>✕</button>
-            </div>
-            <form onSubmit={handleSubmit} className="modal-form">
-              <div className="form-grid">
-                <div className="form-group">
-                  <label>Họ và tên *</label>
-                  <input
-                    type="text"
-                    name="fullName"
-                    value={formData.fullName}
-                    onChange={handleInputChange}
-                    required
-                    placeholder="Nguyễn Văn A"
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Email *</label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    required={!editingUser}
-                    disabled={!!editingUser}
-                    placeholder="email@gmail.com"
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Số điện thoại</label>
-                  <input
-                    type="text"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    placeholder="0912345678"
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Vai trò</label>
-                  <select name="roleId" value={formData.roleId} onChange={handleInputChange}>
-                    <option value="">-- Chưa gán vai trò --</option>
-                    {roles.map((r) => (
-                      <option key={r.id} value={r.id}>
-                        {r.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                {!editingUser && (
-                  <div className="form-group full-width">
-                    <label>Mật khẩu *</label>
-                    <input
-                      type="password"
-                      name="password"
-                      value={formData.password}
-                      onChange={handleInputChange}
-                      required
-                      placeholder="Tối thiểu 6 ký tự"
-                      minLength={6}
-                    />
-                  </div>
-                )}
-              </div>
-              <div className="form-actions">
-                <button type="submit" className="btn btn-primary">
-                  {editingUser ? '💾 Lưu Thay Đổi' : '✅ Tạo Nhân Viên'}
-                </button>
-                <button type="button" className="btn btn-secondary" onClick={resetForm}>
-                  Hủy
-                </button>
-              </div>
-            </form>
-          </div>
+        <div style={{ width: 180 }}>
+          <CustomSelect 
+            value={filterRole} 
+            onChange={val => setFilterRole(val)} 
+            placeholder="Tất cả vai trò"
+            options={[
+              { value: '', label: 'Tất cả vai trò' },
+              ...uniqueRoles.map(r => ({ value: r, label: r }))
+            ]}
+          />
         </div>
-      )}
+        <div style={{ width: 180 }}>
+          <CustomSelect 
+            value={filterStatus} 
+            onChange={val => setFilterStatus(val)} 
+            placeholder="Tất cả trạng thái"
+            options={[
+              { value: '', label: 'Tất cả trạng thái' },
+              { value: 'active', label: 'Đang hoạt động' },
+              { value: 'inactive', label: 'Bị khóa' }
+            ]}
+          />
+        </div>
+      </div>
 
       {/* Table */}
       <div className="table-card">
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Họ Tên</th>
-              <th>Email</th>
-              <th>Điện Thoại</th>
-              <th>Vai Trò</th>
-              <th>Trạng Thái</th>
-              <th>Thao Tác</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.length === 0 ? (
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-secondary)' }}>
+            <RefreshCw size={24} style={{ animation: 'spin 1s linear infinite' }} />
+            <p style={{ marginTop: 8 }}>Đang tải dữ liệu nhân sự...</p>
+          </div>
+        ) : (
+          <table className="rooms-table users-table">
+            <thead>
               <tr>
-                <td colSpan="7" className="empty-row">
-                  {users.length === 0 ? 'Chưa có nhân viên nào' : 'Không tìm thấy kết quả phù hợp'}
-                </td>
+                <th>Họ và tên</th>
+                <th>Email</th>
+                <th>Số điện thoại</th>
+                <th>Vai trò</th>
+                <th style={{ textAlign: 'center' }}>Trạng thái</th>
+                {isAdmin && <th style={{ textAlign: 'center' }}>Đổi vai trò</th>}
               </tr>
-            ) : (
-              filtered.map((user) => (
-                <tr key={user.id} className={user.status === false ? 'row-inactive' : ''}>
-                  <td className="id-cell">#{user.id}</td>
-                  <td className="name-cell">
-                    <div className="user-avatar">{user.fullName.charAt(0).toUpperCase()}</div>
-                    <span>{user.fullName}</span>
+            </thead>
+            <tbody>
+              {filtered.length === 0 ? (
+                <tr><td colSpan={isAdmin ? 6 : 5} className="empty-row">
+                  {users.length === 0 ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                      <Users size={32} style={{ opacity: 0.3 }} />
+                      <span>Không có dữ liệu nhân sự (kiểm tra quyền manage_users)</span>
+                    </div>
+                  ) : 'Không tìm thấy nhân viên phù hợp'}
+                </td></tr>
+              ) : filtered.map((user, idx) => (
+                <tr key={user.id}>
+                  <td>
+                    <div className="user-name-cell">
+                      <div className="user-avatar" style={{ background: AVATAR_COLORS[idx % AVATAR_COLORS.length] }}>
+                        {getInitials(user.fullName)}
+                      </div>
+                      <span className="user-fullname">{user.fullName}</span>
+                    </div>
                   </td>
-                  <td className="email-cell">{user.email}</td>
+                  <td><span className="user-email">{user.email}</span></td>
                   <td>{user.phone || '—'}</td>
                   <td>
-                    {user.roleName ? (
-                      <span className="role-badge">{user.roleName}</span>
-                    ) : (
-                      <span className="no-role">Chưa gán</span>
-                    )}
-                  </td>
-                  <td>
-                    <span className={`status-badge ${user.status ? 'active' : 'inactive'}`}>
-                      {user.status ? '✅ Hoạt động' : '🚫 Vô hiệu'}
+                    <span className={`role-badge ${getRoleColorClass(user.roleName)}`}>
+                      {user.roleName || 'Chưa phân'}
                     </span>
                   </td>
-                  <td className="action-cell">
-                    <button
-                      className="btn btn-sm btn-edit"
-                      onClick={() => openEdit(user)}
-                      title="Sửa"
-                    >
-                      ✏️
-                    </button>
-                    <button
-                      className={`btn btn-sm ${user.status ? 'btn-warning' : 'btn-success'}`}
-                      onClick={() => handleToggleStatus(user)}
-                      title={user.status ? 'Vô hiệu hóa' : 'Kích hoạt'}
-                    >
-                      {user.status ? '🚫' : '✅'}
-                    </button>
-                    <button
-                      className="btn btn-sm btn-delete"
-                      onClick={() => handleDelete(user)}
-                      title="Xóa"
-                    >
-                      🗑️
-                    </button>
+                  <td>
+                    <div className="switch-wrapper" style={{ justifyContent: 'center' }}>
+                      <span className={`switch-label ${user.status ? 'label-active' : 'label-locked'}`}>
+                        {user.status ? 'Hoạt động' : 'Đã khóa'}
+                      </span>
+                    </div>
                   </td>
+                  {isAdmin && (
+                    <td style={{ textAlign: 'center' }}>
+                      <CustomSelect
+                        className="filter-select"
+                        value={roles.find(r => r.name === user.roleName)?.id ?? ''}
+                        onChange={val => handleChangeRole(user.id, val)}
+                        disabled={savingId === user.id}
+                        placeholder="-- Chọn --"
+                        options={roles.map(r => ({ value: r.id, label: r.name }))}
+                      />
+                      {savingId === user.id && <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginLeft: 4 }}>Đang lưu...</span>}
+                    </td>
+                  )}
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ))}
+            </tbody>
+          </table>
+        )}
+        {!loading && (
+          <div className="table-footer">
+            Hiển thị {filtered.length} / {users.length} tài khoản
+          </div>
+        )}
       </div>
     </div>
   );

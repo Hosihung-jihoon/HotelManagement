@@ -114,4 +114,15 @@ public class UserManagementController : ControllerBase
             return BadRequest(new { message = ex.Message });
         }
     }
+
+    /// <summary>
+    /// Thống kê phân bổ hạng thành viên
+    /// </summary>
+    [HttpGet("membership-stats")]
+    [PermissionAuthorize("manage_users")]
+    public async Task<ActionResult<IEnumerable<MembershipStatDto>>> GetMembershipStats()
+    {
+        var result = await _userService.GetMembershipStatsAsync();
+        return Ok(result);
+    }
 }

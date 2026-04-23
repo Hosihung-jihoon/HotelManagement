@@ -30,6 +30,15 @@ public class LossAndDamage
     [Column("created_at")]
     public DateTime? CreatedAt { get; set; }
 
+    [Column("updated_at")]
+    public DateTime? UpdatedAt { get; set; }
+
+    [Column("ImageUrl")]
+    public string? ImageUrl { get; set; }
+
+    [Column("is_paid")]
+    public bool IsPaid { get; set; } = false;
+
     // Navigation
     [ForeignKey("BookingDetailId")]
     public BookingDetail? BookingDetail { get; set; }

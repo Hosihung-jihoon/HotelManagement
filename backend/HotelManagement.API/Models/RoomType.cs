@@ -30,6 +30,28 @@ public class RoomType
     [Column("description")]
     public string? Description { get; set; }
 
+    // ===== Các cột bổ sung trong DB =====
+    [Column("size_sqm")]
+    public decimal? SizeSqm { get; set; }
+
+    [Column("bed_type")]
+    [MaxLength(100)]
+    public string? BedType { get; set; }
+
+    [Column("view_type")]
+    [MaxLength(100)]
+    public string? ViewType { get; set; }
+
+    [Column("is_active")]
+    public bool? IsActive { get; set; } = true;
+
+    [Column("slug")]
+    [MaxLength(255)]
+    public string? Slug { get; set; }
+
+    [Column("content")]
+    public string? Content { get; set; }
+
     // Navigation
     public ICollection<Room> Rooms { get; set; } = new List<Room>();
     public ICollection<RoomImage> RoomImages { get; set; } = new List<RoomImage>();
@@ -37,3 +59,4 @@ public class RoomType
     public ICollection<Review> Reviews { get; set; } = new List<Review>();
     public ICollection<BookingDetail> BookingDetails { get; set; } = new List<BookingDetail>();
 }
+

@@ -1,55 +1,112 @@
-using HotelManagement.API.Data;
-using HotelManagement.API.Middleware;
-using Microsoft.AspNetCore.Authorization;
+using HotelManagement.API.DTOs;
+using HotelManagement.API.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace HotelManagement.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
 public class BookingsController : ControllerBase
 {
-    private readonly HotelDbContext _context;
+    private readonly IBookingService _service;
 
-    public BookingsController(HotelDbContext context)
+    public BookingsController(IBookingService service)
     {
-        _context = context;
+        _service = service;
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetMyBookings()
+    public async Task<ActionResult<IEnumerable<BookingDto>>> GetAll()
     {
-        var userIdClaim = User.FindFirst("userId")?.Value;
-        if (string.IsNullOrEmpty(userIdClaim))
-            return Unauthorized();
+        var result = await _service.GetAllAsync();
+        return Ok(result);
+    }
 
-        var userId = int.Parse(userIdClaim);
+    [HttpGet("{id}")]
+    public async Task<ActionResult<BookingDto>> GetById(int id)
+    {
+        var result = await _service.GetByIdAsync(id);
+        if (result == null)
+            return NotFound(new { message = $"Không tìm thấy đơn đặt phòng với ID = {id}" });
 
-        var bookings = await _context.Bookings
-            .Include(b => b.BookingDetails)
-                .ThenInclude(bd => bd.RoomType)
-            .Where(b => b.UserId == userId)
-            .OrderByDescending(b => b.Id)
-            .Select(b => new
-            {
-                b.Id,
-                b.BookingCode,
-                b.GuestName,
-                b.Status,
-                Details = b.BookingDetails.Select(bd => new
-                {
-                    bd.RoomId,
-                    bd.RoomTypeId,
-                    RoomTypeName = bd.RoomType != null ? bd.RoomType.Name : "",
-                    bd.CheckInDate,
-                    bd.CheckOutDate,
-                    bd.PricePerNight
-                })
-            })
-            .ToListAsync();
+        return Ok(result);
+    }
 
-        return Ok(bookings);
+    [HttpGet("{id}/detail")]
+    public async Task<ActionResult<BookingFullDetailDto>> GetFullDetail(int id)
+    {
+        var result = await _service.GetFullDetailAsync(id);
+        if (result == null)
+            return NotFound(new { message = $"Không tìm thấy đơn đặt phòng với ID = {id}" });
+
+        return Ok(result);
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<BookingDto>> Create([FromBody] CreateBookingDto dto)
+    {
+        var result = await _service.CreateAsync(dto);
+        return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+    }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(int id, [FromBody] UpdateBookingDto dto)
+    {
+        try
+        {
+            var success = await _service.UpdateAsync(id, dto);
+            if (!success)
+                return NotFound(new { message = $"Không tìm thấy đơn đặt phòng với ID = {id}" });
+
+            return NoContent();
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var success = await _service.DeleteAsync(id);
+        if (!success)
+            return NotFound(new { message = $"Không tìm thấy đơn đặt phòng với ID = {id}" });
+
+        return NoContent();
+    }
+
+    [HttpPost("search")]
+    public async Task<ActionResult<IEnumerable<RoomAvailabilityResponseDto>>> SearchAvailableRooms([FromBody] BookingSearchRequestDto request)
+    {
+        if (request.CheckInDate >= request.CheckOutDate)
+            return BadRequest(new { message = "Ngay CheckOut phải lớn hơn CheckIn" });
+
+        var result = await _service.SearchAvailableRoomsAsync(request);
+        return Ok(result);
+    }
+
+    [HttpPost("advanced-create")]
+    public async Task<ActionResult<BookingDto>> CreateAdvanced([FromBody] CreateAdvancedBookingDto dto)
+    {
+        try
+        {
+            var result = await _service.CreateAdvancedAsync(dto);
+            return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpPost("{id}/payments")]
+    public async Task<IActionResult> AddPayment(int id, [FromBody] AddBookingPaymentDto dto)
+    {
+        var success = await _service.AddPaymentAsync(id, dto);
+        if (!success)
+            return NotFound(new { message = $"Không tìm thấy đơn đặt phòng với ID = {id}" });
+
+        return Ok(new { message = "Ghi nhận thanh toán thành công" });
     }
 }
