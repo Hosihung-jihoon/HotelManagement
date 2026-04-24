@@ -138,9 +138,8 @@ function MembershipsPage() {
       {/* ── Hero ── */}
       <section className="mem-hero">
         <div className="mem-hero-bg">
-          <div className="mem-hero-orb mem-orb-1" />
-          <div className="mem-hero-orb mem-orb-2" />
-          <div className="mem-hero-orb mem-orb-3" />
+          <img src="/src/assets/mem_hero.png" alt="Luxury Members Club" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.8 }} />
+          <div className="mem-hero-overlay" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, var(--surface, #f7fafc), transparent 50%)' }} />
         </div>
         <div className="mem-hero-content">
           <span className="mem-hero-badge">MEMBERSHIP PROGRAM</span>

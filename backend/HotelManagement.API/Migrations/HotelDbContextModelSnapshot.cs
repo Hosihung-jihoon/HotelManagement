@@ -1304,6 +1304,20 @@ namespace HotelManagement.API.Migrations
                         .HasColumnType("decimal(18,2)")
                         .HasColumnName("discount_value");
 
+                    b.Property<string>("HolidayName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("holiday_name");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_active");
+
+                    b.Property<string>("MembershipTier")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("membership_tier");
+
                     b.Property<decimal?>("MinBookingValue")
                         .HasColumnType("decimal(18,2)")
                         .HasColumnName("min_booking_value");
@@ -1319,6 +1333,12 @@ namespace HotelManagement.API.Migrations
                     b.Property<DateTime?>("ValidTo")
                         .HasColumnType("datetime2")
                         .HasColumnName("valid_to");
+
+                    b.Property<string>("VoucherType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("voucher_type");
 
                     b.HasKey("Id");
 

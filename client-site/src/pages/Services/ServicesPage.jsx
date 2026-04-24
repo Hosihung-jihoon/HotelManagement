@@ -204,14 +204,28 @@ function ServicesPage() {
       <main className="svc-main">
         {filtered.map(category => (
           <div key={category.id} className="svc-category-block">
-            {/* Category Header */}
-            <div className="svc-cat-header">
-              <div className="svc-cat-icon" style={{ background: category.gradient }}>
-                {category.icon}
+            {/* Category Header with Image */}
+            <div className="svc-cat-header-with-image">
+              <div className="svc-cat-image-wrapper">
+                <img 
+                  src={
+                    category.id === 1 ? '/src/assets/svc_spa.png' :
+                    category.id === 2 ? '/src/assets/svc_fb.png' :
+                    category.id === 3 ? '/src/assets/svc_concierge.png' :
+                    '/src/assets/svc_fitness.png'
+                  }
+                  alt={category.category} 
+                  className="svc-cat-image" 
+                />
               </div>
-              <div>
-                <h2 className="svc-cat-title">{category.category}</h2>
-                <p className="svc-cat-sub">{category.items.length} dịch vụ</p>
+              <div className="svc-cat-header-content">
+                <div className="svc-cat-icon" style={{ background: category.gradient }}>
+                  {category.icon}
+                </div>
+                <div>
+                  <h2 className="svc-cat-title">{category.category}</h2>
+                  <p className="svc-cat-sub">{category.items.length} dịch vụ đặc quyền</p>
+                </div>
               </div>
             </div>
 

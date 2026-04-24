@@ -145,9 +145,11 @@ builder.Services.AddSwaggerGen(c =>
 // ========== CORS ==========
 builder.Services.AddCors(options =>
 {
+    var allowedOrigins = builder.Configuration.GetSection("CorsSettings:AllowedOrigins").Get<string[]>() ?? new[] { "http://localhost:5173" };
+
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:5173")
+        policy.WithOrigins(allowedOrigins)
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -155,6 +157,24 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<HotelManagement.API.Data.HotelDbContext>();
+    if (!context.Users.Any(u => u.Email == "vibecoding209@gmail.com"))
+    {
+        var hash = BCrypt.Net.BCrypt.HashPassword("admin", 11);
+        context.Users.Add(new HotelManagement.API.Models.User
+        {
+            Email = "vibecoding209@gmail.com",
+            PasswordHash = hash,
+            FullName = "Admin Hotel",
+            RoleId = 1,
+            Status = true
+        });
+        context.SaveChanges();
+    }
+}
 
 // ========== Middleware Pipeline ==========
 if (app.Environment.IsDevelopment())

@@ -10,6 +10,7 @@ import {
   Menu, Bell, User as UserIcon, Sun, Moon, Hotel,
   MapPin, FileText, Layers, Target, X, CheckCheck,
   ConciergeBell, UserCheck, LogOut, History, Tag, ChevronDown,
+  Briefcase, Crown, Info,
 } from 'lucide-react';
 
 /**
@@ -127,6 +128,10 @@ function MainLayout() {
     { path: '/users', label: 'Danh sách nhân sự', icon: <Users size={20} /> },
     { path: '/roles', label: 'Vai trò & phân quyền', icon: <ShieldCheck size={20} /> },
     { path: '/audit-logs', label: 'Nhật ký hệ thống', icon: <History size={20} /> },
+    // Client-facing pages
+    { path: '/services', label: 'Dịch vụ (Client)', icon: <Briefcase size={20} /> },
+    { path: '/memberships', label: 'Hạng thành viên', icon: <Crown size={20} /> },
+    { path: '/about', label: 'Giới thiệu (About)', icon: <Info size={20} /> },
   ];
 
   const isReceptionActive = location.pathname.startsWith('/front-desk');

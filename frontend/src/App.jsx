@@ -21,6 +21,9 @@ import LocationMapPage from './pages/Locations/LocationMapPage';
 import MembersPage from './pages/Members/MembersPage';
 import VouchersPage from './pages/Vouchers/VouchersPage';
 import AuditLogPage from './pages/AuditLog/AuditLogPage';
+import AboutUsPage from './pages/AboutUs/AboutUsPage';
+import ServicesPage from './pages/Services/ServicesPage';
+import MembershipsPage from './pages/Memberships/MembershipsPage';
 // Front Desk pages
 import TodayArrivalsPage from './pages/FrontDesk/TodayArrivalsPage';
 import CurrentGuestsPage from './pages/FrontDesk/CurrentGuestsPage';
@@ -89,6 +92,13 @@ function App() {
 
             {/* 14. Nhật ký hệ thống */}
             <Route path="/audit-logs" element={<AuditLogPage />} />
+
+            {/* 15. Giới thiệu */}
+            <Route path="/about" element={<AboutUsPage />} />
+
+            {/* 16. Client-facing pages */}
+            <Route path="/services" element={<ServicesPage />} />
+            <Route path="/memberships" element={<MembershipsPage />} />
 
             {/* 15. Quầy lễ tân */}
             <Route path="/front-desk/today-arrivals" element={<TodayArrivalsPage />} />

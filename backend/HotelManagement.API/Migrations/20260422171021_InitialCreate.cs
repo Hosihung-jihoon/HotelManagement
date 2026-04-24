@@ -17,11 +17,11 @@ namespace HotelManagement.API.Migrations
                 name: "Amenities",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    name = table.Column<string>(type: "TEXT", maxLength: 255, nullable: false),
-                    icon_url = table.Column<string>(type: "TEXT", nullable: true),
-                    is_deleted = table.Column<bool>(type: "INTEGER", nullable: false)
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    icon_url = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    is_deleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -32,9 +32,9 @@ namespace HotelManagement.API.Migrations
                 name: "Article_Categories",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    name = table.Column<string>(type: "TEXT", maxLength: 255, nullable: false)
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -45,12 +45,16 @@ namespace HotelManagement.API.Migrations
                 name: "Attractions",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    name = table.Column<string>(type: "TEXT", maxLength: 255, nullable: false),
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     distance_km = table.Column<decimal>(type: "decimal(5,2)", nullable: true),
-                    description = table.Column<string>(type: "TEXT", nullable: true),
-                    map_embed_link = table.Column<string>(type: "TEXT", nullable: true)
+                    description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    map_embed_link = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    latitude = table.Column<decimal>(type: "decimal(10,8)", nullable: true),
+                    longitude = table.Column<decimal>(type: "decimal(11,8)", nullable: true),
+                    address = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    is_active = table.Column<bool>(type: "bit", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -58,15 +62,43 @@ namespace HotelManagement.API.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Equipments",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ItemCode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    Name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    Category = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    Unit = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    TotalQuantity = table.Column<int>(type: "int", nullable: true),
+                    InUseQuantity = table.Column<int>(type: "int", nullable: true),
+                    DamagedQuantity = table.Column<int>(type: "int", nullable: true),
+                    LiquidatedQuantity = table.Column<int>(type: "int", nullable: true),
+                    InStockQuantity = table.Column<int>(type: "int", nullable: true),
+                    BasePrice = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    DefaultPriceIfLost = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    Supplier = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    IsActive = table.Column<bool>(type: "bit", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ImageUrl = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Equipments", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Memberships",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    tier_name = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    min_points = table.Column<int>(type: "INTEGER", nullable: true),
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    tier_name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    min_points = table.Column<int>(type: "int", nullable: true),
                     discount_percent = table.Column<decimal>(type: "decimal(5,2)", nullable: true),
-                    is_deleted = table.Column<bool>(type: "INTEGER", nullable: false)
+                    is_deleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -77,9 +109,9 @@ namespace HotelManagement.API.Migrations
                 name: "Permissions",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    name = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false)
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -90,10 +122,10 @@ namespace HotelManagement.API.Migrations
                 name: "Roles",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    name = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    description = table.Column<string>(type: "TEXT", nullable: true)
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    description = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -104,19 +136,19 @@ namespace HotelManagement.API.Migrations
                 name: "Room_Types",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    name = table.Column<string>(type: "TEXT", maxLength: 255, nullable: false),
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     base_price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    capacity_adults = table.Column<int>(type: "INTEGER", nullable: false),
-                    capacity_children = table.Column<int>(type: "INTEGER", nullable: false),
-                    description = table.Column<string>(type: "TEXT", nullable: true),
-                    size_sqm = table.Column<decimal>(type: "TEXT", nullable: true),
-                    bed_type = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
-                    view_type = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
-                    is_active = table.Column<bool>(type: "INTEGER", nullable: true),
-                    slug = table.Column<string>(type: "TEXT", maxLength: 255, nullable: true),
-                    content = table.Column<string>(type: "TEXT", nullable: true)
+                    capacity_adults = table.Column<int>(type: "int", nullable: false),
+                    capacity_children = table.Column<int>(type: "int", nullable: false),
+                    description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    size_sqm = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    bed_type = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    view_type = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    is_active = table.Column<bool>(type: "bit", nullable: true),
+                    slug = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    content = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -127,9 +159,9 @@ namespace HotelManagement.API.Migrations
                 name: "Service_Categories",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    name = table.Column<string>(type: "TEXT", maxLength: 255, nullable: false)
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -140,15 +172,19 @@ namespace HotelManagement.API.Migrations
                 name: "Vouchers",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    code = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
-                    discount_type = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    code = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    discount_type = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     discount_value = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     min_booking_value = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    valid_from = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    valid_to = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    usage_limit = table.Column<int>(type: "INTEGER", nullable: true)
+                    valid_from = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    valid_to = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    usage_limit = table.Column<int>(type: "int", nullable: true),
+                    is_active = table.Column<bool>(type: "bit", nullable: false),
+                    voucher_type = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    holiday_name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    membership_tier = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -159,8 +195,8 @@ namespace HotelManagement.API.Migrations
                 name: "Role_Permissions",
                 columns: table => new
                 {
-                    role_id = table.Column<int>(type: "INTEGER", nullable: false),
-                    permission_id = table.Column<int>(type: "INTEGER", nullable: false)
+                    role_id = table.Column<int>(type: "int", nullable: false),
+                    permission_id = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -183,15 +219,15 @@ namespace HotelManagement.API.Migrations
                 name: "Users",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    role_id = table.Column<int>(type: "INTEGER", nullable: true),
-                    membership_id = table.Column<int>(type: "INTEGER", nullable: true),
-                    full_name = table.Column<string>(type: "TEXT", maxLength: 255, nullable: false),
-                    email = table.Column<string>(type: "TEXT", maxLength: 255, nullable: false),
-                    phone = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
-                    password_hash = table.Column<string>(type: "TEXT", nullable: false),
-                    status = table.Column<bool>(type: "INTEGER", nullable: true)
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    role_id = table.Column<int>(type: "int", nullable: true),
+                    membership_id = table.Column<int>(type: "int", nullable: true),
+                    full_name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    email = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    phone = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    password_hash = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    status = table.Column<bool>(type: "bit", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -212,12 +248,12 @@ namespace HotelManagement.API.Migrations
                 name: "Room_Images",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    room_type_id = table.Column<int>(type: "INTEGER", nullable: true),
-                    image_url = table.Column<string>(type: "TEXT", nullable: false),
-                    is_primary = table.Column<bool>(type: "INTEGER", nullable: true),
-                    is_active = table.Column<bool>(type: "INTEGER", nullable: true)
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    room_type_id = table.Column<int>(type: "int", nullable: true),
+                    image_url = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    is_primary = table.Column<bool>(type: "bit", nullable: true),
+                    is_active = table.Column<bool>(type: "bit", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -233,12 +269,13 @@ namespace HotelManagement.API.Migrations
                 name: "Rooms",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    room_type_id = table.Column<int>(type: "INTEGER", nullable: true),
-                    room_number = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
-                    floor = table.Column<int>(type: "INTEGER", nullable: true),
-                    status = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true)
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    room_type_id = table.Column<int>(type: "int", nullable: true),
+                    room_number = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    floor = table.Column<int>(type: "int", nullable: true),
+                    status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    cleaning_status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -254,8 +291,8 @@ namespace HotelManagement.API.Migrations
                 name: "RoomType_Amenities",
                 columns: table => new
                 {
-                    room_type_id = table.Column<int>(type: "INTEGER", nullable: false),
-                    amenity_id = table.Column<int>(type: "INTEGER", nullable: false)
+                    room_type_id = table.Column<int>(type: "int", nullable: false),
+                    amenity_id = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -278,12 +315,12 @@ namespace HotelManagement.API.Migrations
                 name: "Services",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    category_id = table.Column<int>(type: "INTEGER", nullable: true),
-                    name = table.Column<string>(type: "TEXT", maxLength: 255, nullable: false),
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    category_id = table.Column<int>(type: "int", nullable: true),
+                    name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    unit = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true)
+                    unit = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -299,15 +336,17 @@ namespace HotelManagement.API.Migrations
                 name: "Articles",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    category_id = table.Column<int>(type: "INTEGER", nullable: true),
-                    author_id = table.Column<int>(type: "INTEGER", nullable: true),
-                    title = table.Column<string>(type: "TEXT", nullable: false),
-                    slug = table.Column<string>(type: "TEXT", maxLength: 255, nullable: true),
-                    content = table.Column<string>(type: "TEXT", nullable: true),
-                    thumbnail_url = table.Column<string>(type: "TEXT", nullable: true),
-                    published_at = table.Column<DateTime>(type: "TEXT", nullable: true)
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    category_id = table.Column<int>(type: "int", nullable: true),
+                    author_id = table.Column<int>(type: "int", nullable: true),
+                    attraction_id = table.Column<int>(type: "int", nullable: true),
+                    title = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    slug = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    content = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    thumbnail_url = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    published_at = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    is_active = table.Column<bool>(type: "bit", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -316,6 +355,11 @@ namespace HotelManagement.API.Migrations
                         name: "FK_Articles_Article_Categories_category_id",
                         column: x => x.category_id,
                         principalTable: "Article_Categories",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "FK_Articles_Attractions_attraction_id",
+                        column: x => x.attraction_id,
+                        principalTable: "Attractions",
                         principalColumn: "id");
                     table.ForeignKey(
                         name: "FK_Articles_Users_author_id",
@@ -328,15 +372,15 @@ namespace HotelManagement.API.Migrations
                 name: "Audit_Logs",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    user_id = table.Column<int>(type: "INTEGER", nullable: true),
-                    action = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
-                    table_name = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    record_id = table.Column<int>(type: "INTEGER", nullable: false),
-                    old_value = table.Column<string>(type: "TEXT", nullable: true),
-                    new_value = table.Column<string>(type: "TEXT", nullable: true),
-                    created_at = table.Column<DateTime>(type: "TEXT", nullable: true)
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    user_id = table.Column<int>(type: "int", nullable: true),
+                    action = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    table_name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    record_id = table.Column<int>(type: "int", nullable: false),
+                    old_value = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    new_value = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    created_at = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -352,16 +396,16 @@ namespace HotelManagement.API.Migrations
                 name: "Bookings",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    user_id = table.Column<int>(type: "INTEGER", nullable: true),
-                    guest_name = table.Column<string>(type: "TEXT", maxLength: 255, nullable: true),
-                    guest_phone = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
-                    guest_email = table.Column<string>(type: "TEXT", maxLength: 255, nullable: true),
-                    booking_code = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
-                    voucher_id = table.Column<int>(type: "INTEGER", nullable: true),
-                    status = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
-                    created_at = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    user_id = table.Column<int>(type: "int", nullable: true),
+                    guest_name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    guest_phone = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    guest_email = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    booking_code = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    voucher_id = table.Column<int>(type: "int", nullable: true),
+                    status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -382,21 +426,22 @@ namespace HotelManagement.API.Migrations
                 name: "Notifications",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    UserId = table.Column<int>(type: "INTEGER", nullable: true),
-                    Title = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
-                    Message = table.Column<string>(type: "TEXT", maxLength: 1000, nullable: false),
-                    Type = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false),
-                    IsRead = table.Column<bool>(type: "INTEGER", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    user_id = table.Column<int>(type: "int", nullable: true),
+                    title = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    content = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
+                    type = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    reference_link = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    is_read = table.Column<bool>(type: "bit", nullable: false),
+                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Notifications", x => x.Id);
+                    table.PrimaryKey("PK_Notifications", x => x.id);
                     table.ForeignKey(
-                        name: "FK_Notifications_Users_UserId",
-                        column: x => x.UserId,
+                        name: "FK_Notifications_Users_user_id",
+                        column: x => x.user_id,
                         principalTable: "Users",
                         principalColumn: "id");
                 });
@@ -405,18 +450,18 @@ namespace HotelManagement.API.Migrations
                 name: "Reviews",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    user_id = table.Column<int>(type: "INTEGER", nullable: true),
-                    room_type_id = table.Column<int>(type: "INTEGER", nullable: true),
-                    rating = table.Column<int>(type: "INTEGER", nullable: true),
-                    comment = table.Column<string>(type: "TEXT", nullable: true),
-                    created_at = table.Column<DateTime>(type: "TEXT", nullable: true)
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    user_id = table.Column<int>(type: "int", nullable: true),
+                    room_type_id = table.Column<int>(type: "int", nullable: true),
+                    rating = table.Column<int>(type: "int", nullable: true),
+                    comment = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    created_at = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Reviews", x => x.id);
-                    table.CheckConstraint("CK_Reviews_Rating", "\"rating\" >= 1 AND \"rating\" <= 5");
+                    table.CheckConstraint("CK_Reviews_Rating", "[rating] >= 1 AND [rating] <= 5");
                     table.ForeignKey(
                         name: "FK_Reviews_Room_Types_room_type_id",
                         column: x => x.room_type_id,
@@ -433,19 +478,19 @@ namespace HotelManagement.API.Migrations
                 name: "Room_Inventory",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    room_id = table.Column<int>(type: "INTEGER", nullable: true),
-                    item_name = table.Column<string>(type: "TEXT", maxLength: 255, nullable: false),
-                    quantity = table.Column<int>(type: "INTEGER", nullable: true),
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    room_id = table.Column<int>(type: "int", nullable: true),
+                    item_name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    quantity = table.Column<int>(type: "int", nullable: true),
                     price_if_lost = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    note = table.Column<string>(type: "TEXT", nullable: true),
-                    is_active = table.Column<bool>(type: "INTEGER", nullable: true),
-                    item_type = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
-                    unit = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
-                    quantity_in_use = table.Column<int>(type: "INTEGER", nullable: false),
-                    quantity_damaged = table.Column<int>(type: "INTEGER", nullable: false),
-                    image_url = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true)
+                    note = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    is_active = table.Column<bool>(type: "bit", nullable: true),
+                    item_type = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    unit = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    quantity_in_use = table.Column<int>(type: "int", nullable: false),
+                    quantity_damaged = table.Column<int>(type: "int", nullable: false),
+                    image_url = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -461,13 +506,13 @@ namespace HotelManagement.API.Migrations
                 name: "Booking_Details",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    booking_id = table.Column<int>(type: "INTEGER", nullable: true),
-                    room_id = table.Column<int>(type: "INTEGER", nullable: true),
-                    room_type_id = table.Column<int>(type: "INTEGER", nullable: true),
-                    check_in_date = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    check_out_date = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    booking_id = table.Column<int>(type: "int", nullable: true),
+                    room_id = table.Column<int>(type: "int", nullable: true),
+                    room_type_id = table.Column<int>(type: "int", nullable: true),
+                    check_in_date = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    check_out_date = table.Column<DateTime>(type: "datetime2", nullable: false),
                     price_per_night = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
                 },
                 constraints: table =>
@@ -494,16 +539,16 @@ namespace HotelManagement.API.Migrations
                 name: "Invoices",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    booking_id = table.Column<int>(type: "INTEGER", nullable: true),
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    booking_id = table.Column<int>(type: "int", nullable: true),
                     total_room_amount = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     total_service_amount = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     discount_amount = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     tax_amount = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     final_total = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    status = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
-                    created_at = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -519,14 +564,17 @@ namespace HotelManagement.API.Migrations
                 name: "Loss_And_Damages",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    booking_detail_id = table.Column<int>(type: "INTEGER", nullable: true),
-                    room_inventory_id = table.Column<int>(type: "INTEGER", nullable: true),
-                    quantity = table.Column<int>(type: "INTEGER", nullable: false),
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    booking_detail_id = table.Column<int>(type: "int", nullable: true),
+                    room_inventory_id = table.Column<int>(type: "int", nullable: true),
+                    quantity = table.Column<int>(type: "int", nullable: false),
                     penalty_amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    description = table.Column<string>(type: "TEXT", nullable: true),
-                    created_at = table.Column<DateTime>(type: "TEXT", nullable: true)
+                    description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    created_at = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    updated_at = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    is_paid = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -547,12 +595,12 @@ namespace HotelManagement.API.Migrations
                 name: "Order_Services",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    booking_detail_id = table.Column<int>(type: "INTEGER", nullable: true),
-                    order_date = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    booking_detail_id = table.Column<int>(type: "int", nullable: true),
+                    order_date = table.Column<DateTime>(type: "datetime2", nullable: true),
                     total_amount = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    status = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true)
+                    status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -568,13 +616,13 @@ namespace HotelManagement.API.Migrations
                 name: "Payments",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    invoice_id = table.Column<int>(type: "INTEGER", nullable: true),
-                    payment_method = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    invoice_id = table.Column<int>(type: "int", nullable: true),
+                    payment_method = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     amount_paid = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    transaction_code = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
-                    payment_date = table.Column<DateTime>(type: "TEXT", nullable: true)
+                    transaction_code = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    payment_date = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -590,11 +638,11 @@ namespace HotelManagement.API.Migrations
                 name: "Order_Service_Details",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    order_service_id = table.Column<int>(type: "INTEGER", nullable: true),
-                    service_id = table.Column<int>(type: "INTEGER", nullable: true),
-                    quantity = table.Column<int>(type: "INTEGER", nullable: false),
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    order_service_id = table.Column<int>(type: "int", nullable: true),
+                    service_id = table.Column<int>(type: "int", nullable: true),
+                    quantity = table.Column<int>(type: "int", nullable: false),
                     unit_price = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
                 },
                 constraints: table =>
@@ -660,6 +708,11 @@ namespace HotelManagement.API.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_Articles_attraction_id",
+                table: "Articles",
+                column: "attraction_id");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Articles_author_id",
                 table: "Articles",
                 column: "author_id");
@@ -673,7 +726,8 @@ namespace HotelManagement.API.Migrations
                 name: "IX_Articles_slug",
                 table: "Articles",
                 column: "slug",
-                unique: true);
+                unique: true,
+                filter: "[slug] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Audit_Logs_user_id",
@@ -715,7 +769,8 @@ namespace HotelManagement.API.Migrations
                 name: "IX_Invoices_booking_id",
                 table: "Invoices",
                 column: "booking_id",
-                unique: true);
+                unique: true,
+                filter: "[booking_id] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Loss_And_Damages_booking_detail_id",
@@ -728,9 +783,9 @@ namespace HotelManagement.API.Migrations
                 column: "room_inventory_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Notifications_UserId",
+                name: "IX_Notifications_user_id",
                 table: "Notifications",
-                column: "UserId");
+                column: "user_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Order_Service_Details_order_service_id",
@@ -822,10 +877,10 @@ namespace HotelManagement.API.Migrations
                 name: "Articles");
 
             migrationBuilder.DropTable(
-                name: "Attractions");
+                name: "Audit_Logs");
 
             migrationBuilder.DropTable(
-                name: "Audit_Logs");
+                name: "Equipments");
 
             migrationBuilder.DropTable(
                 name: "Loss_And_Damages");
@@ -853,6 +908,9 @@ namespace HotelManagement.API.Migrations
 
             migrationBuilder.DropTable(
                 name: "Article_Categories");
+
+            migrationBuilder.DropTable(
+                name: "Attractions");
 
             migrationBuilder.DropTable(
                 name: "Room_Inventory");
