@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import paymentService from '../../../api/paymentService';
+import axiosClient from '../../../api/axiosClient';
 import './CheckoutPage.css';
 
 /**
@@ -50,23 +51,42 @@ function CheckoutPage() {
     setIsProcessing(true);
 
     try {
+      // 1. Create real booking via API
+      const bookingPayload = {
+        guestName: formData.fullName,
+        guestPhone: formData.phone,
+        guestEmail: formData.email,
+        paymentMethod: paymentMethod === 'cash' ? 'Cash' : (paymentMethod === 'momo' ? 'MoMo' : 'VNPay'),
+        details: [{
+          roomId: 1, // Mock room ID for demonstration
+          checkInDate: new Date(cart.checkIn).toISOString(),
+          checkOutDate: new Date(cart.checkOut).toISOString(),
+          pricePerNight: cart.pricePerNight
+        }]
+      };
+
+      const bookingRes = await axiosClient.post('/Bookings/advanced-create', bookingPayload);
+      const bookingId = bookingRes.data.id;
+
       if (paymentMethod === 'momo') {
-        const res = await paymentService.createMomoPayment(finalTotal, `Thanh toán phòng ${cart.roomName}`);
+        const res = await paymentService.createMomoPayment(finalTotal, `Thanh toán phòng ${cart.roomName}`, bookingId);
         if (res.payUrl) {
           window.location.href = res.payUrl;
           return;
         }
       } else if (paymentMethod === 'vnpay') {
-        const res = await paymentService.createVnPayPayment(finalTotal, `Thanh toán phòng ${cart.roomName}`);
+        const res = await paymentService.createVnPayPayment(finalTotal, `Thanh toán phòng ${cart.roomName}`, bookingId);
         if (res.paymentUrl) {
           window.location.href = res.paymentUrl;
           return;
         }
       } else {
-        processBooking('Cash', 'Pending');
+        setIsProcessing(false);
+        alert('Đặt phòng thành công! Mã Code: ' + bookingRes.data.bookingCode);
+        navigate('/my-bookings');
       }
     } catch (err) {
-      alert('Lỗi khởi tạo thanh toán: ' + (err.response?.data?.message || err.message));
+      alert('Lỗi xử lý đặt phòng: ' + (err.response?.data?.message || err.message));
       setIsProcessing(false);
     }
   };

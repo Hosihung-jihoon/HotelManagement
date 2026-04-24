@@ -27,6 +27,7 @@ import CurrentGuestsPage from './pages/FrontDesk/CurrentGuestsPage';
 import FrontDeskCheckoutPage from './pages/FrontDesk/CheckoutPage';
 import CustomerCheckoutPage from './pages/Customer/Checkout/CheckoutPage';
 import PaymentResultPage from './pages/Customer/Checkout/PaymentResultPage';
+import BookingHistoryPage from './pages/Customer/BookingHistory/BookingHistoryPage';
 
 /**
  * App chính - Cấu hình routing với Auth & Private Routes.
@@ -42,6 +43,7 @@ function App() {
           <Route path="/payment-result" element={<PaymentResultPage />} />
           <Route path="/payment-momo-result" element={<PaymentResultPage />} />
           <Route path="/checkout" element={<CustomerCheckoutPage />} />
+          <Route path="/my-bookings" element={<BookingHistoryPage />} />
 
           {/* === Private Routes (Admin) === */}
           <Route element={

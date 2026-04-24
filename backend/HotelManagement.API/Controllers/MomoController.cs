@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace HotelManagement.API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/payment/[controller]")]
 public class MomoController : ControllerBase
 {
     private readonly IMomoService _momoService;
@@ -31,19 +31,7 @@ public class MomoController : ControllerBase
         }
     }
 
-    [HttpGet("return")]
-    public IActionResult PaymentReturn([FromQuery] MomoCallbackDto callback)
-    {
-        // This is where MoMo redirects the user after payment
-        // We can check the resultCode here to show a message to the user
-        if (callback.ResultCode == 0)
-        {
-            return Ok(new { message = "Thanh toán thành công", data = callback });
-        }
-        return BadRequest(new { message = "Thanh toán thất bại hoặc đã bị hủy", data = callback });
-    }
-
-    [HttpPost("callback")]
+    [HttpPost("ipn")]
     public async Task<IActionResult> PaymentCallback([FromBody] MomoCallbackDto callback)
     {
         // This is the IPN (Instant Payment Notification) called by MoMo server
@@ -52,20 +40,37 @@ public class MomoController : ControllerBase
             return BadRequest(new { message = "Chữ ký không hợp lệ" });
         }
 
-        if (callback.ResultCode == 0)
+        // Extract bookingId from extraData
+        int bookingId = 0;
+        if (!string.IsNullOrEmpty(callback.ExtraData))
         {
-            // Logic to update booking status in database
-            // We might need to parse extraData or use orderId to find the booking
-            // For now, let's assume we can find it. 
-            // Usually, we pass bookingId in extraData or part of orderId.
-            
-            // Example: updating payment in our system
-            // await _bookingService.AddPaymentAsync(...);
-            
-            return Ok();
+            var parts = callback.ExtraData.Split('=');
+            if (parts.Length == 2 && parts[0] == "bookingId")
+            {
+                int.TryParse(parts[1], out bookingId);
+            }
         }
 
-        await Task.CompletedTask;
+        if (bookingId > 0)
+        {
+            string status = callback.ResultCode == 0 ? "paid" : "failed";
+            
+            // Update booking status
+            await _bookingService.UpdateAsync(bookingId, new UpdateBookingDto { Status = status });
+
+            if (callback.ResultCode == 0)
+            {
+                // Record payment record
+                await _bookingService.AddPaymentAsync(bookingId, new AddBookingPaymentDto
+                {
+                    Amount = callback.Amount,
+                    PaymentMethod = "MoMo",
+                    TransactionCode = callback.TransId.ToString(),
+                    PaymentDate = DateTime.UtcNow
+                });
+            }
+        }
+
         return Ok(); // Always return 200 to MoMo unless there's a server error
     }
 }

@@ -26,9 +26,9 @@ public class MomoService : IMomoService
         var redirectUrl = momoConfig["ReturnUrl"];
         var ipnUrl = momoConfig["IpnUrl"];
 
-        var orderId = DateTime.UtcNow.Ticks.ToString();
+        var orderId = $"{request.BookingId}_{DateTime.UtcNow.Ticks}";
         var requestId = Guid.NewGuid().ToString();
-        var extraData = ""; // Can be used to pass booking ID or other info
+        var extraData = $"bookingId={request.BookingId}";
         var orderInfo = request.OrderInfo ?? $"Thanh toán đơn đặt phòng {request.BookingId}";
         var requestType = "captureWallet";
         var amount = ((long)request.Amount).ToString();

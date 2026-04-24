@@ -2,7 +2,7 @@ import axiosClient from './axiosClient';
 
 const paymentService = {
   createMomoPayment: async (amount, orderInfo, bookingId) => {
-    const response = await axiosClient.post('/Momo/create', {
+    const response = await axiosClient.post('/payment/momo/create', {
       amount: parseFloat(amount),
       orderInfo: orderInfo,
       bookingId: bookingId || 0
