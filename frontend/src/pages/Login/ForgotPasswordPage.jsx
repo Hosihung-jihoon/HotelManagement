@@ -54,8 +54,24 @@ function ForgotPasswordPage() {
   const handleResetPassword = async (e) => {
     e.preventDefault();
     setError(''); setSuccess('');
-    if (newPassword.length < 6) { setError('Mật khẩu mới phải có ít nhất 6 ký tự.'); return; }
-    if (newPassword !== confirmPassword) { setError('Mật khẩu xác nhận không khớp.'); return; }
+
+    // Strict validation
+    if (newPassword.length < 6) {
+      setError('Mật khẩu mới phải có ít nhất 6 ký tự.');
+      return;
+    }
+
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/;
+    if (!passwordRegex.test(newPassword)) {
+      setError('Mật khẩu phải bao gồm ít nhất một chữ hoa, một chữ thường và một chữ số.');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setError('Mật khẩu xác nhận không khớp.');
+      return;
+    }
+
     setLoading(true);
     try {
       await axiosClient.post('/PasswordReset/reset-password', {
@@ -208,8 +224,12 @@ function ForgotPasswordPage() {
             {/* Strength indicator */}
             {newPassword && (
               <div className="pw-strength">
-                <div className={`pw-bar ${newPassword.length >= 6 ? 'ok' : ''} ${newPassword.length >= 10 ? 'great' : ''}`} />
-                <span>{newPassword.length < 6 ? 'Quá ngắn' : newPassword.length < 10 ? 'Chấp nhận được' : 'Mạnh'}</span>
+                <div className={`pw-bar ${newPassword.length >= 6 ? 'ok' : ''} ${/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/.test(newPassword) ? 'great' : ''}`} />
+                <span>
+                  {newPassword.length < 6 ? 'Quá ngắn' : 
+                   !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/.test(newPassword) ? 'Thiếu chữ hoa/số' : 
+                   'Mạnh (Hợp lệ)'}
+                </span>
               </div>
             )}
             <button type="submit" className="login-btn" disabled={loading}>

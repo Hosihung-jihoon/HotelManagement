@@ -14,6 +14,22 @@ function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    
+    // Basic validation
+    if (!email.trim()) {
+      setError('Vui lòng nhập email');
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError('Định dạng email không hợp lệ');
+      return;
+    }
+    if (!password) {
+      setError('Vui lòng nhập mật khẩu');
+      return;
+    }
+
     setLoading(true);
 
     try {
