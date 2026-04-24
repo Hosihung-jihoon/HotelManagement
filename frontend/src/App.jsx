@@ -24,7 +24,9 @@ import AuditLogPage from './pages/AuditLog/AuditLogPage';
 // Front Desk pages
 import TodayArrivalsPage from './pages/FrontDesk/TodayArrivalsPage';
 import CurrentGuestsPage from './pages/FrontDesk/CurrentGuestsPage';
-import CheckoutPage from './pages/FrontDesk/CheckoutPage';
+import FrontDeskCheckoutPage from './pages/FrontDesk/CheckoutPage';
+import CustomerCheckoutPage from './pages/Customer/Checkout/CheckoutPage';
+import PaymentResultPage from './pages/Customer/Checkout/PaymentResultPage';
 
 /**
  * App chính - Cấu hình routing với Auth & Private Routes.
@@ -37,6 +39,9 @@ function App() {
           {/* === Public Routes === */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/payment-result" element={<PaymentResultPage />} />
+          <Route path="/payment-momo-result" element={<PaymentResultPage />} />
+          <Route path="/checkout" element={<CustomerCheckoutPage />} />
 
           {/* === Private Routes (Admin) === */}
           <Route element={
@@ -93,7 +98,7 @@ function App() {
             {/* 15. Quầy lễ tân */}
             <Route path="/front-desk/today-arrivals" element={<TodayArrivalsPage />} />
             <Route path="/front-desk/current-guests" element={<CurrentGuestsPage />} />
-            <Route path="/front-desk/checkout" element={<CheckoutPage />} />
+            <Route path="/front-desk/checkout" element={<FrontDeskCheckoutPage />} />
             <Route path="/front-desk/bookings" element={<BookingsPage />} />
           </Route>
         </Routes>

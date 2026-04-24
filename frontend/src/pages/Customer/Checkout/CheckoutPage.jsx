@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import paymentService from '../../../api/paymentService';
 import './CheckoutPage.css';
 
 /**
@@ -27,8 +28,7 @@ function CheckoutPage() {
     notes: '',
   });
 
-  const [paymentMethod, setPaymentMethod] = useState(''); // 'vnpay' hoặc 'cash'
-  const [showVnPayModal, setShowVnPayModal] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState(''); // 'vnpay', 'momo' hoặc 'cash'
   const [isProcessing, setIsProcessing] = useState(false);
 
   // Tính toán
@@ -40,24 +40,39 @@ function CheckoutPage() {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleCheckout = (e) => {
+  const handleCheckout = async (e) => {
     e.preventDefault();
     if (!paymentMethod) {
       alert('Vui lòng chọn phương thức thanh toán.');
       return;
     }
 
-    if (paymentMethod === 'vnpay') {
-      setShowVnPayModal(true);
-    } else {
-      processBooking('Cash', 'Pending');
+    setIsProcessing(true);
+
+    try {
+      if (paymentMethod === 'momo') {
+        const res = await paymentService.createMomoPayment(finalTotal, `Thanh toán phòng ${cart.roomName}`);
+        if (res.payUrl) {
+          window.location.href = res.payUrl;
+          return;
+        }
+      } else if (paymentMethod === 'vnpay') {
+        const res = await paymentService.createVnPayPayment(finalTotal, `Thanh toán phòng ${cart.roomName}`);
+        if (res.paymentUrl) {
+          window.location.href = res.paymentUrl;
+          return;
+        }
+      } else {
+        processBooking('Cash', 'Pending');
+      }
+    } catch (err) {
+      alert('Lỗi khởi tạo thanh toán: ' + (err.response?.data?.message || err.message));
+      setIsProcessing(false);
     }
   };
 
   const processBooking = (method, status) => {
-    setIsProcessing(true);
-    
-    // Giả lập call API lưu booking
+    // Giữ nguyên logic processBooking cho thanh toán tiền mặt
     setTimeout(() => {
       const newBooking = {
         id: 'BK-' + Math.floor(1000 + Math.random() * 9000),
@@ -71,16 +86,13 @@ function CheckoutPage() {
         createdAt: new Date().toISOString(),
       };
 
-      // Lưu tạm vào LocalStorage để trang Booking History có thể đọc
       const existingBookings = JSON.parse(localStorage.getItem('mockBookings') || '[]');
       existingBookings.push(newBooking);
       localStorage.setItem('mockBookings', JSON.stringify(existingBookings));
 
       setIsProcessing(false);
-      setShowVnPayModal(false);
-      
       alert('Đặt phòng thành công! Mã Code: ' + newBooking.bookingCode);
-      navigate('/my-bookings');
+      navigate('/bookings'); // Redirect to bookings list
     }, 1500);
   };
 
@@ -122,18 +134,29 @@ function CheckoutPage() {
             <div className="form-section">
               <h3 className="section-title">2. Phương thức thanh toán</h3>
               <div className="payment-options">
-                <label className={`payment-option ${paymentMethod === 'vnpay' ? 'selected' : ''}`}>
+                <label className={`payment-option momo ${paymentMethod === 'momo' ? 'selected' : ''}`}>
+                  <input type="radio" name="payment" value="momo" onChange={(e) => setPaymentMethod(e.target.value)} />
+                  <div className="payment-info">
+                    <img src="https://upload.wikimedia.org/wikipedia/vi/f/fe/MoMo_Logo.png" alt="MoMo" className="payment-logo" />
+                    <div>
+                      <span className="payment-name">Ví điện tử MoMo</span>
+                      <span className="payment-desc">Thanh toán nhanh chóng qua ứng dụng MoMo.</span>
+                    </div>
+                  </div>
+                </label>
+
+                <label className={`payment-option vnpay ${paymentMethod === 'vnpay' ? 'selected' : ''}`}>
                   <input type="radio" name="payment" value="vnpay" onChange={(e) => setPaymentMethod(e.target.value)} />
                   <div className="payment-info">
                     <img src="https://vnpay.vn/s1/statics.vnpay.vn/2023/11/qr-vnpay-331.png" alt="VNPay" className="payment-logo" />
                     <div>
-                      <span className="payment-name">Thanh toán qua VNPAY</span>
-                      <span className="payment-desc">Quét mã QR qua ứng dụng ngân hàng hoặc ví VNPAY.</span>
+                      <span className="payment-name">Cổng thanh toán VNPAY</span>
+                      <span className="payment-desc">Quét mã QR hoặc dùng thẻ ATM/Visa/MasterCard.</span>
                     </div>
                   </div>
                 </label>
                 
-                <label className={`payment-option ${paymentMethod === 'cash' ? 'selected' : ''}`}>
+                <label className={`payment-option cash ${paymentMethod === 'cash' ? 'selected' : ''}`}>
                   <input type="radio" name="payment" value="cash" onChange={(e) => setPaymentMethod(e.target.value)} />
                   <div className="payment-info">
                     <span className="payment-icon">💵</span>
@@ -200,58 +223,7 @@ function CheckoutPage() {
         </div>
       </div>
 
-      {/* VNPay Mock Modal */}
-      {showVnPayModal && (
-        <div className="vnpay-overlay">
-          <div className="vnpay-modal">
-            <div className="vnpay-header">
-              <img src="https://vnpay.vn/s1/statics.vnpay.vn/2023/11/qr-vnpay-331.png" alt="VNPay Logo" />
-              <button className="btn-close-vnpay" onClick={() => setShowVnPayModal(false)} disabled={isProcessing}>✕</button>
-            </div>
-            
-            <div className="vnpay-body">
-              <div className="vnpay-invoice-info">
-                <div className="vnpay-row">
-                  <span>Đơn hàng:</span>
-                  <strong>{cart.roomName} x {cart.nights} đêm</strong>
-                </div>
-                <div className="vnpay-row highlight">
-                  <span>Số tiền:</span>
-                  <strong className="vnpay-amount">{formatCurrency(finalTotal)}</strong>
-                </div>
-              </div>
-
-              {isProcessing ? (
-                <div className="vnpay-processing">
-                  <div className="spinner"></div>
-                  <p>Đang xử lý giao dịch...</p>
-                </div>
-              ) : (
-                <div className="vnpay-methods">
-                  <div className="qr-section">
-                    <h4>Quét mã QR để thanh toán</h4>
-                    <div className="qr-code-box">
-                      {/* Fake QR via an svg or image placeholder */}
-                      <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=vnpay_mock_data" alt="QR" />
-                    </div>
-                    <p>Mở ứng dụng Mobile Banking để quét mã</p>
-                  </div>
-                  <div className="card-section">
-                    <h4>Hoặc thanh toán qua thẻ ATM/Nội địa</h4>
-                    <button className="btn-mock-pay" onClick={() => processBooking('VNPAY', 'Paid')}>
-                      Mô phỏng Thanh toán thành công ✅
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-            
-            <div className="vnpay-footer">
-              <p>Mã giao dịch có hiệu lực trong: <strong>14:59</strong></p>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Payment methods now redirect directly to gateway */}
     </div>
   );
 }
