@@ -1,0 +1,80 @@
+.hotel-error-page {
+  min-height: calc(100vh - 88px);
+  display: grid;
+  grid-template-columns: 1.15fr 0.95fr;
+}
+
+.hotel-error-media img {
+  width: 100%;
+  height: 100%;
+  min-height: calc(100vh - 88px);
+  object-fit: cover;
+  display: block;
+}
+
+.hotel-error-content {
+  display: grid;
+  align-content: center;
+  gap: 16px;
+  padding: 42px;
+  background: linear-gradient(180deg, var(--surface-color), var(--surface-low));
+}
+
+.hotel-error-content h1 {
+  font-size: clamp(4rem, 8vw, 7rem);
+  line-height: 0.95;
+  color: var(--text-primary);
+}
+
+.hotel-error-content h2 {
+  font-size: 1.8rem;
+  color: var(--on-primary-fixed-variant);
+}
+
+.hotel-error-content p {
+  max-width: 44ch;
+  color: var(--text-secondary);
+}
+
+.hotel-error-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.hotel-tertiary-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  border-radius: 8px;
+  color: var(--primary);
+  background: rgba(206, 229, 255, 0.38);
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.hotel-error-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: rgba(247, 250, 252, 0.82);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 960px) {
+  .hotel-error-page {
+    grid-template-columns: 1fr;
+  }
+
+  .hotel-error-media img {
+    min-height: 38vh;
+  }
+
+  .hotel-error-content {
+    padding: 28px 20px 36px;
+  }
+}

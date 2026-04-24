@@ -3,21 +3,23 @@ import { useAuth } from '../context/AuthContext';
 
 /**
  * PrivateRoute - Bảo vệ route admin.
- * Nếu chưa đăng nhập → redirect sang /login.
+ * Chỉ tài khoản admin mới được vào trang quản trị.
  */
 function PrivateRoute({ children }) {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, isAdmin, loading } = useAuth();
 
   if (loading) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh',
-        fontSize: '1.1rem',
-        color: '#666'
-      }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
+          fontSize: '1.1rem',
+          color: '#666',
+        }}
+      >
         Đang tải...
       </div>
     );
@@ -25,6 +27,10 @@ function PrivateRoute({ children }) {
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+
+  if (!isAdmin) {
+    return <Navigate to="/site" replace />;
   }
 
   return children;

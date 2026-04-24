@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import PrivateRoute from './components/PrivateRoute';
 import MainLayout from './components/Layout/MainLayout';
+import PublicLayout from './components/Public/PublicLayout';
 import LoginPage from './pages/Login/LoginPage';
 import ForgotPasswordPage from './pages/Login/ForgotPasswordPage';
 import DashboardPage from './pages/Dashboard/DashboardPage';
@@ -21,6 +22,10 @@ import LocationMapPage from './pages/Locations/LocationMapPage';
 import MembersPage from './pages/Members/MembersPage';
 import VouchersPage from './pages/Vouchers/VouchersPage';
 import AuditLogPage from './pages/AuditLog/AuditLogPage';
+import HomePage from './pages/Public/HomePage';
+import RoomCatalogPage from './pages/Public/RoomCatalogPage';
+import RoomDetailPage from './pages/Public/RoomDetailPage';
+import ErrorPage from './pages/Public/ErrorPage';
 // Front Desk pages
 import TodayArrivalsPage from './pages/FrontDesk/TodayArrivalsPage';
 import CurrentGuestsPage from './pages/FrontDesk/CurrentGuestsPage';
@@ -35,6 +40,12 @@ function App() {
       <BrowserRouter>
         <Routes>
           {/* === Public Routes === */}
+          <Route element={<PublicLayout />}>
+            <Route path="/site" element={<HomePage />} />
+            <Route path="/site/rooms" element={<RoomCatalogPage />} />
+            <Route path="/site/rooms/:roomId" element={<RoomDetailPage />} />
+            <Route path="/site/error/500" element={<ErrorPage variant="500" />} />
+          </Route>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
@@ -96,6 +107,8 @@ function App() {
             <Route path="/front-desk/checkout" element={<CheckoutPage />} />
             <Route path="/front-desk/bookings" element={<BookingsPage />} />
           </Route>
+
+          <Route path="*" element={<ErrorPage variant="404" />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

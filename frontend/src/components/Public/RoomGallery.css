@@ -1,0 +1,86 @@
+.room-gallery,
+.room-gallery-swiper,
+.room-gallery-slide {
+  width: 100%;
+  height: 100%;
+}
+
+.room-gallery-slide {
+  position: relative;
+  min-height: 320px;
+}
+
+.room-gallery-slide img {
+  width: 100%;
+  height: 100%;
+  min-height: 320px;
+  object-fit: cover;
+  display: block;
+}
+
+.room-gallery-badge {
+  position: absolute;
+  left: 18px;
+  bottom: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(247, 250, 252, 0.82);
+  color: var(--primary);
+  font-size: 0.8rem;
+  backdrop-filter: blur(24px);
+}
+
+.room-gallery-empty {
+  min-height: 280px;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 14px;
+  padding: 24px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--surface-low), var(--surface-color));
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  overflow: hidden;
+}
+
+.room-gallery-empty img {
+  width: 100%;
+  max-width: 560px;
+  height: auto;
+  border-radius: 8px;
+}
+
+.room-gallery-empty-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.room-gallery .swiper-button-prev,
+.room-gallery .swiper-button-next {
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  background: rgba(247, 250, 252, 0.82);
+  color: var(--primary);
+  backdrop-filter: blur(24px);
+}
+
+.room-gallery .swiper-button-prev::after,
+.room-gallery .swiper-button-next::after {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.room-gallery .swiper-pagination-bullet {
+  background: rgba(255, 255, 255, 0.75);
+  opacity: 1;
+}
+
+.room-gallery .swiper-pagination-bullet-active {
+  background: var(--primary-fixed-dim);
+}

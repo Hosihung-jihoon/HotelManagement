@@ -1,0 +1,192 @@
+.room-catalog-page {
+  display: grid;
+  gap: 24px;
+  padding: 28px 32px 48px;
+}
+
+.room-catalog-hero {
+  display: grid;
+  grid-template-columns: 1.2fr auto;
+  gap: 24px;
+  padding: 30px 32px;
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(0, 25, 60, 0.96), rgba(0, 45, 98, 0.88)),
+    var(--primary);
+  color: var(--on-primary);
+}
+
+.room-catalog-hero h1 {
+  margin: 10px 0 14px;
+  font-size: clamp(2rem, 2.6vw, 3rem);
+}
+
+.room-catalog-hero p {
+  max-width: 52ch;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.room-catalog-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  align-items: center;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filter-group label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.filter-group select {
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--outline-variant);
+  background: var(--surface-color);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.95rem;
+  min-width: 180px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.filter-group select:focus {
+  border-color: var(--primary);
+}
+
+.room-catalog-list {
+  display: grid;
+  gap: 22px;
+}
+
+.room-catalog-card {
+  display: grid;
+  grid-template-columns: minmax(340px, 0.95fr) minmax(0, 1.2fr);
+  background: var(--surface-low);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: var(--ambient-shadow);
+}
+
+.room-catalog-gallery {
+  min-height: 100%;
+  display: block;
+}
+
+.room-catalog-content {
+  display: grid;
+  gap: 18px;
+  padding: 24px;
+}
+
+.room-catalog-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.room-catalog-header h2 {
+  margin-bottom: 8px;
+  font-size: 1.4rem;
+  color: var(--text-primary);
+}
+
+.room-catalog-title-link {
+  display: inline-flex;
+}
+
+.room-catalog-header p {
+  color: var(--text-secondary);
+}
+
+.room-catalog-header strong {
+  display: flex;
+  flex-direction: column;
+  align-items: end;
+  gap: 6px;
+  color: var(--primary-container);
+  font-size: 1.12rem;
+  white-space: nowrap;
+}
+
+.room-catalog-header strong span {
+  font-size: 0.84rem;
+  color: var(--text-muted);
+}
+
+.room-catalog-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+}
+
+.room-catalog-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.room-catalog-amenities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.room-catalog-actions {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.room-catalog-detail-link {
+  width: fit-content;
+}
+
+.room-amenity-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: var(--surface-color);
+  box-shadow: inset 0 0 0 1px rgba(196, 198, 209, 0.2);
+}
+
+.room-amenity-chip span {
+  color: var(--on-primary-fixed-variant);
+  font-size: 0.86rem;
+}
+
+@media (max-width: 960px) {
+  .room-catalog-page {
+    padding: 20px;
+  }
+
+  .room-catalog-hero,
+  .room-catalog-card {
+    grid-template-columns: 1fr;
+  }
+
+  .room-catalog-header {
+    flex-direction: column;
+  }
+
+  .room-catalog-header strong {
+    align-items: start;
+  }
+}

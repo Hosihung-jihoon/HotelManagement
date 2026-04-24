@@ -1,6 +1,7 @@
 using System.Text;
 using HotelManagement.API.Data;
 using HotelManagement.API.Hubs;
+using HotelManagement.API.Models;
 using HotelManagement.API.Repositories;
 using HotelManagement.API.Services;
 using HotelManagement.API.Filters;
@@ -155,6 +156,89 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+// ========== Local SQLite bootstrap ==========
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<HotelDbContext>();
+    var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+    var runtimeDbProvider = configuration["DatabaseProvider"] ?? "SqlServer";
+
+    if (runtimeDbProvider.Equals("Sqlite", StringComparison.OrdinalIgnoreCase))
+    {
+        db.Database.EnsureCreated();
+
+        if (!db.Users.Any(u => u.Email == "vibecoding209@gmail.com"))
+        {
+            db.Users.Add(new User
+            {
+                FullName = "System Administrator",
+                Email = "vibecoding209@gmail.com",
+                Phone = "0000000000",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin"),
+                RoleId = 1,
+                Status = true
+            });
+        }
+
+        if (!db.Users.Any(u => u.Email == "manager@hotel.com"))
+        {
+            db.Users.Add(new User
+            {
+                FullName = "Hotel Manager",
+                Email = "manager@hotel.com",
+                Phone = "0111222333",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("manager"),
+                RoleId = 2, // Receptionist/Manager role
+                Status = true
+            });
+        }
+
+        if (!db.Users.Any(u => u.Email == "reception1@hotel.com"))
+        {
+            db.Users.Add(new User
+            {
+                FullName = "Receptionist 01",
+                Email = "reception1@hotel.com",
+                Phone = "0987654321",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("reception"),
+                RoleId = 3,
+                Status = true
+            });
+        }
+
+        // ========== Seed RoomTypes & Rooms for Demo ==========
+        if (!db.RoomTypes.Any())
+        {
+            var rts = new List<RoomType>
+            {
+                new RoomType { Name = "Standard Room", BasePrice = 1200000, CapacityAdults = 2, CapacityChildren = 1, Description = "Phòng tiêu chuẩn tiện nghi." },
+                new RoomType { Name = "Deluxe Ocean View", BasePrice = 2850000, CapacityAdults = 2, CapacityChildren = 2, Description = "Phòng Deluxe view biển tuyệt đẹp." },
+                new RoomType { Name = "Family Suite", BasePrice = 4500000, CapacityAdults = 4, CapacityChildren = 2, Description = "Phòng gia đình rộng rãi." },
+                new RoomType { Name = "Presidential Suite", BasePrice = 15000000, CapacityAdults = 2, CapacityChildren = 0, Description = "Hạng phòng sang trọng nhất." }
+            };
+            db.RoomTypes.AddRange(rts);
+            db.SaveChanges();
+
+            // Create some rooms for each type
+            foreach (var rt in rts)
+            {
+                for (int i = 1; i <= 5; i++)
+                {
+                    db.Rooms.Add(new Room
+                    {
+                        RoomNumber = $"{rt.Name.Substring(0, 1)}{i:D2}",
+                        Status = "Available",
+                        CleanStatus = "clean",
+                        RoomTypeId = rt.Id
+                    });
+                }
+            }
+        }
+
+        db.SaveChanges();
+    }
+}
 
 // ========== Middleware Pipeline ==========
 if (app.Environment.IsDevelopment())

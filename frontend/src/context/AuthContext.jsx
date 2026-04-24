@@ -3,6 +3,10 @@ import axiosClient from '../api/axiosClient';
 
 const AuthContext = createContext(null);
 
+function normalizeRoleName(roleName) {
+  return (roleName || '').trim().toLowerCase();
+}
+
 /**
  * AuthProvider - Quản lý trạng thái đăng nhập.
  * Dùng sessionStorage thay localStorage để mỗi tab có thể login với account khác nhau.
@@ -49,6 +53,8 @@ export function AuthProvider({ children }) {
     token,
     loading,
     isAuthenticated: !!token,
+    isAdmin: normalizeRoleName(user?.roleName) === 'admin',
+    isGuest: normalizeRoleName(user?.roleName) === 'guest',
     login,
     logout,
   };
