@@ -1,0 +1,198 @@
+.faqPage {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+}
+
+.hero {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 80px 20px;
+  text-align: center;
+}
+
+.heroContent h1 {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.heroContent p {
+  font-size: 1.25rem;
+  opacity: 0.95;
+}
+
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 60px 20px;
+}
+
+.intro {
+  text-align: center;
+  margin-bottom: 50px;
+  font-size: 1.1rem;
+  color: #666;
+}
+
+.intro a {
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.intro a:hover {
+  text-decoration: underline;
+}
+
+.categorySection {
+  margin-bottom: 50px;
+}
+
+.categoryTitle {
+  font-size: 1.8rem;
+  color: #2c3e50;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 3px solid #667eea;
+}
+
+.accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.accordionItem {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.accordionHeader {
+  width: 100%;
+  padding: 20px 25px;
+  background: white;
+  border: none;
+  text-align: left;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2c3e50;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.accordionHeader:hover {
+  background: #f8f9fa;
+}
+
+.accordionHeader.active {
+  background: #f0f4ff;
+  color: #667eea;
+}
+
+.icon {
+  font-size: 1.5rem;
+  font-weight: 300;
+  color: #667eea;
+  transition: transform 0.3s ease;
+}
+
+.accordionContent {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.accordionContent.show {
+  max-height: 500px;
+}
+
+.accordionContent p {
+  padding: 0 25px 20px 25px;
+  line-height: 1.7;
+  color: #555;
+}
+
+.contactSection {
+  background: white;
+  padding: 50px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  margin-top: 60px;
+}
+
+.contactSection h2 {
+  font-size: 2rem;
+  color: #2c3e50;
+  margin-bottom: 15px;
+}
+
+.contactSection p {
+  font-size: 1.1rem;
+  color: #666;
+  margin-bottom: 30px;
+}
+
+.contactButtons {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.contactBtn {
+  padding: 15px 30px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  display: inline-block;
+}
+
+.contactBtn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+}
+
+@media (max-width: 768px) {
+  .heroContent h1 {
+    font-size: 2rem;
+  }
+
+  .heroContent p {
+    font-size: 1rem;
+  }
+
+  .categoryTitle {
+    font-size: 1.5rem;
+  }
+
+  .accordionHeader {
+    padding: 15px 20px;
+    font-size: 1rem;
+  }
+
+  .accordionContent p {
+    padding: 0 20px 15px 20px;
+  }
+
+  .contactSection {
+    padding: 30px 20px;
+  }
+
+  .contactButtons {
+    flex-direction: column;
+  }
+
+  .contactBtn {
+    width: 100%;
+  }
+}
