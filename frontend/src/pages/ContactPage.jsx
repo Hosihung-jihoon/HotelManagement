@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { MapPin, Phone, Mail, Clock, Send, CheckCircle, AlertCircle } from 'lucide-react';
 import styles from './ContactPage.module.css';
 
 const ContactPage = () => {
@@ -48,8 +49,8 @@ const ContactPage = () => {
       {/* Hero Section */}
       <section className={styles.hero}>
         <div className={styles.heroContent}>
-          <h1>📞 Liên Hệ Với Chúng Tôi</h1>
-          <p>Chúng tôi luôn sẵn sàng hỗ trợ bạn 24/7</p>
+          <h1 className="display-lg">Liên Hệ Với Chúng Tôi</h1>
+          <p className="body-lg">Chúng tôi luôn sẵn sàng hỗ trợ bạn 24/7 để mang lại trải nghiệm tuyệt vời nhất.</p>
         </div>
       </section>
 
@@ -58,10 +59,12 @@ const ContactPage = () => {
         <div className={styles.contentGrid}>
           {/* Contact Information */}
           <div className={styles.contactInfo}>
-            <h2>Thông Tin Liên Hệ</h2>
+            <h2 className="headline-lg">Thông Tin Liên Hệ</h2>
             <div className={styles.infoList}>
               <div className={styles.infoItem}>
-                <div className={styles.icon}>📍</div>
+                <div className={styles.icon}>
+                  <MapPin size={24} />
+                </div>
                 <div className={styles.infoContent}>
                   <h3>Địa chỉ</h3>
                   <p>123 Đường Nguyễn Huệ, Quận 1<br />Thành phố Hồ Chí Minh, Việt Nam</p>
@@ -69,7 +72,9 @@ const ContactPage = () => {
               </div>
 
               <div className={styles.infoItem}>
-                <div className={styles.icon}>📞</div>
+                <div className={styles.icon}>
+                  <Phone size={24} />
+                </div>
                 <div className={styles.infoContent}>
                   <h3>Điện thoại</h3>
                   <p>
@@ -80,7 +85,9 @@ const ContactPage = () => {
               </div>
 
               <div className={styles.infoItem}>
-                <div className={styles.icon}>✉️</div>
+                <div className={styles.icon}>
+                  <Mail size={24} />
+                </div>
                 <div className={styles.infoContent}>
                   <h3>Email</h3>
                   <p>
@@ -91,7 +98,9 @@ const ContactPage = () => {
               </div>
 
               <div className={styles.infoItem}>
-                <div className={styles.icon}>🕐</div>
+                <div className={styles.icon}>
+                  <Clock size={24} />
+                </div>
                 <div className={styles.infoContent}>
                   <h3>Giờ làm việc</h3>
                   <p>
@@ -105,17 +114,19 @@ const ContactPage = () => {
 
           {/* Contact Form */}
           <div className={styles.contactForm}>
-            <h2>Gửi Tin Nhắn</h2>
+            <h2 className="headline-lg">Gửi Tin Nhắn</h2>
             
             {submitStatus === 'success' && (
               <div className={styles.successMessage}>
-                ✅ Cảm ơn bạn! Chúng tôi đã nhận được tin nhắn và sẽ phản hồi sớm nhất.
+                <CheckCircle size={20} />
+                <span>Cảm ơn bạn! Chúng tôi đã nhận được tin nhắn và sẽ phản hồi sớm nhất.</span>
               </div>
             )}
             
             {submitStatus === 'error' && (
               <div className={styles.errorMessage}>
-                ❌ Có lỗi xảy ra. Vui lòng thử lại sau.
+                <AlertCircle size={20} />
+                <span>Có lỗi xảy ra. Vui lòng thử lại sau.</span>
               </div>
             )}
 
@@ -193,7 +204,12 @@ const ContactPage = () => {
                 className={styles.submitBtn}
                 disabled={submitting}
               >
-                {submitting ? 'Đang gửi...' : 'Gửi tin nhắn'}
+                {submitting ? 'Đang gửi...' : (
+                  <>
+                    <span>Gửi tin nhắn</span>
+                    <Send size={18} style={{ marginLeft: '10px' }} />
+                  </>
+                )}
               </button>
             </form>
           </div>
@@ -201,7 +217,7 @@ const ContactPage = () => {
 
         {/* Google Maps */}
         <div className={styles.mapSection}>
-          <h2>🗺️ Vị Trí Của Chúng Tôi</h2>
+          <h2 className="headline-lg">Vị Trí Của Chúng Tôi</h2>
           <div className={styles.mapContainer}>
             <iframe
               src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.4967814570754!2d106.70291831533417!3d10.775015992321!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752f4b3330bcc9%3A0xb3ff69197b10ec4f!2zTmd1eeG7hW4gSHXhu4csIFF14bqtbiAxLCBUaMOgbmggcGjhu5EgSOG7kyBDaMOtIE1pbmgsIFZp4buHdCBOYW0!5e0!3m2!1svi!2s!4v1234567890123!5m2!1svi!2s"

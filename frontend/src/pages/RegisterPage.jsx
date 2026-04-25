@@ -153,19 +153,6 @@ const RegisterPage = () => {
               Đã có tài khoản? <Link to="/login">Đăng nhập ngay</Link>
             </p>
           </div>
-
-          <div className={styles.divider}>
-            <span>hoặc</span>
-          </div>
-
-          <div className={styles.socialLogin}>
-            <button className={styles.socialBtn}>
-              <span>🔵</span> Đăng ký với Facebook
-            </button>
-            <button className={styles.socialBtn}>
-              <span>🔴</span> Đăng ký với Google
-            </button>
-          </div>
         </div>
       </div>
     </div>

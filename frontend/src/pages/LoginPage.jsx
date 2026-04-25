@@ -1,12 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, LogIn } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import Input from '../components/ui/Input';
-import Button from '../components/ui/Button';
-import styles from './LoginPage.module.css';
-
-const BG = 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=1200&q=80';
+import styles from './AuthPage.module.css';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -34,69 +30,89 @@ export default function LoginPage() {
   };
 
   return (
-    <div className={styles.page}>
-      {/* Left: image */}
-      <div className={styles.imgSide} style={{ backgroundImage: `url(${BG})` }}>
-        <div className={styles.imgOverlay} />
-        <div className={styles.imgContent}>
-          <Link to="/" className={styles.logo}>✦ Azure Horizon</Link>
-          <blockquote className={styles.quote}>
-            <p className="headline-md">"Nơi mỗi khoảnh khắc trở thành ký ức không thể quên."</p>
-          </blockquote>
-        </div>
-      </div>
-
-      {/* Right: form */}
-      <div className={styles.formSide}>
-        <div className={styles.formWrap}>
-          <div className={styles.formHeader}>
-            <p className={['label-md', styles.eyebrow].join(' ')}>Chào mừng trở lại</p>
-            <h1 className={['headline-md', styles.formTitle].join(' ')}>Đăng nhập</h1>
-            <p className={['body-md', styles.formSub].join(' ')}>
-              Chưa có tài khoản?{' '}
-              <Link to="/register" className={styles.formLink}>Đăng ký ngay</Link>
-            </p>
+    <div className={styles.authPage}>
+      <div className={styles.authContainer}>
+        <div className={styles.authCard}>
+          <div className={styles.authHeader}>
+            <h1>Chào Mừng Trở Lại</h1>
+            <p>Đăng nhập để quản lý đặt phòng và nhận ưu đãi</p>
           </div>
 
-          {error && <div className={styles.error}>{error}</div>}
+          {error && (
+            <div className={styles.errorMessage}>
+              ⚠️ {error}
+            </div>
+          )}
 
-          <form className={styles.form} onSubmit={handleSubmit}>
-            <Input
-              label="Email"
-              type="email"
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              required
-              autoComplete="email"
-            />
+          <form onSubmit={handleSubmit} className={styles.authForm}>
+            <div className={styles.formGroup}>
+              <label htmlFor="email">Email *</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                required
+                placeholder="Nhập email của bạn"
+                autoComplete="email"
+              />
+            </div>
 
-            <div className={styles.pwWrap}>
-              <Input
-                label="Mật khẩu"
+            <div className={styles.formGroup} style={{ position: 'relative' }}>
+              <label htmlFor="password">Mật khẩu *</label>
+              <input
                 type={showPw ? 'text' : 'password'}
+                id="password"
+                name="password"
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
                 required
+                placeholder="Nhập mật khẩu"
                 autoComplete="current-password"
+                style={{ paddingRight: '45px' }}
               />
               <button
                 type="button"
-                className={styles.eyeBtn}
                 onClick={() => setShowPw(!showPw)}
+                style={{
+                  position: 'absolute',
+                  right: '12px',
+                  top: '38px',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: '#666'
+                }}
                 aria-label={showPw ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
               >
-                {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                {showPw ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
 
-            <div className={styles.forgotRow}>
-              <Link to="/forgot-password" className={styles.forgotLink}>Quên mật khẩu?</Link>
+            <div className={styles.forgotPassword}>
+              <Link to="/forgot-password">Quên mật khẩu?</Link>
             </div>
 
-            <Button type="submit" variant="primary" size="lg" loading={loading} className={styles.submitBtn}>
-              Đăng nhập
-            </Button>
+            <button 
+              type="submit" 
+              className={styles.submitBtn}
+              disabled={loading}
+            >
+              {loading ? 'Đang xử lý...' : (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                  <span>Đăng nhập</span>
+                  <LogIn size={20} />
+                </div>
+              )}
+            </button>
           </form>
+
+          <div className={styles.authFooter}>
+            <p>
+              Chưa có tài khoản? <Link to="/register">Đăng ký ngay</Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>
