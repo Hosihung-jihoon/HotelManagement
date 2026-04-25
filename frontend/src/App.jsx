@@ -1,105 +1,84 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
-import PrivateRoute from './components/PrivateRoute';
-import MainLayout from './components/Layout/MainLayout';
-import LoginPage from './pages/Login/LoginPage';
-import ForgotPasswordPage from './pages/Login/ForgotPasswordPage';
-import DashboardPage from './pages/Dashboard/DashboardPage';
-import RoomsPage from './pages/Rooms/RoomsPage';
-import BookingsPage from './pages/Bookings/BookingsPage';
-import UsersPage from './pages/Users/UsersPage';
-import InventoryPage from './pages/Inventory/InventoryPage';
-import LossesPage from './pages/Losses/LossesPage';
-import HousekeepingPage from './pages/Housekeeping/HousekeepingPage';
-import RolesPage from './pages/Roles/RolesPage';
-import RoomTypesPage from './pages/RoomTypes/RoomTypesPage';
-import ArticlesPage from './pages/Articles/ArticlesPage';
-import ArticleEditorPage from './pages/Articles/ArticleEditorPage';
-import ArticleCategoriesPage from './pages/Articles/ArticleCategoriesPage';
-import LocationsPage from './pages/Locations/LocationsPage';
-import LocationMapPage from './pages/Locations/LocationMapPage';
-import MembersPage from './pages/Members/MembersPage';
-import VouchersPage from './pages/Vouchers/VouchersPage';
-import AuditLogPage from './pages/AuditLog/AuditLogPage';
-// Front Desk pages
-import TodayArrivalsPage from './pages/FrontDesk/TodayArrivalsPage';
-import CurrentGuestsPage from './pages/FrontDesk/CurrentGuestsPage';
-import CheckoutPage from './pages/FrontDesk/CheckoutPage';
+import Navbar from './components/layout/Navbar';
+import Footer from './components/layout/Footer';
+import HomePage from './pages/HomePage';
+import SearchResultsPage from './pages/SearchResultsPage';
+import RoomDetailPage from './pages/RoomDetailPage';
+import BookingConfirmationPage from './pages/BookingConfirmationPage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ArticlesPage from './pages/ArticlesPage';
+import ArticleDetailPage from './pages/ArticleDetailPage';
+import AttractionsPage from './pages/AttractionsPage';
+import ContactPage from './pages/ContactPage';
+import FAQPage from './pages/FAQPage';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+import TermsOfServicePage from './pages/TermsOfServicePage';
 
-/**
- * App chính - Cấu hình routing với Auth & Private Routes.
- */
-function App() {
+function Layout({ children }) {
+  return (
+    <>
+      <Navbar />
+      {children}
+      <Footer />
+    </>
+  );
+}
+
+export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* === Public Routes === */}
+          {/* Auth pages — no footer/navbar layout */}
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
-          {/* === Private Routes (Admin) === */}
-          <Route element={
-            <PrivateRoute>
-              <MainLayout />
-            </PrivateRoute>
-          }>
-            {/* 1. Dashboard */}
-            <Route path="/" element={<DashboardPage />} />
+          {/* Client pages */}
+          <Route path="/" element={<Layout><HomePage /></Layout>} />
+          <Route path="/rooms" element={<Layout><SearchResultsPage /></Layout>} />
+          <Route path="/rooms/:id" element={<Layout><RoomDetailPage /></Layout>} />
+          <Route path="/booking-confirmation/:id" element={<Layout><BookingConfirmationPage /></Layout>} />
+          
+          {/* Articles & Blog */}
+          <Route path="/articles" element={<Layout><ArticlesPage /></Layout>} />
+          <Route path="/articles/:id" element={<Layout><ArticleDetailPage /></Layout>} />
+          
+          {/* Attractions */}
+          <Route path="/attractions" element={<Layout><AttractionsPage /></Layout>} />
+          
+          {/* Contact & Policies */}
+          <Route path="/contact" element={<Layout><ContactPage /></Layout>} />
+          <Route path="/faq" element={<Layout><FAQPage /></Layout>} />
+          <Route path="/privacy-policy" element={<Layout><PrivacyPolicyPage /></Layout>} />
+          <Route path="/terms-of-service" element={<Layout><TermsOfServicePage /></Layout>} />
 
-            {/* 2. Quản lý phòng */}
-            <Route path="/rooms" element={<RoomsPage />} />
-
-            {/* 3. Kho vật tư */}
-            <Route path="/inventory" element={<InventoryPage />} />
-
-            {/* 4. Thất thoát & đền bù */}
-            <Route path="/losses" element={<LossesPage />} />
-
-            {/* 5. Dọn phòng (Housekeeping) */}
-            <Route path="/housekeeping" element={<HousekeepingPage />} />
-
-            {/* 6. Booking */}
-            <Route path="/bookings" element={<BookingsPage />} />
-
-            {/* 7. Danh sách nhân sự */}
-            <Route path="/users" element={<UsersPage />} />
-
-            {/* 8. Vai trò & phân quyền */}
-            <Route path="/roles" element={<RolesPage />} />
-
-            {/* 9. Hạng phòng */}
-            <Route path="/room-types" element={<RoomTypesPage />} />
-
-            {/* 10. Địa điểm */}
-            <Route path="/locations" element={<LocationsPage />} />
-            <Route path="/locations/map" element={<LocationMapPage />} />
-
-            {/* 11. Bài viết */}
-            <Route path="/articles" element={<ArticlesPage />} />
-            <Route path="/articles/categories" element={<ArticleCategoriesPage />} />
-            <Route path="/articles/editor" element={<ArticleEditorPage />} />
-            <Route path="/articles/editor/:id" element={<ArticleEditorPage />} />
-
-            {/* 12. Thành viên */}
-            <Route path="/members" element={<MembersPage />} />
-
-            {/* 13. Voucher */}
-            <Route path="/vouchers" element={<VouchersPage />} />
-
-            {/* 14. Nhật ký hệ thống */}
-            <Route path="/audit-logs" element={<AuditLogPage />} />
-
-            {/* 15. Quầy lễ tân */}
-            <Route path="/front-desk/today-arrivals" element={<TodayArrivalsPage />} />
-            <Route path="/front-desk/current-guests" element={<CurrentGuestsPage />} />
-            <Route path="/front-desk/checkout" element={<CheckoutPage />} />
-            <Route path="/front-desk/bookings" element={<BookingsPage />} />
-          </Route>
+          {/* Fallback */}
+          <Route path="*" element={<Layout><NotFound /></Layout>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
   );
 }
 
-export default App;
+function NotFound() {
+  return (
+    <div style={{
+      minHeight: '80vh',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '1.5rem',
+      paddingTop: 'var(--nav-h)',
+      color: 'var(--clr-on-surface-variant)',
+    }}>
+      <span style={{ fontSize: '4rem' }}>404</span>
+      <h1 className="headline-md" style={{ color: 'var(--clr-on-surface)' }}>Trang không tồn tại</h1>
+      <a href="/" style={{ color: 'var(--clr-primary)', textDecoration: 'underline' }}>Về trang chủ</a>
+    </div>
+  );
+}

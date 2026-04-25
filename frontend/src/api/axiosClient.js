@@ -8,18 +8,21 @@ import axios from 'axios';
  *   const response = await axiosClient.get('/RoomTypes');
  */
 const axiosClient = axios.create({
-  baseURL: 'http://localhost:5280/api',
+  // Sử dụng biến môi trường (Lấy từ PR)
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5280/api',
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 10000,
+  // Giữ timeout (Từ code cũ)
+  timeout: 10000, 
 });
 
 // ========== Request Interceptor ==========
-// Tự động gắn token vào header nếu có (dùng cho Auth sau này)
+// Tự động gắn token vào header nếu có
 axiosClient.interceptors.request.use(
   (config) => {
-    const token = sessionStorage.getItem('token');
+    // Chuyển sang localStorage (Lấy từ PR)
+    const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -37,7 +40,10 @@ axiosClient.interceptors.response.use(
       switch (error.response.status) {
         case 401:
           console.error('Chưa đăng nhập hoặc token hết hạn');
-          // Có thể redirect về trang login ở đây
+          // Xóa token và thông tin user khi 401 (Lấy từ PR)
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          // Có thể redirect về trang login ở đây: window.location.href = '/login'
           break;
         case 403:
           console.error('Không có quyền truy cập');

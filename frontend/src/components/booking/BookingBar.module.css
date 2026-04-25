@@ -1,0 +1,83 @@
+/* === Hero variant — glassmorphic floating bar === */
+.bar {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+}
+
+.hero {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border-radius: var(--r-2xl);
+  padding: var(--sp-6) var(--sp-8);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Inline variant for search page */
+.inline {
+  background: var(--clr-surface-lowest);
+  border-radius: var(--r-xl);
+  padding: var(--sp-5) var(--sp-6);
+  box-shadow: var(--shadow-md);
+}
+
+.fields {
+  display: flex;
+  gap: var(--sp-8);
+  flex: 1;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.field {
+  flex: 1;
+  min-width: 200px;
+}
+
+.fieldLabel {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--clr-on-surface-variant);
+  margin-bottom: 0.375rem;
+}
+
+/* Guest selector */
+.guestRow {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  border-bottom: 1.5px solid rgba(196,198,209,0.4);
+  padding: 0.625rem 0;
+  transition: border-color var(--t-base);
+}
+.guestRow:focus-within { border-bottom-color: var(--clr-primary); }
+.guestIcon { color: var(--clr-outline); flex-shrink: 0; }
+.guestBtn {
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--r-full);
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--clr-primary);
+  transition: background var(--t-fast);
+}
+.guestBtn:hover { background: var(--clr-primary-fixed); }
+.guestCount {
+  font-size: 0.9375rem;
+  color: var(--clr-on-surface);
+  flex: 1;
+  text-align: center;
+}
+
+.cta { flex-shrink: 0; align-self: flex-end; }
+
+@media (max-width: 640px) {
+  .hero, .inline { padding: var(--sp-5); }
+  .fields { gap: var(--sp-5); }
+  .cta { width: 100%; }
+}
