@@ -1,0 +1,91 @@
+/* ============================================================
+   DESIGN TOKENS — "The Atmospheric Horizon"
+   ============================================================ */
+:root {
+  /* === Primary === */
+  --clr-primary:              #00193c;
+  --clr-primary-container:    #002d62;
+  --clr-on-primary:           #ffffff;
+  --clr-primary-fixed:        #d4e4ff;
+  --clr-primary-fixed-dim:    #a6c8ff;
+  --clr-on-primary-fixed:     #001b3e;
+  --clr-on-primary-fixed-var: #004494;
+
+  /* === Secondary === */
+  --clr-secondary:            #535f70;
+  --clr-secondary-container:  #d7e3f7;
+  --clr-on-secondary:         #ffffff;
+  --clr-secondary-fixed:      #cee5ff;
+
+  /* === Surface Hierarchy === */
+  --clr-surface:                   #f7fafc;
+  --clr-surface-dim:               #d8dde1;
+  --clr-surface-lowest:            #ffffff;
+  --clr-surface-low:               #f1f4f6;
+  --clr-surface-container:         #eaeef1;
+  --clr-surface-high:              #e4e8eb;
+  --clr-surface-highest:           #e0e3e5;
+
+  /* === On-Surface === */
+  --clr-on-surface:         #181c1e;
+  --clr-on-surface-variant: #41484d;
+
+  /* === Outline === */
+  --clr-outline:         #71787e;
+  --clr-outline-variant: #c4c6d1;
+
+  /* === Semantic === */
+  --clr-error:             #ba1a1a;
+  --clr-error-container:   #ffdad6;
+  --clr-success:           #1a6b3c;
+  --clr-success-container: #c8f5d8;
+
+  /* === Typography === */
+  --font-serif: 'Noto Serif', Georgia, serif;
+  --font-sans:  'Manrope', system-ui, -apple-system, sans-serif;
+
+  /* === Spacing === */
+  --sp-1:  0.25rem;
+  --sp-2:  0.5rem;
+  --sp-3:  0.75rem;
+  --sp-4:  1rem;
+  --sp-5:  1.25rem;
+  --sp-6:  1.5rem;
+  --sp-8:  2rem;
+  --sp-10: 2.5rem;
+  --sp-12: 3rem;
+  --sp-16: 4rem;
+  --sp-20: 5rem;
+  --sp-24: 6rem;
+  --sp-32: 8rem;
+
+  /* === Radius === */
+  --r-sm:   0.25rem;
+  --r-md:   0.375rem;
+  --r-lg:   0.5rem;
+  --r-xl:   0.75rem;
+  --r-2xl:  1rem;
+  --r-3xl:  1.5rem;
+  --r-full: 9999px;
+
+  /* === Shadows (ambient, max 6% opacity) === */
+  --shadow-sm:     0 8px 32px rgba(24,28,30,0.05);
+  --shadow-md:     0 20px 60px rgba(24,28,30,0.06);
+  --shadow-lg:     0 40px 80px rgba(24,28,30,0.06);
+  --shadow-modal:  0 60px 120px rgba(24,28,30,0.08);
+
+  /* === Glassmorphism === */
+  --glass-bg:     rgba(247,250,252,0.82);
+  --glass-blur:   24px;
+  --glass-border: rgba(196,198,209,0.15);
+
+  /* === Transitions === */
+  --t-fast:   150ms cubic-bezier(0.4,0,0.2,1);
+  --t-base:   250ms cubic-bezier(0.4,0,0.2,1);
+  --t-slow:   400ms cubic-bezier(0.4,0,0.2,1);
+  --t-spring: 500ms cubic-bezier(0.34,1.56,0.64,1);
+
+  /* === Layout === */
+  --max-w:  1280px;
+  --nav-h:  72px;
+}

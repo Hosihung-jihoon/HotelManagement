@@ -1,0 +1,27 @@
+.wrap { display: flex; flex-direction: column; gap: 0.375rem; }
+
+.label {
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--clr-on-surface-variant);
+}
+
+.input {
+  background: transparent;
+  border: none;
+  border-bottom: 1.5px solid rgba(196,198,209,0.4);
+  padding: 0.625rem 0;
+  font-size: 0.9375rem;
+  color: var(--clr-on-surface);
+  outline: none;
+  transition: border-color var(--t-base);
+  width: 100%;
+}
+.input::placeholder { color: var(--clr-outline); }
+.input:focus { border-bottom-color: var(--clr-primary); }
+
+.hasError .input { border-bottom-color: var(--clr-error); }
+.error { font-size: 0.8125rem; color: var(--clr-error); }
