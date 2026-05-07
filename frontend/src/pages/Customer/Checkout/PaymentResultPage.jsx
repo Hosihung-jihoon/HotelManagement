@@ -40,21 +40,6 @@ function PaymentResultPage() {
       return;
     }
 
-    // 2. Detect VNPay callback (uses 'vnp_ResponseCode')
-    const vnpResponseCode = searchParams.get('vnp_ResponseCode');
-    if (vnpResponseCode !== null) {
-      const isSuccess = vnpResponseCode === '00';
-      setStatus(isSuccess ? 'success' : 'failed');
-      setData({
-        method: 'VNPay',
-        amount: parseInt(searchParams.get('vnp_Amount') || '0') / 100,
-        orderId: searchParams.get('vnp_TxnRef'),
-        message: isSuccess ? 'Thanh toán VNPay thành công' : 'Giao dịch VNPay không thành công',
-        transId: searchParams.get('vnp_TransactionNo')
-      });
-      return;
-    }
-
     // Default fallback
     setStatus('failed');
     setData({ message: 'Không tìm thấy thông tin giao dịch.' });

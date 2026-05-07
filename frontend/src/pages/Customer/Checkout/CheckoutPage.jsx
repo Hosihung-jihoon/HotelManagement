@@ -29,8 +29,10 @@ function CheckoutPage() {
     notes: '',
   });
 
-  const [paymentMethod, setPaymentMethod] = useState(''); // 'vnpay', 'momo' hoặc 'cash'
+  const [paymentMethod, setPaymentMethod] = useState(''); // 'vietqr', 'momo' hoặc 'cash'
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showQR, setShowQR] = useState(false);
+  const [qrData, setQrData] = useState({ amount: 0, code: '', qrUrl: '' });
 
   // Tính toán
   const roomTotal = cart.pricePerNight * cart.nights;
@@ -56,7 +58,7 @@ function CheckoutPage() {
         guestName: formData.fullName,
         guestPhone: formData.phone,
         guestEmail: formData.email,
-        paymentMethod: paymentMethod === 'cash' ? 'Cash' : (paymentMethod === 'momo' ? 'MoMo' : 'VNPay'),
+        paymentMethod: paymentMethod === 'cash' ? 'Cash' : (paymentMethod === 'momo' ? 'MoMo' : 'VietQR'),
         details: [{
           roomId: 1, // Mock room ID for demonstration
           checkInDate: new Date(cart.checkIn).toISOString(),
@@ -74,12 +76,15 @@ function CheckoutPage() {
           window.location.href = res.payUrl;
           return;
         }
-      } else if (paymentMethod === 'vnpay') {
-        const res = await paymentService.createVnPayPayment(finalTotal, `Thanh toán phòng ${cart.roomName}`, bookingId);
-        if (res.paymentUrl) {
-          window.location.href = res.paymentUrl;
-          return;
-        }
+      } else if (paymentMethod === 'vietqr') {
+        const res = await paymentService.createVietQR(finalTotal, bookingRes.data.bookingCode);
+        setQrData({ 
+          amount: finalTotal, 
+          code: bookingRes.data.bookingCode, 
+          qrUrl: res.data.qrDataURL 
+        });
+        setShowQR(true);
+        setIsProcessing(false);
       } else {
         setIsProcessing(false);
         alert('Đặt phòng thành công! Mã Code: ' + bookingRes.data.bookingCode);
@@ -165,13 +170,13 @@ function CheckoutPage() {
                   </div>
                 </label>
 
-                <label className={`payment-option vnpay ${paymentMethod === 'vnpay' ? 'selected' : ''}`}>
-                  <input type="radio" name="payment" value="vnpay" onChange={(e) => setPaymentMethod(e.target.value)} />
+                <label className={`payment-option vietqr ${paymentMethod === 'vietqr' ? 'selected' : ''}`}>
+                  <input type="radio" name="payment" value="vietqr" onChange={(e) => setPaymentMethod(e.target.value)} />
                   <div className="payment-info">
-                    <img src="https://vnpay.vn/s1/statics.vnpay.vn/2023/11/qr-vnpay-331.png" alt="VNPay" className="payment-logo" />
+                    <img src="https://api.vietqr.io/img/vietqr_light.png" alt="VietQR" className="payment-logo" />
                     <div>
-                      <span className="payment-name">Cổng thanh toán VNPAY</span>
-                      <span className="payment-desc">Quét mã QR hoặc dùng thẻ ATM/Visa/MasterCard.</span>
+                      <span className="payment-name">Chuyển khoản VietQR</span>
+                      <span className="payment-desc">Quét mã QR để chuyển khoản ngân hàng nhanh chóng.</span>
                     </div>
                   </div>
                 </label>
@@ -243,7 +248,40 @@ function CheckoutPage() {
         </div>
       </div>
 
-      {/* Payment methods now redirect directly to gateway */}
+      {/* VietQR Modal */}
+      {showQR && (
+        <div className="vietqr-overlay">
+          <div className="vietqr-modal">
+            <div className="vietqr-header">
+              <h3>Thanh toán VietQR</h3>
+              <button className="btn-close-modal" onClick={() => navigate('/my-bookings')}>×</button>
+            </div>
+            <div className="vietqr-body">
+              <p className="qr-guide">Vui lòng dùng ứng dụng Ngân hàng quét mã bên dưới</p>
+              <div className="qr-container">
+                {qrData.qrUrl ? (
+                  <img src={qrData.qrUrl} alt="VietQR Code" className="qr-image" />
+                ) : (
+                  <div className="qr-loading">Đang tải mã QR...</div>
+                )}
+              </div>
+              <div className="payment-details">
+                <div className="detail-row">
+                  <span>Số tiền:</span>
+                  <strong className="amount">{formatCurrency(qrData.amount)}</strong>
+                </div>
+                <div className="detail-row">
+                  <span>Nội dung:</span>
+                  <strong>Thanh toan phong {qrData.code}</strong>
+                </div>
+              </div>
+              <button className="btn-done" onClick={() => navigate('/my-bookings')}>
+                Tôi đã chuyển khoản thành công
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -40,9 +40,9 @@
 .payment-option.momo.selected .payment-name { color: #a50064; }
 .payment-option.momo input[type="radio"]:checked { accent-color: #a50064; }
 
-.payment-option.vnpay.selected { border-color: #005baa; background: #f0f7ff; }
-.payment-option.vnpay.selected .payment-name { color: #005baa; }
-.payment-option.vnpay input[type="radio"]:checked { accent-color: #005baa; }
+.payment-option.vietqr.selected { border-color: #005baa; background: #f0f7ff; }
+.payment-option.vietqr.selected .payment-name { color: #005baa; }
+.payment-option.vietqr input[type="radio"]:checked { accent-color: #005baa; }
 
 .payment-option input[type="radio"] { margin-top: 4px; transform: scale(1.3); }
 
@@ -86,40 +86,26 @@
 .btn-confirm-booking:disabled { background: #94a3b8; cursor: not-allowed; transform: none; box-shadow: none; }
 .policy-text { font-size: 0.75rem; color: #94a3b8; text-align: center; margin-top: 16px; line-height: 1.4; }
 
-/* VNPay Mock Modal */
-.vnpay-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(4px); }
-.vnpay-modal { background: #fff; width: 440px; border-radius: 16px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-@keyframes popIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+/* VietQR Modal Styles */
+.vietqr-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(5px); }
+.vietqr-modal { background: #fff; width: 400px; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.2); animation: modalFadeIn 0.3s ease-out; }
+@keyframes modalFadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-.vnpay-header { background: #f0f8ff; padding: 16px 24px; border-bottom: 2px solid #e0f2fe; display: flex; justify-content: space-between; align-items: center; }
-.vnpay-header img { height: 32px; object-fit: contain; }
-.btn-close-vnpay { background: transparent; border: none; font-size: 1.25rem; font-weight: 700; color: #64748b; cursor: pointer; }
-.btn-close-vnpay:hover { color: #0f172a; }
+.vietqr-header { padding: 20px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; background: #f8fafc; }
+.vietqr-header h3 { margin: 0; font-size: 1.2rem; color: #1e293b; }
+.btn-close-modal { background: none; border: none; font-size: 1.8rem; color: #94a3b8; cursor: pointer; line-height: 1; }
 
-.vnpay-body { padding: 24px; text-align: center; }
+.vietqr-body { padding: 24px; text-align: center; }
+.qr-guide { color: #64748b; font-size: 0.9rem; margin-bottom: 20px; }
+.qr-container { background: #fff; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; display: inline-block; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+.qr-image { width: 220px; height: 220px; display: block; }
 
-.vnpay-invoice-info { background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 16px; margin-bottom: 24px; text-align: left; }
-.vnpay-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; color: #475569; }
-.vnpay-row:last-child { margin-bottom: 0; }
-.vnpay-row.highlight { margin-top: 12px; padding-top: 12px; border-top: 1px solid #e2e8f0; align-items: center; }
-.vnpay-amount { font-size: 1.3rem; color: #e11d48; }
+.payment-details { background: #f8fafc; border-radius: 12px; padding: 16px; margin-bottom: 24px; text-align: left; }
+.detail-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.95rem; color: #475569; }
+.detail-row:last-child { margin-bottom: 0; }
+.detail-row .amount { color: #ef4444; font-weight: 800; font-size: 1.1rem; }
 
-.qr-section h4 { color: #0f172a; font-size: 1rem; margin-bottom: 16px; }
-.qr-code-box { border: 2px solid #3b82f6; border-radius: 12px; padding: 16px; display: inline-block; background: #fff; margin-bottom: 12px; box-shadow: 0 4px 14px rgba(59,130,246,0.15); }
-.qr-code-box img { width: 140px; height: 140px; }
-.qr-section p { font-size: 0.85rem; color: #64748b; margin-bottom: 24px; }
-
-.card-section { border-top: 1px solid #e2e8f0; padding-top: 24px; }
-.card-section h4 { font-size: 0.95rem; color: #475569; margin-bottom: 16px; font-weight: 600; }
-.btn-mock-pay { background: #1d4ed8; color: #fff; border: none; padding: 12px 20px; border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: background 0.2s; width: 100%; }
-.btn-mock-pay:hover { background: #1e40af; }
-
-.vnpay-processing { padding: 40px 0; }
-.spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px; }
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.vnpay-footer { background: #f8fafc; padding: 12px; text-align: center; border-top: 1px solid #e2e8f0; }
-.vnpay-footer p { margin: 0; font-size: 0.85rem; color: #64748b; }
-.vnpay-footer strong { color: #ea580c; }
+.btn-done { width: 100%; background: #3b82f6; color: #fff; border: none; padding: 14px; border-radius: 10px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+.btn-done:hover { background: #2563eb; }
 
 @media (max-width: 900px) { .checkout-container { grid-template-columns: 1fr; } .checkout-right { position: relative; top: 0; } }
