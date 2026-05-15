@@ -14,7 +14,7 @@ export default function useSignalR() {
   const connectionRef = useRef(null);
 
   useEffect(() => {
-    const token = sessionStorage.getItem('token');
+    const token = localStorage.getItem('token');
 
     const connection = new HubConnectionBuilder()
       .withUrl('http://localhost:5280/hubs/notification', {

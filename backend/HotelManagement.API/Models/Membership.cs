@@ -24,6 +24,14 @@ public class Membership
     [Column("is_deleted")]
     public bool IsDeleted { get; set; } = false;
 
+    [Column("amenities")]
+    [MaxLength(1000)]
+    public string? Amenities { get; set; }
+
+    [Column("services")]
+    [MaxLength(1000)]
+    public string? Services { get; set; }
+
     // Navigation
     public ICollection<User> Users { get; set; } = new List<User>();
 }

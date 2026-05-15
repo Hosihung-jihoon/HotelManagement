@@ -12,9 +12,10 @@
 |----------|---------| 
 | **Tên** | Hệ thống Quản trị Khách sạn (Hotel ERP & Booking Portal) |
 | **Mô hình** | Monorepo — Backend + Frontend cùng 1 repository |
+| **Cách tiếp cận DB** | **Database First** (Không chạy auto-migrate EF Core lúc khởi động) |
 | **Quy mô** | 6 Module nghiệp vụ · 28 Entity Model · 4 Actors · 6 thành viên |
 | **Timeline** | 6 Sprint (10/03 – 20/04/2026) |
-| **Trạng thái hiện tại** | ✅ Sprint 4 hoàn thành · ⏳ Sprint 5 sắp bắt đầu |
+| **Trạng thái hiện tại** | 🚧 Sprint 5 đang chạy (Hoàn thiện UI/UX, Fixbugs, Tích hợp BE↔FE) |
 
 ### Actors & Phân quyền (RBAC)
 
@@ -112,6 +113,10 @@ Controller → Service → Repository → DbContext → Database
 ```
 
 > **Tạo module mới:** Copy mẫu `RoomType` (Controller + Service + IService + Repository) rồi đổi tên entity.
+
+### 3.7. Database First Approach
+
+> Dự án áp dụng phương pháp **Database First**. Schema database được quy định tử trước, và model Entity Framework phải được ánh xạ tay hoặc tự sinh (scaffold) đúng theo DB. **Tuyệt đối KHÔNG CHẠY `db.Database.Migrate()` lúc runtime** vì các bảng đã tồn tại sẵn trong CSDL rồi.
 
 ---
 
@@ -362,7 +367,16 @@ POST   /api/LossAndDamages              → Báo cáo hư hỏng/mất mát
 | `/bookings` | `BookingsPage` | ✅ CRUD đầy đủ |
 | `/users` | `UsersPage` | ✅ Quản lý nhân sự |
 | `/roles` | `RolesPage` | ✅ RBAC phân quyền |
-| — | `Amenities`, `Articles`, `Invoices`, `Memberships`, `Reviews`, `Services`, `Vouchers` | 🚧 Đã tạo folder, đang phát triển |
+| `/vouchers` | `VouchersPage` | ✅ Quản lý mã giảm giá |
+| `/audit-logs` | `AuditLogPage` | ✅ Nhật ký hệ thống |
+| `/articles/*` | `ArticlesPage`, `ArticleEditor` | ✅ Quản lý bài viết blog |
+| `/locations/*` | `LocationsPage`, `LocationMap` | ✅ Điểm tham quan |
+| `/members` | `MembersPage` | ✅ Quản lý thành viên |
+| `/front-desk/*` | `TodayArrivals`, `CurrentGuests`, `Checkout` | ✅ Quầy lễ tân, deep-link navigation |
+| `/services` | `ServicesPage` | ✅ Quản lý dịch vụ |
+| `/amenities` | `AmenitiesPage` | ✅ Quản lý tiện nghi |
+| `/membership` (Client) | `MembershipPage` | ✅ Giao diện hạng thành viên cho khách hàng |
+| — | `Invoices`, `Reviews` | 🚧 Đã tạo folder, đang phát triển |
 
 ---
 
@@ -419,6 +433,15 @@ POST   /api/LossAndDamages              → Báo cáo hư hỏng/mất mát
 - ✅ **HotelDbContext.cs** — cấu hình dual-provider, Check Constraint tương thích SQLite/SQL Server
 - ✅ **Program.cs** — DI dynamic theo `DatabaseProvider` (SqlServer / Sqlite)
 - ✅ `.gitignore` cập nhật — loại trừ `*.db`, `*.db-shm`, `*.db-wal`
+
+### Đã hoàn thành trong Sprint 5 (Đang cập nhật)
+
+- ✅ **Chuẩn hóa UI component:** Cập nhật đồng bộ `CustomSelect` cho tất cả dropdown (Users, Vouchers, Audit Log, Rooms).
+- ✅ **Fix critical backend bug:** Thêm logic bắt buộc gọi validation thanh toán (`TotalAmount - PaidAmount <= 0`) trong `BookingService.cs` trước khi cập nhật trạng thái Checkout, phòng tránh lỗi trạng thái booking cập nhật sai.
+- ✅ **Deep-linking & Navigation:** Tích hợp tính năng trỏ nhanh từ Dashboard Lễ tân (`Today Arrivals`) trực tiếp đến modal chi tiết cụ thể (`BookingsPage`).
+- ✅ **New Modules (Frontend):** Hoàn thành giao diện & tích hợp cho các trang `Vouchers`, `AuditLog`, `Articles`, `Locations`, `Members`, và module `Front Desk`.
+- ✅ **New Client Features:** Đã thêm trang Hạng Thành Viên (`MembershipPage`) hiển thị thông tin các bậc thẻ khách hàng thân thiết.
+- ✅ **New Admin Modules:** Hoàn thiện tích hợp hiển thị danh sách Dịch Vụ (`Services`) và Tiện Nghi (`Amenities`) vào Admin Portal để giải quyết lỗi tải dữ liệu trên UI.
 
 ---
 

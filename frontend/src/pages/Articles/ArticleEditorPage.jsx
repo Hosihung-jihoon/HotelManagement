@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import ReactQuill from 'react-quill';
+import ReactQuill from 'react-quill-new';
 import {
   ChevronLeft, Save, Send, Eye, EyeOff, ImagePlus, RefreshCw,
   FileText, Tag, MapPin, LayoutList,
 } from 'lucide-react';
 import axiosClient from '../../api/axiosClient';
-import 'react-quill/dist/quill.snow.css';
+import 'react-quill-new/dist/quill.snow.css';
 import './ArticleEditorPage.css';
 
 /* =========== Quill Toolbar Config =========== */

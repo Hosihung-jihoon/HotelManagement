@@ -2,21 +2,23 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 /**
- * PrivateRoute - Bảo vệ route admin.
- * Nếu chưa đăng nhập → redirect sang /login.
+ * PrivateRoute — Bảo vệ /admin/* routes.
+ * - Chưa đăng nhập → /login
+ * - Đã đăng nhập nhưng không phải admin role → / (client site)
  */
 function PrivateRoute({ children }) {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, isAdmin, loading } = useAuth();
 
   if (loading) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
         height: '100vh',
         fontSize: '1.1rem',
-        color: '#666'
+        color: '#666',
+        fontFamily: 'Manrope, sans-serif',
       }}>
         Đang tải...
       </div>
@@ -24,7 +26,12 @@ function PrivateRoute({ children }) {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/client-login" replace />;
+  }
+
+  if (!isAdmin) {
+    // Đã đăng nhập nhưng là Guest/Customer → về client site
+    return <Navigate to="/" replace />;
   }
 
   return children;
