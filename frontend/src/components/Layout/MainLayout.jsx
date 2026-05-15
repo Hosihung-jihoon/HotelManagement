@@ -10,6 +10,7 @@ import {
   Menu, Bell, User as UserIcon, Sun, Moon, Hotel,
   MapPin, FileText, Layers, Target, X, CheckCheck,
   ConciergeBell, UserCheck, LogOut, History, Tag, ChevronDown,
+  Coffee, Wifi,
 } from 'lucide-react';
 
 /**
@@ -31,7 +32,7 @@ function MainLayout() {
 
   // Auto-expand reception group when on front-desk routes
   useEffect(() => {
-    if (location.pathname.startsWith('/front-desk')) {
+    if (location.pathname.startsWith('/admin/front-desk')) {
       setReceptionOpen(true);
     }
   }, [location.pathname]);
@@ -100,14 +101,14 @@ function MainLayout() {
 
   // Front-desk sub-items
   const receptionItems = [
-    { path: '/front-desk/bookings', label: 'Quản lý đặt phòng', icon: <CalendarCheck size={16} /> },
-    { path: '/front-desk/today-arrivals', label: 'Khách đến hôm nay', icon: <UserCheck size={16} /> },
-    { path: '/front-desk/current-guests', label: 'Khách đang lưu trú', icon: <Users size={16} /> },
-    { path: '/front-desk/checkout', label: 'Thủ tục trả phòng', icon: <LogOut size={16} /> },
+    { path: '/admin/front-desk/bookings',       label: 'Quản lý đặt phòng',  icon: <CalendarCheck size={16} /> },
+    { path: '/admin/front-desk/today-arrivals', label: 'Khách đến hôm nay',  icon: <UserCheck size={16} /> },
+    { path: '/admin/front-desk/current-guests', label: 'Khách đang lưu trú', icon: <Users size={16} /> },
+    { path: '/admin/front-desk/checkout',       label: 'Thủ tục trả phòng',  icon: <LogOut size={16} /> },
   ];
 
   const menuItems = [
-    { path: '/', label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
+    { path: '/admin', label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
     // Reception group (accordion)
     {
       type: 'group',
@@ -115,21 +116,23 @@ function MainLayout() {
       icon: <ConciergeBell size={20} />,
       items: receptionItems,
     },
-    { path: '/rooms', label: 'Quản lý phòng', icon: <BedDouble size={20} /> },
-    { path: '/room-types', label: 'Hạng phòng', icon: <Layers size={20} /> },
-    { path: '/inventory', label: 'Kho vật tư', icon: <Package size={20} /> },
-    { path: '/losses', label: 'Thất thoát & đền bù', icon: <AlertTriangle size={20} /> },
-    { path: '/housekeeping', label: 'Dọn phòng', icon: <Sparkles size={20} /> },
-    { path: '/vouchers', label: 'Voucher', icon: <Tag size={20} /> },
-    { path: '/locations', label: 'Địa điểm', icon: <MapPin size={20} /> },
-    { path: '/articles', label: 'Bài viết', icon: <FileText size={20} /> },
-    { path: '/members', label: 'Khách hàng', icon: <Target size={20} /> },
-    { path: '/users', label: 'Danh sách nhân sự', icon: <Users size={20} /> },
-    { path: '/roles', label: 'Vai trò & phân quyền', icon: <ShieldCheck size={20} /> },
-    { path: '/audit-logs', label: 'Nhật ký hệ thống', icon: <History size={20} /> },
+    { path: '/admin/rooms',       label: 'Quản lý phòng',        icon: <BedDouble size={20} /> },
+    { path: '/admin/room-types',  label: 'Hạng phòng',           icon: <Layers size={20} /> },
+    { path: '/admin/inventory',   label: 'Kho vật tư',           icon: <Package size={20} /> },
+    { path: '/admin/losses',      label: 'Thất thoát & đền bù',  icon: <AlertTriangle size={20} /> },
+    { path: '/admin/housekeeping',label: 'Dọn phòng',            icon: <Sparkles size={20} /> },
+    { path: '/admin/vouchers',    label: 'Voucher',              icon: <Tag size={20} /> },
+    { path: '/admin/locations',   label: 'Địa điểm',             icon: <MapPin size={20} /> },
+    { path: '/admin/services',    label: 'Dịch vụ',              icon: <Coffee size={20} /> },
+    { path: '/admin/amenities',   label: 'Tiện nghi',            icon: <Wifi size={20} /> },
+    { path: '/admin/articles',    label: 'Bài viết',             icon: <FileText size={20} /> },
+    { path: '/admin/members',     label: 'Khách hàng',           icon: <Target size={20} /> },
+    { path: '/admin/users',       label: 'Danh sách nhân sự',    icon: <Users size={20} /> },
+    { path: '/admin/roles',       label: 'Vai trò & phân quyền', icon: <ShieldCheck size={20} /> },
+    { path: '/admin/audit-logs',  label: 'Nhật ký hệ thống',     icon: <History size={20} /> },
   ];
 
-  const isReceptionActive = location.pathname.startsWith('/front-desk');
+  const isReceptionActive = location.pathname.startsWith('/admin/front-desk');
 
   return (
     <div className="layout">
@@ -191,7 +194,7 @@ function MainLayout() {
                 className={({ isActive }) =>
                   `nav-item ${isActive ? 'active' : ''}`
                 }
-                end={item.path === '/'}
+                end={item.path === '/admin'}
               >
                 <span className="nav-icon">{item.icon}</span>
                 {sidebarOpen && <span className="nav-label">{item.label}</span>}

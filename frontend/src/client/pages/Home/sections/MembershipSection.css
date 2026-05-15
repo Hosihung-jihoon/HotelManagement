@@ -1,0 +1,98 @@
+/* ── Membership ── */
+.c-membership { background: var(--c-surface); }
+
+.c-membership__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-24);
+  align-items: start;
+}
+
+.c-tier-card {
+  background: var(--c-surface-container-lowest);
+  border-radius: var(--r-2xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  transition: transform var(--duration-normal) var(--ease-out),
+              box-shadow var(--duration-normal) var(--ease-out);
+  position: relative;
+  cursor: default;
+}
+.c-tier-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-xl);
+}
+
+.c-tier-card--popular {
+  transform: scale(1.04);
+  box-shadow: var(--shadow-xl);
+  border: 2px solid rgba(196,198,209,0.25);
+}
+.c-tier-card--popular:hover { transform: scale(1.04) translateY(-4px); }
+
+.c-tier-card__popular-badge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: var(--c-primary);
+  color: var(--c-on-primary);
+  font-family: var(--font-sans);
+  font-size: var(--text-caption);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: var(--sp-4) var(--sp-10, 0.625rem);
+  border-radius: var(--r-full);
+  z-index: 1;
+}
+
+.c-tier-card__header {
+  padding: var(--sp-32) var(--sp-24) var(--sp-24);
+  text-align: center;
+}
+.c-tier-card__icon {
+  margin-bottom: var(--sp-12);
+  opacity: 0.85;
+}
+.c-tier-card__name {
+  color: rgba(0,0,0,0.75);
+  margin-bottom: var(--sp-8);
+  font-family: var(--font-serif);
+}
+.c-tier-card__points {
+  font-family: var(--font-sans);
+  font-size: var(--text-label-md);
+  color: rgba(0,0,0,0.6);
+  font-weight: 600;
+}
+
+.c-tier-card__body { padding: var(--sp-24) var(--sp-24) var(--sp-28); }
+
+.c-tier-card__benefits {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-12);
+  margin-bottom: var(--sp-24);
+}
+.c-tier-card__benefit {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-10, 0.625rem);
+  font-family: var(--font-sans);
+  font-size: var(--text-body-md);
+  color: var(--c-on-surface-variant);
+  line-height: 1.5;
+}
+
+.c-tier-card__cta {
+  width: 100%;
+  justify-content: center;
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .c-membership__grid { grid-template-columns: 1fr; max-width: 420px; margin: 0 auto; }
+  .c-tier-card--popular { transform: none; }
+  .c-tier-card--popular:hover { transform: translateY(-6px); }
+}

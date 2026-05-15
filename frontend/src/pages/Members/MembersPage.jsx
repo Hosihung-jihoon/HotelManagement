@@ -167,6 +167,7 @@ export default function MembersPage() {
               <th>Email</th>
               <th>Số điện thoại</th>
               <th>Phân Quyền</th>
+              <th>Tiền Đã Tiêu</th>
               <th>Hạng Thành Viên</th>
             </tr>
           </thead>
@@ -196,18 +197,35 @@ export default function MembersPage() {
                     </span>
                   </td>
                   <td>
+                    <strong>{u.totalSpent ? u.totalSpent.toLocaleString('vi-VN') : 0}đ</strong>
+                  </td>
+                  <td>
                     {u.membershipName ? (
-                      <span style={{ 
-                        color: getTierTextColor(u.membershipName), 
-                        fontWeight: 'bold', 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        gap: '4px' 
-                      }}>
-                        <Star size={14} fill={getTierTextColor(u.membershipName)} /> {u.membershipName}
-                      </span>
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ 
+                          color: getTierTextColor(u.membershipName), 
+                          fontWeight: 'bold', 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: '4px' 
+                        }}>
+                          <Star size={14} fill={getTierTextColor(u.membershipName)} /> {u.membershipName}
+                        </span>
+                        {u.nextTierName && (
+                          <small style={{ color: '#64748b', fontSize: '11px', marginTop: '2px' }}>
+                            Cần {u.remainingToNextTier?.toLocaleString('vi-VN')}đ lên {u.nextTierName}
+                          </small>
+                        )}
+                      </div>
                     ) : (
-                      <span style={{ color: '#9ca3af' }}>Chưa có hạng</span>
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ color: '#9ca3af' }}>Chưa có hạng</span>
+                        {u.nextTierName && (
+                          <small style={{ color: '#64748b', fontSize: '11px', marginTop: '2px' }}>
+                            Cần {u.remainingToNextTier?.toLocaleString('vi-VN')}đ lên {u.nextTierName}
+                          </small>
+                        )}
+                      </div>
                     )}
                   </td>
                 </tr>

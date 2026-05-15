@@ -1,0 +1,96 @@
+/* ── Blog Preview ── */
+.c-blog-preview { background: var(--c-surface); }
+
+.c-blog-preview__grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: var(--sp-24);
+}
+
+/* Blog card */
+.c-blog-card {
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+}
+
+.c-blog-card__img-wrap {
+  position: relative;
+  overflow: hidden;
+}
+.c-blog-card__img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  transition: transform var(--duration-slow) var(--ease-out);
+}
+.c-blog-card--featured .c-blog-card__img { height: 280px; }
+.c-blog-card:hover .c-blog-card__img { transform: scale(1.05); }
+
+.c-blog-card__cat {
+  position: absolute;
+  top: var(--sp-12);
+  left: var(--sp-12);
+  background: var(--c-primary);
+  color: var(--c-on-primary);
+}
+
+.c-blog-card__body {
+  padding: var(--sp-20) var(--sp-24) var(--sp-24);
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.c-blog-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-12);
+  margin-bottom: var(--sp-12);
+}
+.c-blog-card__meta span {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  font-family: var(--font-sans);
+  font-size: var(--text-caption);
+  color: var(--c-on-surface-variant);
+}
+
+.c-blog-card__title {
+  margin-bottom: var(--sp-12);
+  color: var(--c-on-surface);
+  line-height: 1.35;
+  font-size: var(--text-headline-md);
+}
+.c-blog-card--featured .c-blog-card__title { font-size: var(--text-headline-lg); }
+
+.c-blog-card__excerpt {
+  flex: 1;
+  font-size: var(--text-body-md);
+  line-height: 1.65;
+  margin-bottom: var(--sp-16);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.c-blog-card__read-more {
+  align-self: flex-start;
+  padding-left: 0;
+  color: var(--c-primary);
+  font-weight: 600;
+}
+.c-blog-card__read-more:hover { background: transparent; text-decoration: underline; }
+
+/* ── Responsive ── */
+@media (max-width: 1024px) {
+  .c-blog-preview__grid { grid-template-columns: 1fr 1fr; }
+  .c-blog-card--featured { grid-column: 1 / -1; }
+  .c-blog-card--featured .c-blog-card__img { height: 320px; }
+}
+@media (max-width: 640px) {
+  .c-blog-preview__grid { grid-template-columns: 1fr; }
+  .c-blog-card--featured { grid-column: unset; }
+}

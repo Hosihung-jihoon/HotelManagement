@@ -50,6 +50,8 @@ public class HotelDbContext : DbContext
     public DbSet<Voucher> Vouchers { get; set; }
     public DbSet<Notification> Notifications { get; set; }
     public DbSet<Equipment> Equipments { get; set; }
+    public DbSet<HotelBranch> HotelBranches { get; set; }
+    public DbSet<RoleDashboardPeriodState> DashboardSnapshots { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

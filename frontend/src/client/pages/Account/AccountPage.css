@@ -1,0 +1,66 @@
+/* AccountPage.css */
+.c-account { padding-bottom: var(--sp-80); min-height: 100vh; background: var(--c-surface-container-low); }
+.c-account .container { padding-top: var(--sp-24); }
+.c-account__layout { display: grid; grid-template-columns: 280px 1fr; gap: var(--sp-32); align-items: start; }
+
+/* Sidebar */
+.c-account__sidebar { position: sticky; top: calc(72px + var(--sp-24)); }
+.c-account__user-card { padding: var(--sp-24) !important; text-align: center; margin-bottom: var(--sp-16); }
+.c-account__avatar {
+  width: 72px; height: 72px; border-radius: var(--r-full);
+  background: linear-gradient(135deg, var(--c-primary), var(--c-primary-container));
+  color: var(--c-on-primary); font-family: var(--font-serif); font-size: var(--text-headline-md);
+  display: flex; align-items: center; justify-content: center; margin: 0 auto var(--sp-12);
+}
+.c-account__name { margin-bottom: var(--sp-4); }
+
+.c-account__tabs { display: flex; flex-direction: column; gap: var(--sp-4); }
+.c-account__tab-btn {
+  display: flex; align-items: center; gap: var(--sp-12);
+  padding: var(--sp-12) var(--sp-16); border-radius: var(--r-lg);
+  background: none; border: none; cursor: pointer;
+  font-family: var(--font-sans); font-size: var(--text-label-lg); font-weight: 500;
+  color: var(--c-on-surface-variant); text-align: left; width: 100%;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+.c-account__tab-btn:hover { background: var(--c-surface-container-low); color: var(--c-primary); }
+.c-account__tab-btn.active { background: var(--c-secondary-container); color: var(--c-primary); font-weight: 700; }
+.c-account__tab-arrow { margin-left: auto; }
+
+/* Content */
+.c-account__panel { animation: fadeUp 0.3s var(--ease-out); }
+.c-account__panel-title { margin-bottom: var(--sp-24); color: var(--c-primary); font-family: var(--font-serif); }
+
+/* Stats */
+.c-account__stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-16); margin-bottom: var(--sp-32); }
+.c-stat-card { padding: var(--sp-20) var(--sp-24) !important; display: flex; flex-direction: column; gap: var(--sp-8); }
+.c-stat-card__label { font-family: var(--font-sans); font-size: var(--text-label-md); color: var(--c-on-surface-variant); text-transform: uppercase; letter-spacing: 0.05em; }
+.c-stat-card__value { display: flex; align-items: center; gap: var(--sp-8); }
+.c-stat-card__value.display-md { font-size: var(--text-headline-lg); color: var(--c-primary); }
+
+/* Bookings */
+.c-bookings-list, .c-account__upcoming { display: flex; flex-direction: column; gap: var(--sp-16); }
+.c-booking-card, .c-booking-mini-card { cursor: default; }
+
+/* Membership */
+.c-membership-progress-bar { width: 100%; height: 8px; background: rgba(0,0,0,0.15); border-radius: var(--r-full); margin-top: var(--sp-16); overflow: hidden; }
+.c-membership-progress-fill { height: 100%; background: rgba(0,0,0,0.4); border-radius: var(--r-full); transition: width var(--duration-slow) var(--ease-out); }
+
+/* Profile */
+.c-profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-24); }
+
+/* Empty */
+.c-empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: var(--sp-64); text-align: center; gap: var(--sp-12); }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .c-account__layout { grid-template-columns: 1fr; }
+  .c-account__sidebar { position: static; }
+  .c-account__stats-grid { grid-template-columns: 1fr 1fr; }
+  .c-account__tabs { flex-direction: row; flex-wrap: wrap; }
+  .c-account__tab-arrow { display: none; }
+}
+@media (max-width: 560px) {
+  .c-account__stats-grid { grid-template-columns: 1fr; }
+  .c-profile-grid { grid-template-columns: 1fr; }
+}
