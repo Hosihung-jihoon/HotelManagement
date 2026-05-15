@@ -45,24 +45,16 @@ public class ArticlesController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<ArticleDto>> Create([FromForm] CreateArticleDto dto)
+    public async Task<ActionResult<ArticleDto>> Create([FromBody] CreateArticleDto dto)
     {
-        if (dto.ThumbnailFile != null)
-        {
-            dto.ThumbnailUrl = await _cloudinaryService.UploadImageAsync(dto.ThumbnailFile);
-        }
 
         var result = await _service.CreateAsync(dto);
         return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, [FromForm] UpdateArticleDto dto)
+    public async Task<IActionResult> Update(int id, [FromBody] UpdateArticleDto dto)
     {
-        if (dto.ThumbnailFile != null)
-        {
-            dto.ThumbnailUrl = await _cloudinaryService.UploadImageAsync(dto.ThumbnailFile);
-        }
 
         var success = await _service.UpdateAsync(id, dto);
         if (!success)
