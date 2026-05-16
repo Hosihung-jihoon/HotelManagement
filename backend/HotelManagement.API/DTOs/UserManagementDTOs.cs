@@ -24,6 +24,9 @@ public class UserListDto
     public int? RoleId { get; set; }
     public string? RoleName { get; set; }
     public string? MembershipName { get; set; }
+    public decimal TotalSpent { get; set; } = 0;
+    public decimal? RemainingToNextTier { get; set; }
+    public string? NextTierName { get; set; }
 }
 
 // ========== Membership Stats ==========

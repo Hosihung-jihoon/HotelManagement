@@ -15,7 +15,7 @@ export async function uploadToCloudinary(file, folder = 'hotel') {
   const formData = new FormData();
   formData.append('file', file);
 
-  const token = sessionStorage.getItem('token');
+  const token = localStorage.getItem('token');
   const headers = {};
   if (token) headers['Authorization'] = `Bearer ${token}`;
 

@@ -17,6 +17,7 @@
     "react-dom": "^19.2.0",
     "react-is": "^19.2.5",
     "react-quill": "^2.0.0",
+    "react-quill-new": "^3.8.3",
     "react-router-dom": "^7.13.1",
     "recharts": "^3.8.0",
     "vietqr": "^1.1.9"
