@@ -35,6 +35,23 @@ const paymentService = {
     return response.data; // Returns { data: { qrDataURL: "..." } }
   },
 
+  createMomoPayment: async (amount, orderInfo, bookingId) => {
+    const response = await axiosClient.post('/payment/Momo/create', {
+      bookingId,
+      amount,
+      orderInfo
+    });
+    return response.data; // Returns { payUrl: "..." }
+  },
+
+  createVnPayPayment: async (amount, bookingId) => {
+    const response = await axiosClient.post('/payment/vnpay', {
+      bookingId,
+      amount
+    });
+    return response.data; // Returns { paymentUrl: "..." }
+  },
+
   getVietQRLink: ({ bank, accountName, accountNumber, amount, memo, template }) => {
     return vietQR.genQuickLink({
       bank: bank || '970415',

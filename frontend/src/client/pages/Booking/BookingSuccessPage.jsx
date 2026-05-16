@@ -55,6 +55,19 @@ export default function BookingSuccessPage() {
             </div>
           </div>
 
+          {/* VietQR Display */}
+          {state.qrUrl && (
+            <div className="c-success__qr-box" style={{ textAlign: 'center', marginTop: 'var(--sp-24)', marginBottom: 'var(--sp-24)', background: 'rgba(255,255,255,0.05)', padding: 'var(--sp-16)', borderRadius: 'var(--r-lg)' }}>
+              <h3 className="title-md" style={{ marginBottom: 'var(--sp-12)' }}>
+                {lang === 'vi' ? 'Quét mã để thanh toán' : 'Scan QR to pay'}
+              </h3>
+              <img src={state.qrUrl} alt="VietQR" style={{ maxWidth: '100%', height: 'auto', borderRadius: 'var(--r-md)', maxHeight: '350px' }} />
+              <p className="text-muted" style={{ marginTop: 'var(--sp-12)' }}>
+                {lang === 'vi' ? 'Vui lòng sử dụng App ngân hàng để quét mã này.' : 'Please use your banking app to scan this code.'}
+              </p>
+            </div>
+          )}
+
           {/* Booking details */}
           {state.room && (
             <div className="c-success__details">
