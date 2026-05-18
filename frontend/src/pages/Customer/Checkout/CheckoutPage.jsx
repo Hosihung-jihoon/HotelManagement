@@ -108,6 +108,12 @@ function CheckoutPage() {
           window.location.href = res.payUrl;
           return;
         }
+      } else if (paymentMethod === 'vnpay') {
+        const res = await paymentService.createVnPayPayment(finalTotal, bookingId);
+        if (res.paymentUrl) {
+          window.location.href = res.paymentUrl;
+          return;
+        }
       } else if (paymentMethod === 'vietqr') {
         const res = await paymentService.createVietQR(finalTotal, bookingRes.data.bookingCode);
         setQrData({ 
@@ -198,6 +204,17 @@ function CheckoutPage() {
                     <div>
                       <span className="payment-name">Ví điện tử MoMo</span>
                       <span className="payment-desc">Thanh toán nhanh chóng qua ứng dụng MoMo.</span>
+                    </div>
+                  </div>
+                </label>
+
+                <label className={`payment-option vnpay ${paymentMethod === 'vnpay' ? 'selected' : ''}`}>
+                  <input type="radio" name="payment" value="vnpay" onChange={(e) => setPaymentMethod(e.target.value)} />
+                  <div className="payment-info">
+                    <img src="https://vnpay.vn/s1/statics.vnpay.vn/2023/6/0oxp5wma67un1686271761851.png" alt="VNPAY" className="payment-logo" />
+                    <div>
+                      <span className="payment-name">Cổng thanh toán VNPAY</span>
+                      <span className="payment-desc">Thanh toán qua ATM, Thẻ quốc tế hoặc Ứng dụng ngân hàng.</span>
                     </div>
                   </div>
                 </label>

@@ -3,6 +3,7 @@ import { useParams, useSearchParams, useNavigate, Link } from 'react-router-dom'
 import { useLang } from '../../i18n/LangContext';
 import { useAuth } from '../../../context/AuthContext';
 import { getRoomById, validateVoucher, createBooking } from '../../api/clientApi';
+import paymentService from '../../../api/paymentService';
 import { Check, AlertCircle, ChevronRight, CreditCard, Banknote, Smartphone, Tag } from 'lucide-react';
 import './BookingPage.css';
 
@@ -100,20 +101,44 @@ export default function BookingPage() {
   };
 
   const handleConfirm = async () => {
-    if (paymentMethod !== 'cash') {
-      showToast(t('booking.paymentUnavailable'), 4000);
-      return;
-    }
     setSubmitting(true);
     try {
-      await createBooking({
+      const res = await createBooking({
         roomId, checkInDate: checkIn, checkOutDate: checkOut,
         adults, numRooms, guestInfo: guest,
         voucherId: voucherApplied ? voucherApplied.id : null,
         paymentMethod, totalAmount: total,
         pricePerNight: price,
       });
-      navigate('/booking/success', { state: { room, checkIn, checkOut, total, guestEmail: guest.email } });
+      const bookingId = res.data?.id;
+
+      const bookingCode = res.data?.bookingCode || `BK${bookingId}`;
+
+      if (paymentMethod === 'vietqr') {
+        try {
+          const qrRes = await paymentService.createVietQR(total, bookingCode);
+          navigate('/booking/success', { state: { room, checkIn, checkOut, total, guestEmail: guest.email, qrUrl: qrRes.data?.qrDataURL || `https://api.vietqr.io/image/970415-113366668888-JG63EEf.jpg?amount=${total}&addInfo=Thanh toan phong ${bookingCode}`, bookingCode } });
+          return;
+        } catch (qrErr) {
+          console.error('Error generating VietQR', qrErr);
+          // Fallback to static URL if API fails
+          const fallbackQr = `https://api.vietqr.io/image/970415-113366668888-JG63EEf.jpg?amount=${total}&addInfo=Thanh toan phong ${bookingCode}`;
+          navigate('/booking/success', { state: { room, checkIn, checkOut, total, guestEmail: guest.email, qrUrl: fallbackQr, bookingCode } });
+          return;
+        }
+      } else if (paymentMethod === 'momo' && bookingId) {
+        const momoRes = await paymentService.createMomoPayment(
+          total,
+          lang === 'vi' ? `Thanh toán phòng ${room?.name}` : `Room payment ${room?.name}`,
+          bookingId
+        );
+        if (momoRes.payUrl) {
+          window.location.href = momoRes.payUrl;
+          return;
+        }
+      }
+
+      navigate('/booking/success', { state: { room, checkIn, checkOut, total, guestEmail: guest.email, bookingCode: res.data?.bookingCode } });
     } catch (err) {
       setError(err.response?.data?.message || (lang === 'vi' ? 'Đặt phòng thất bại. Vui lòng thử lại.' : 'Booking failed. Please try again.'));
     } finally {
@@ -125,8 +150,8 @@ export default function BookingPage() {
 
   const PAYMENT_OPTIONS = [
     { key:'cash',     icon: <Banknote size={20} />,    label: t('booking.paymentCash') },
-    { key:'transfer', icon: <CreditCard size={20} />,   label: t('booking.paymentTransfer') },
-    { key:'vnpay',    icon: <Smartphone size={20} />,   label: t('booking.paymentVnpay') },
+    { key:'vietqr',   icon: <CreditCard size={20} />,  label: lang === 'vi' ? 'Chuyển khoản VietQR' : 'VietQR Transfer' },
+    { key:'momo',     icon: <Smartphone size={20} />,  label: lang === 'vi' ? 'Ví MoMo' : 'MoMo Wallet' },
   ];
 
   const STEP_LABELS = [t('booking.step1'), t('booking.step2'), t('booking.step3'), t('booking.step4')];
@@ -288,7 +313,7 @@ export default function BookingPage() {
                   ))}
                 </div>
 
-                {paymentMethod !== 'cash' && (
+                {(paymentMethod === 'transfer') && (
                   <div className="c-payment-unavailable">
                     <AlertCircle size={20} />
                     <p>{t('booking.paymentUnavailable')}</p>

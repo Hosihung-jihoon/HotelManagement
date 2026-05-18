@@ -3,8 +3,8 @@ import axios from 'axios';
 import { VietQR } from 'vietqr';
 
 const vietQR = new VietQR({
-  clientID: 'de8a0804-a76d-41e5-8ad6-31503ce7d5f4',
-  apiKey: '17c29f09-4ea2-4417-b9c2-7f020d35de42',
+  clientID: import.meta.env.VITE_VIETQR_CLIENT_ID,
+  apiKey: import.meta.env.VITE_VIETQR_API_KEY,
 });
 
 const paymentService = {
@@ -27,12 +27,29 @@ const paymentService = {
       template: 'compact'
     }, {
       headers: {
-        'x-client-id': 'de8a0804-a76d-41e5-8ad6-31503ce7d5f4', // Placeholder or from user
-        'x-api-key': '17c29f09-4ea2-4417-b9c2-7f020d35de42',    // Placeholder or from user
+        'x-client-id': import.meta.env.VITE_VIETQR_CLIENT_ID,
+        'x-api-key': import.meta.env.VITE_VIETQR_API_KEY, 
         'Content-Type': 'application/json'
       }
     });
     return response.data; // Returns { data: { qrDataURL: "..." } }
+  },
+
+  createMomoPayment: async (amount, orderInfo, bookingId) => {
+    const response = await axiosClient.post('/payment/Momo/create', {
+      bookingId,
+      amount,
+      orderInfo
+    });
+    return response.data; // Returns { payUrl: "..." }
+  },
+
+  createVnPayPayment: async (amount, bookingId) => {
+    const response = await axiosClient.post('/payment/vnpay', {
+      bookingId,
+      amount
+    });
+    return response.data; // Returns { paymentUrl: "..." }
   },
 
   getVietQRLink: ({ bank, accountName, accountNumber, amount, memo, template }) => {

@@ -71,6 +71,8 @@ builder.Services.AddScoped<ILossAndDamageService, LossAndDamageService>();
 builder.Services.AddScoped<IPasswordResetService, PasswordResetService>();
 builder.Services.AddScoped<IEquipmentService, EquipmentService>();
 builder.Services.AddScoped<IAuditLogService, AuditLogService>();
+builder.Services.AddScoped<IMomoService, MomoService>();
+builder.Services.AddHttpClient();
 builder.Services.AddScoped<HotelBranchService>();
 builder.Services.AddScoped<DashboardSnapshotService>(); // legacy, giữ tương thích
 builder.Services.AddScoped<IRoleDashboardPeriodService, RoleDashboardPeriodService>(); // mới theo chuẩn giảng viên

@@ -28,12 +28,14 @@ import CheckoutPage        from './pages/FrontDesk/CheckoutPage';
 import AdminServicesPage   from './pages/Services/ServicesPage';
 import AmenitiesPage       from './pages/Amenities/AmenitiesPage';
 
-// VietQR / Customer Checkout
+// Login pages
+import LoginPage           from './pages/Login/LoginPage';
+import ForgotPasswordPage   from './pages/Login/ForgotPasswordPage';
+
+// Payment & Checkout pages
 import CustomerCheckoutPage from './pages/Customer/Checkout/CheckoutPage';
 import PaymentResultPage    from './pages/Customer/Checkout/PaymentResultPage';
-
-// Forgot Password
-import ForgotPasswordPage   from './pages/Login/ForgotPasswordPage';
+import BookingHistoryPage   from './pages/Customer/BookingHistory/BookingHistoryPage';
 
 // ── Client pages ─────────────────────────────────────────────
 import ClientLayout        from './client/layouts/ClientLayout';
@@ -84,13 +86,16 @@ function App() {
               <Route path="/client-login"    element={<ClientLoginPage />} />
               <Route path="/register"        element={<ClientRegisterPage />} />
               <Route path="/membership"      element={<ClientMembershipPage />} />
-
               {/* VietQR / Customer Checkout / Forgot Password / Payment Result (styled inside ClientLayout) */}
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="/checkout"        element={<CustomerCheckoutPage />} />
               <Route path="/payment-result"  element={<PaymentResultPage />} />
               <Route path="/payment-momo-result" element={<PaymentResultPage />} />
+              <Route path="/my-bookings"      element={<BookingHistoryPage />} />
             </Route>
+
+            {/* ── Auth routes (Admin/General) ── */}
+            <Route path="/login" element={<LoginPage />} />
 
             {/* ── Admin Site routes (/admin/*) ── */}
             <Route path="/admin" element={
@@ -124,9 +129,7 @@ function App() {
               <Route path="amenities"                element={<AmenitiesPage />} />
             </Route>
 
-            {/* ── Redirections & Fallbacks ── */}
-            <Route path="/login" element={<Navigate to="/client-login" replace />} />
-            <Route path="/my-bookings" element={<Navigate to="/account?tab=bookings" replace />} />
+            {/* ── Fallback ── */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>
