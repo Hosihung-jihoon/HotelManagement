@@ -87,6 +87,28 @@ public class VoucherService : IVoucherService
         return true;
     }
 
+    public async Task<object?> ValidateVoucherAsync(string code)
+    {
+        var voucher = await _repository.GetByCodeAsync(code);
+        if (voucher == null || !voucher.IsActive) return null;
+
+        var now = DateTime.Now;
+        if (voucher.ValidFrom.HasValue && now < voucher.ValidFrom.Value) return null;
+        if (voucher.ValidTo.HasValue && now > voucher.ValidTo.Value) return null;
+
+        // Note: For full production, UsageLimit vs actual usage in bookings should be checked here.
+
+        return new
+        {
+            id = voucher.Id,
+            code = voucher.Code,
+            discountPercent = voucher.DiscountType == "Percentage" ? voucher.DiscountValue : 0,
+            discountAmount = voucher.DiscountType == "Fixed" ? voucher.DiscountValue : 0,
+            minBookingValue = voucher.MinBookingValue,
+            voucherType = voucher.VoucherType
+        };
+    }
+
     private static VoucherDto MapToDto(Voucher v) => new()
     {
         Id = v.Id,

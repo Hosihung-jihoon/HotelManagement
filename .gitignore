@@ -55,5 +55,8 @@ desktop.ini
 *.md.resolved
 .antigravityrules
 *.db
+*.db-shm
+*.db-wal
+*.db-journal
 export_to_sqlite.py
 assets/

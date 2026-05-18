@@ -109,8 +109,9 @@ export default function BookingPage() {
       await createBooking({
         roomId, checkInDate: checkIn, checkOutDate: checkOut,
         adults, numRooms, guestInfo: guest,
-        voucherCode: voucherApplied ? voucherCode : null,
+        voucherId: voucherApplied ? voucherApplied.id : null,
         paymentMethod, totalAmount: total,
+        pricePerNight: price,
       });
       navigate('/booking/success', { state: { room, checkIn, checkOut, total, guestEmail: guest.email } });
     } catch (err) {
@@ -258,7 +259,7 @@ export default function BookingPage() {
                   {voucherError && <p style={{ color:'var(--c-error)', fontFamily:'var(--font-sans)', fontSize:'var(--text-label-md)', marginTop:'var(--sp-8)' }}>{voucherError}</p>}
                   {voucherApplied && (
                     <div className="c-voucher-success">
-                      <Check size={16} /> {lang === 'vi' ? 'Đã áp dụng mã giảm giá!' : 'Discount applied!'} {voucherApplied.discountPercent && `(−${voucherApplied.discountPercent}%)`}
+                      <Check size={16} /> {lang === 'vi' ? 'Đã áp dụng mã giảm giá!' : 'Discount applied!'} {voucherApplied.discountPercent ? `(−${voucherApplied.discountPercent}%)` : `(−${formatPrice(voucherApplied.discountAmount)})`}
                     </div>
                   )}
                 </div>

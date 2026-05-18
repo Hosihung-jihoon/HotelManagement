@@ -74,8 +74,23 @@ export const getRoomAvailability = async (roomId, checkIn, checkOut) => {
 };
 
 // ── Bookings ───────────────────────────────────────────────
-export const createBooking = (data) =>
-  axiosClient.post('/Bookings', data);
+export const createBooking = (payload) => {
+  const advancedDto = {
+    guestName: `${payload.guestInfo.firstName} ${payload.guestInfo.lastName}`.trim(),
+    guestPhone: payload.guestInfo.phone,
+    guestEmail: payload.guestInfo.email,
+    voucherId: payload.voucherId,
+    prePayment: 0,
+    paymentMethod: payload.paymentMethod,
+    details: Array.from({ length: payload.numRooms || 1 }).map(() => ({
+      roomId: payload.roomId,
+      checkInDate: payload.checkInDate,
+      checkOutDate: payload.checkOutDate,
+      pricePerNight: payload.pricePerNight || 0
+    }))
+  };
+  return axiosClient.post('/Bookings/advanced-create', advancedDto);
+};
 
 export const getMyBookings = async () => {
   try {

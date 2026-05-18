@@ -96,7 +96,7 @@ public class AuthService : IAuthService
         var secretKey = jwtSettings["SecretKey"]!;
         var issuer = jwtSettings["Issuer"]!;
         var audience = jwtSettings["Audience"]!;
-        var expirationMinutes = int.Parse(jwtSettings["ExpirationInMinutes"]!);
+        var expirationMinutes = int.Parse(jwtSettings["ExpirationInMinutes"] ?? "120");
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

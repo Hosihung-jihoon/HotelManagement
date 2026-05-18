@@ -34,10 +34,41 @@ function CheckoutPage() {
   const [showQR, setShowQR] = useState(false);
   const [qrData, setQrData] = useState({ amount: 0, code: '', qrUrl: '' });
 
+  // Voucher
+  const [voucherCode, setVoucherCode] = useState('');
+  const [voucherApplied, setVoucherApplied] = useState(null);
+  const [voucherError, setVoucherError] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
+
+  const handleApplyVoucher = async () => {
+    if (!voucherCode.trim()) return;
+    setIsVerifying(true);
+    setVoucherError('');
+    try {
+      const res = await axiosClient.post('/Vouchers/validate', { code: voucherCode.trim() });
+      setVoucherApplied(res.data);
+    } catch (err) {
+      setVoucherError('Mã voucher không hợp lệ hoặc đã hết hạn.');
+      setVoucherApplied(null);
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  const removeVoucher = () => {
+    setVoucherApplied(null);
+    setVoucherCode('');
+    setVoucherError('');
+  };
+
   // Tính toán
   const roomTotal = cart.pricePerNight * cart.nights;
   const vat = roomTotal * 0.08; // VAT 8%
-  const finalTotal = roomTotal + vat;
+  const subTotalBeforeDiscount = roomTotal + vat;
+  const discount = voucherApplied 
+    ? (voucherApplied.discountAmount || Math.round(subTotalBeforeDiscount * voucherApplied.discountPercent / 100)) 
+    : 0;
+  const finalTotal = Math.max(0, subTotalBeforeDiscount - discount);
 
   const handleInputChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -59,6 +90,7 @@ function CheckoutPage() {
         guestPhone: formData.phone,
         guestEmail: formData.email,
         paymentMethod: paymentMethod === 'cash' ? 'Cash' : (paymentMethod === 'momo' ? 'MoMo' : 'VietQR'),
+        voucherId: voucherApplied ? voucherApplied.id : null,
         details: [{
           roomId: 1, // Mock room ID for demonstration
           checkInDate: new Date(cart.checkIn).toISOString(),
@@ -223,6 +255,43 @@ function CheckoutPage() {
 
             <hr className="summary-divider"/>
 
+            <div className="voucher-section" style={{ marginBottom: 20 }}>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <input 
+                  type="text" 
+                  value={voucherCode} 
+                  onChange={e => setVoucherCode(e.target.value.toUpperCase())}
+                  placeholder="Nhập mã giảm giá..."
+                  disabled={!!voucherApplied}
+                  style={{ flex: 1, padding: '10px 14px', borderRadius: 8, border: '1px solid #e2e8f0', fontFamily: 'inherit' }}
+                />
+                {!voucherApplied ? (
+                  <button 
+                    type="button" 
+                    onClick={handleApplyVoucher}
+                    disabled={isVerifying || !!voucherApplied}
+                    style={{ padding: '10px 20px', borderRadius: 8, background: 'var(--c-primary, #2563eb)', color: '#fff', border: 'none', fontWeight: 600, cursor: 'pointer' }}
+                  >
+                    {isVerifying ? 'Đang xét...' : 'Áp dụng'}
+                  </button>
+                ) : (
+                  <button 
+                    type="button" 
+                    onClick={removeVoucher}
+                    style={{ padding: '10px 20px', borderRadius: 8, background: '#f1f5f9', color: '#64748b', border: 'none', fontWeight: 600, cursor: 'pointer' }}
+                  >
+                    Bỏ chọn
+                  </button>
+                )}
+              </div>
+              {voucherError && <div style={{ color: '#dc2626', fontSize: '0.85rem', marginTop: 8 }}>{voucherError}</div>}
+              {voucherApplied && (
+                <div style={{ color: '#059669', fontSize: '0.88rem', marginTop: 8, fontWeight: 500 }}>
+                  ✓ Đã áp dụng mã giảm giá {voucherApplied.discountPercent ? `${voucherApplied.discountPercent}%` : formatCurrency(voucherApplied.discountAmount)}
+                </div>
+              )}
+            </div>
+
             <div className="price-breakdown">
               <div className="price-row">
                 <span>Tiền phòng ({cart.nights} đêm)</span>
@@ -232,6 +301,12 @@ function CheckoutPage() {
                 <span>Thuế giá trị gia tăng (8%)</span>
                 <span>{formatCurrency(vat)}</span>
               </div>
+              {voucherApplied && (
+                <div className="price-row" style={{ color: '#059669', fontWeight: 600 }}>
+                  <span>Giảm giá ({voucherApplied.code})</span>
+                  <span>-{formatCurrency(discount)}</span>
+                </div>
+              )}
               <div className="price-row total">
                 <span>Tổng cộng</span>
                 <span className="total-amount">{formatCurrency(finalTotal)}</span>
