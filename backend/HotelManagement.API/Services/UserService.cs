@@ -70,12 +70,43 @@ public class UserService : IUserService
 
     // ========== Admin - Quản lý nhân viên ==========
 
+    /// <summary>
+    /// Lấy danh sách tất cả users (admin), kèm theo tổng chi tiêu để xác định hạng VIP.
+    /// </summary>
     public async Task<IEnumerable<UserListDto>> GetAllUsersAsync()
     {
-        return await _context.Users
+        var users = await _context.Users
             .Include(u => u.Role)
             .Include(u => u.Membership)
-            .Select(u => new UserListDto
+            .Include(u => u.Bookings)
+                .ThenInclude(b => b.Invoice)
+            .ToListAsync();
+
+        var memberships = await _context.Memberships
+            .IgnoreQueryFilters()
+            .Where(m => !m.IsDeleted)
+            .OrderBy(m => m.MinPoints)
+            .ToListAsync();
+
+        var userDtos = new List<UserListDto>();
+
+        foreach (var u in users)
+        {
+            var totalSpent = u.Bookings
+                .Where(b => b.Invoice != null && b.Invoice.Status == "Paid")
+                .Sum(b => b.Invoice.FinalTotal ?? 0);
+
+            // MinPoints stores VND threshold as int; cast to decimal for comparison
+            var nextTier = memberships.FirstOrDefault(m => m.MinPoints.HasValue && (decimal)m.MinPoints.Value > totalSpent);
+            decimal? remainingToNextTier = null;
+            string? nextTierName = null;
+            if (nextTier != null && nextTier.MinPoints.HasValue)
+            {
+                remainingToNextTier = (decimal)nextTier.MinPoints.Value - totalSpent;
+                nextTierName = nextTier.TierName;
+            }
+
+            userDtos.Add(new UserListDto
             {
                 Id = u.Id,
                 FullName = u.FullName,
@@ -83,9 +114,14 @@ public class UserService : IUserService
                 Phone = u.Phone,
                 Status = u.Status,
                 RoleName = u.Role != null ? u.Role.Name : null,
-                MembershipName = u.Membership != null ? u.Membership.TierName : null
-            })
-            .ToListAsync();
+                MembershipName = u.Membership != null ? u.Membership.TierName : null,
+                TotalSpent = totalSpent,
+                RemainingToNextTier = remainingToNextTier,
+                NextTierName = nextTierName
+            });
+        }
+
+        return userDtos;
     }
 
     public async Task<UserListDto?> GetUserByIdAsync(int userId)

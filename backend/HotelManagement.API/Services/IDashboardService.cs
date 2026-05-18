@@ -4,5 +4,5 @@ namespace HotelManagement.API.Services;
 
 public interface IDashboardService
 {
-    Task<DashboardStatsDto> GetStatsAsync();
+    Task<DashboardStatsDto> GetStatsAsync(int? month, int? year);
 }

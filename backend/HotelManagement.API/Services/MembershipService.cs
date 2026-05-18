@@ -27,7 +27,9 @@ public class MembershipService : IMembershipService
             Id = m.Id,
             TierName = m.TierName,
             MinPoints = m.MinPoints,
-            DiscountPercent = m.DiscountPercent
+            DiscountPercent = m.DiscountPercent,
+            Amenities = m.Amenities,
+            Services = m.Services
         });
     }
 
@@ -41,7 +43,9 @@ public class MembershipService : IMembershipService
             Id = membership.Id,
             TierName = membership.TierName,
             MinPoints = membership.MinPoints,
-            DiscountPercent = membership.DiscountPercent
+            DiscountPercent = membership.DiscountPercent,
+            Amenities = membership.Amenities,
+            Services = membership.Services
         };
     }
 
@@ -51,7 +55,9 @@ public class MembershipService : IMembershipService
         {
             TierName = dto.TierName,
             MinPoints = dto.MinPoints,
-            DiscountPercent = dto.DiscountPercent
+            DiscountPercent = dto.DiscountPercent,
+            Amenities = dto.Amenities,
+            Services = dto.Services
         };
 
         var created = await _repository.CreateAsync(entity);
@@ -61,7 +67,9 @@ public class MembershipService : IMembershipService
             Id = created.Id,
             TierName = created.TierName,
             MinPoints = created.MinPoints,
-            DiscountPercent = created.DiscountPercent
+            DiscountPercent = created.DiscountPercent,
+            Amenities = created.Amenities,
+            Services = created.Services
         };
     }
 
@@ -73,6 +81,8 @@ public class MembershipService : IMembershipService
         entity.TierName = dto.TierName;
         entity.MinPoints = dto.MinPoints;
         entity.DiscountPercent = dto.DiscountPercent;
+        entity.Amenities = dto.Amenities;
+        entity.Services = dto.Services;
 
         await _repository.UpdateAsync(entity);
         return true;

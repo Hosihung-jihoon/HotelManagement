@@ -17,45 +17,82 @@ public class DashboardService : IDashboardService
         _context = context;
     }
 
-    public async Task<DashboardStatsDto> GetStatsAsync()
+    public async Task<DashboardStatsDto> GetStatsAsync(int? month, int? year)
     {
         var today = DateTime.UtcNow.Date;
-        var currentYear = DateTime.UtcNow.Year;
+        var currentYear = year ?? DateTime.UtcNow.Year;
 
         // === Thống kê phòng ===
         var totalRooms = await _context.Rooms.CountAsync();
         var occupiedRooms = await _context.Rooms.CountAsync(r => r.Status == "Occupied");
         var availableRooms = await _context.Rooms.CountAsync(r => r.Status == "Available");
 
-        // === Thống kê booking ===
-        var totalBookings = await _context.Bookings.CountAsync();
-        var totalBookingsToday = await _context.Bookings
-            .CountAsync(b => b.CreatedAt.Date == today);
+        // Query base
+        var bookingsQuery = _context.Bookings.AsQueryable();
+        var invoicesQuery = _context.Invoices.Where(i => i.Status == "Paid");
 
-        // === Doanh thu tổng ===
-        var totalRevenue = await _context.Invoices
-            .Where(i => i.Status == "Paid")
-            .SumAsync(i => i.FinalTotal ?? 0);
+        if (month.HasValue)
+        {
+            bookingsQuery = bookingsQuery.Where(b => b.CreatedAt.Year == currentYear && b.CreatedAt.Month == month.Value);
+            invoicesQuery = invoicesQuery.Where(i => i.CreatedAt.Year == currentYear && i.CreatedAt.Month == month.Value);
+        }
+        else
+        {
+            bookingsQuery = bookingsQuery.Where(b => b.CreatedAt.Year == currentYear);
+            invoicesQuery = invoicesQuery.Where(i => i.CreatedAt.Year == currentYear);
+        }
 
-        // === Doanh thu theo tháng (năm hiện tại) ===
-        var revenueByMonth = await _context.Invoices
-            .Where(i => i.Status == "Paid" && i.CreatedAt.Year == currentYear)
-            .GroupBy(i => i.CreatedAt.Month)
-            .Select(g => new RevenueByMonthDto
-            {
-                Month = "T" + g.Key,
-                Amount = g.Sum(i => i.FinalTotal ?? 0)
-            })
-            .OrderBy(r => r.Month)
-            .ToListAsync();
+        // === Thống kê booking in period ===
+        var totalBookings = await bookingsQuery.CountAsync();
+        var totalBookingsToday = await _context.Bookings.CountAsync(b => b.CreatedAt.Date == today); // today remains absolute today
 
-        // Đảm bảo đủ 12 tháng (tháng không có doanh thu = 0)
-        var fullRevenueByMonth = Enumerable.Range(1, 12)
-            .Select(m => revenueByMonth.FirstOrDefault(r => r.Month == "T" + m) ?? new RevenueByMonthDto { Month = "T" + m, Amount = 0 })
-            .ToList();
+        // === Doanh thu tổng in period ===
+        var totalRevenue = await invoicesQuery.SumAsync(i => i.FinalTotal ?? 0);
 
-        // === Bookings theo trạng thái ===
-        var bookingsByStatus = await _context.Bookings
+        List<RevenueByMonthDto> fullRevenueByMonth;
+
+        if (month.HasValue)
+        {
+            // Doanh thu theo từng ngày trong tháng
+            var revenueByDay = await invoicesQuery
+                .GroupBy(i => i.CreatedAt.Date)
+                .Select(g => new
+                {
+                    Date = g.Key,
+                    Amount = g.Sum(i => i.FinalTotal ?? 0)
+                })
+                .ToListAsync();
+
+            var daysInMonth = DateTime.DaysInMonth(currentYear, month.Value);
+            
+            fullRevenueByMonth = Enumerable.Range(1, daysInMonth)
+                .Select(d => new RevenueByMonthDto
+                {
+                    Month = d.ToString("00") + "/" + month.Value.ToString("00"),
+                    Amount = revenueByDay.FirstOrDefault(r => r.Date.Day == d)?.Amount ?? 0
+                })
+                .ToList();
+        }
+        else
+        {
+            // Doanh thu theo tháng (năm hiện tại)
+            var revenueByMonth = await invoicesQuery
+                .GroupBy(i => i.CreatedAt.Month)
+                .Select(g => new RevenueByMonthDto
+                {
+                    Month = "T" + g.Key,
+                    Amount = g.Sum(i => i.FinalTotal ?? 0)
+                })
+                .OrderBy(r => r.Month)
+                .ToListAsync();
+
+            fullRevenueByMonth = Enumerable.Range(1, 12)
+                .Select(m => revenueByMonth.FirstOrDefault(r => r.Month == "T" + m) ?? new RevenueByMonthDto { Month = "T" + m, Amount = 0 })
+                .ToList();
+        }
+
+        // === Bookings theo trạng thái (trong kỳ lọc) ===
+        var bookingsByStatus = await bookingsQuery
             .GroupBy(b => b.Status)
             .Select(g => new BookingsByStatusDto
             {
