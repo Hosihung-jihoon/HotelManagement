@@ -11,10 +11,12 @@ namespace HotelManagement.API.Services;
 public class HotelBranchService
 {
     private readonly HotelDbContext _context;
+    private readonly IGoogleMapsMetadataService _googleMapsMetadataService;
 
-    public HotelBranchService(HotelDbContext context)
+    public HotelBranchService(HotelDbContext context, IGoogleMapsMetadataService googleMapsMetadataService)
     {
         _context = context;
+        _googleMapsMetadataService = googleMapsMetadataService;
     }
 
     // ── CRUD ────────────────────────────────────────────────
@@ -28,6 +30,10 @@ public class HotelBranchService
                 Id = b.Id,
                 Name = b.Name,
                 Address = b.Address,
+                GoogleMapsUrl = b.GoogleMapsUrl,
+                MapEmbedLink = b.MapEmbedLink,
+                MapPreviewImageUrl = b.MapPreviewImageUrl,
+                GooglePlaceId = b.GooglePlaceId,
                 Latitude = b.Latitude,
                 Longitude = b.Longitude,
                 Phone = b.Phone,
@@ -46,18 +52,24 @@ public class HotelBranchService
 
     public async Task<HotelBranchDto> CreateAsync(CreateHotelBranchDto dto)
     {
+        var metadata = await _googleMapsMetadataService.ResolveAsync(dto.GoogleMapsUrl, dto.MapEmbedLink, dto.Name);
         var entity = new HotelBranch
         {
             Name = dto.Name,
-            Address = dto.Address,
-            Latitude = dto.Latitude,
-            Longitude = dto.Longitude,
+            Address = metadata.Address ?? dto.Address,
+            GoogleMapsUrl = metadata.GoogleMapsUrl ?? dto.GoogleMapsUrl,
+            MapEmbedLink = metadata.MapEmbedLink ?? dto.MapEmbedLink,
+            MapPreviewImageUrl = metadata.MapPreviewImageUrl,
+            GooglePlaceId = metadata.GooglePlaceId,
+            Latitude = metadata.Latitude ?? dto.Latitude,
+            Longitude = metadata.Longitude ?? dto.Longitude,
             Phone = dto.Phone,
             IsMain = dto.IsMain,
             IsActive = dto.IsActive
         };
         _context.HotelBranches.Add(entity);
         await _context.SaveChangesAsync();
+        await RecalcAllDistancesAsync();
         return ToDto(entity);
     }
 
@@ -65,14 +77,20 @@ public class HotelBranchService
     {
         var entity = await _context.HotelBranches.FindAsync(id);
         if (entity == null) return false;
+        var metadata = await _googleMapsMetadataService.ResolveAsync(dto.GoogleMapsUrl, dto.MapEmbedLink, dto.Name);
         entity.Name = dto.Name;
-        entity.Address = dto.Address;
-        entity.Latitude = dto.Latitude;
-        entity.Longitude = dto.Longitude;
+        entity.Address = metadata.Address ?? dto.Address;
+        entity.GoogleMapsUrl = metadata.GoogleMapsUrl ?? dto.GoogleMapsUrl;
+        entity.MapEmbedLink = metadata.MapEmbedLink ?? dto.MapEmbedLink;
+        entity.MapPreviewImageUrl = metadata.MapPreviewImageUrl;
+        entity.GooglePlaceId = metadata.GooglePlaceId;
+        entity.Latitude = metadata.Latitude ?? dto.Latitude;
+        entity.Longitude = metadata.Longitude ?? dto.Longitude;
         entity.Phone = dto.Phone;
         entity.IsMain = dto.IsMain;
         entity.IsActive = dto.IsActive;
         await _context.SaveChangesAsync();
+        await RecalcAllDistancesAsync();
         return true;
     }
 
@@ -96,6 +114,17 @@ public class HotelBranchService
         var attractions = await _context.Attractions.ToListAsync();
 
         var result = new List<AttractionDistanceDto>();
+        if (branches.Count == 0)
+        {
+            return attractions.Select(attr => new AttractionDistanceDto
+            {
+                AttractionId = attr.Id,
+                AttractionName = attr.Name,
+                Distances = new(),
+                Updated = false,
+                SkipReason = "Khong co chi nhanh dang hoat dong co toa do cache."
+            }).ToList();
+        }
 
         foreach (var attr in attractions)
         {
@@ -105,7 +134,9 @@ public class HotelBranchService
                 {
                     AttractionId = attr.Id,
                     AttractionName = attr.Name,
-                    Distances = new()
+                    Distances = new(),
+                    Updated = false,
+                    SkipReason = "Dia diem chua co toa do cache tu Google Maps."
                 });
                 continue;
             }
@@ -138,7 +169,9 @@ public class HotelBranchService
                 AttractionName = attr.Name,
                 Distances = distItems,
                 NearestDistanceKm = nearest?.DistanceKm,
-                NearestBranchName = nearest?.BranchName
+                NearestBranchName = nearest?.BranchName,
+                Updated = nearest != null,
+                SkipReason = nearest == null ? "Khong co chi nhanh nao co toa do cache hop le." : null
             });
         }
 
@@ -167,6 +200,10 @@ public class HotelBranchService
         Id = b.Id,
         Name = b.Name,
         Address = b.Address,
+        GoogleMapsUrl = b.GoogleMapsUrl,
+        MapEmbedLink = b.MapEmbedLink,
+        MapPreviewImageUrl = b.MapPreviewImageUrl,
+        GooglePlaceId = b.GooglePlaceId,
         Latitude = b.Latitude,
         Longitude = b.Longitude,
         Phone = b.Phone,

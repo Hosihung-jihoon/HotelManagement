@@ -208,6 +208,11 @@ function HousekeepingPage() {
   const [loading, setLoading]       = useState(true);
   const [selectedRoom, setSelectedRoom] = useState(null);
 
+  const normalizeCleanStatus = (status) => {
+    const value = String(status || 'clean').toLowerCase();
+    return value === 'loss' ? 'inspecting' : value;
+  };
+
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
@@ -216,7 +221,7 @@ function HousekeepingPage() {
         axiosClient.get('/RoomInventories'),
       ]);
       // Chỉ lấy các phòng đang được đánh dấu cần dọn.
-      const needsCleaning = roomsRes.data.filter(r => (r.cleanStatus || 'clean') === 'dirty');
+      const needsCleaning = roomsRes.data.filter(r => normalizeCleanStatus(r.cleanStatus) === 'dirty');
       setRooms(needsCleaning);
       setAllInventory(invRes.data);
     } catch (err) {
@@ -227,6 +232,28 @@ function HousekeepingPage() {
   }, []);
 
   useEffect(() => { fetchData(); }, [fetchData]);
+
+  const handleSelectRoom = async (room) => {
+    const currentCleanStatus = normalizeCleanStatus(room.cleanStatus);
+    if (currentCleanStatus === 'dirty') {
+      try {
+        await axiosClient.patch('/Rooms/patch-clean-status', {
+          roomId: room.id,
+          cleanStatus: 'cleaning',
+        });
+        const nextRoom = { ...room, cleanStatus: 'cleaning' };
+        setRooms(prev => prev.map(r => r.id === room.id ? nextRoom : r));
+        setSelectedRoom(nextRoom);
+        return;
+      } catch (err) {
+        console.error('Lỗi cập nhật trạng thái đang dọn:', err);
+        alert('Không thể chuyển phòng sang trạng thái đang dọn. Vui lòng thử lại.');
+        return;
+      }
+    }
+
+    setSelectedRoom(room);
+  };
 
   const handleFinish = async (roomId, reported) => {
     const room = rooms.find(r => r.id === roomId);
@@ -245,7 +272,7 @@ function HousekeepingPage() {
 
       await axiosClient.patch('/Rooms/patch-clean-status', {
         roomId,
-        cleanStatus: reported.length > 0 ? 'loss' : 'clean',
+        cleanStatus: reported.length > 0 ? 'inspecting' : 'clean',
       });
       setRooms(prev => prev.filter(r => r.id !== roomId));
     } catch (err) {
@@ -292,7 +319,7 @@ function HousekeepingPage() {
       ) : (
         <div className="hk-grid">
           {rooms.map(room => (
-            <div key={room.id} className="hk-card" onClick={() => setSelectedRoom(room)}>
+            <div key={room.id} className="hk-card" onClick={() => handleSelectRoom(room)}>
               <div className="hk-card-top">
                 <span className="hk-room-number">P.{room.roomNumber}</span>
                 <span className="hk-badge">Cần dọn</span>

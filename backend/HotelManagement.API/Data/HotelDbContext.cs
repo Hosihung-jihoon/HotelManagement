@@ -18,7 +18,8 @@ public class HotelDbContext : DbContext
     {
         // Suppress PendingModelChangesWarning caused by EF tools version mismatch
         optionsBuilder.ConfigureWarnings(w =>
-            w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+            w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)
+             .Ignore(Microsoft.EntityFrameworkCore.Diagnostics.CoreEventId.PossibleIncorrectRequiredNavigationWithQueryFilterInteractionWarning));
     }
 
     // ========== DbSets ==========
@@ -44,6 +45,7 @@ public class HotelDbContext : DbContext
     public DbSet<RoomInventory> RoomInventories { get; set; }
     public DbSet<RoomType> RoomTypes { get; set; }
     public DbSet<RoomTypeAmenity> RoomTypeAmenities { get; set; }
+    public DbSet<RoomTypeService> RoomTypeServices { get; set; }
     public DbSet<Service> Services { get; set; }
     public DbSet<ServiceCategory> ServiceCategories { get; set; }
     public DbSet<User> Users { get; set; }
@@ -51,6 +53,7 @@ public class HotelDbContext : DbContext
     public DbSet<Notification> Notifications { get; set; }
     public DbSet<Equipment> Equipments { get; set; }
     public DbSet<HotelBranch> HotelBranches { get; set; }
+    public DbSet<ContactRequest> ContactRequests { get; set; }
     public DbSet<RoleDashboardPeriodState> DashboardSnapshots { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -70,6 +73,13 @@ public class HotelDbContext : DbContext
 
         modelBuilder.Entity<RoomTypeAmenity>()
             .HasKey(rta => new { rta.RoomTypeId, rta.AmenityId });
+
+        modelBuilder.Entity<RoomTypeService>()
+            .HasKey(rts => new { rts.RoomTypeId, rts.ServiceId });
+
+        modelBuilder.Entity<RoomType>()
+            .Property(rt => rt.SizeSqm)
+            .HasPrecision(10, 2);
 
         // ===== Unique Constraints =====
         modelBuilder.Entity<User>()

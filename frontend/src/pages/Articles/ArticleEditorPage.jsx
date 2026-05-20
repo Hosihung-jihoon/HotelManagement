@@ -124,7 +124,7 @@ export default function ArticleEditorPage() {
         await axiosClient.post('/Articles', payload);
       }
       setLastSaved(new Date());
-      if (publish !== null) navigate('/articles');
+      if (publish !== null) navigate('/admin/articles');
     } catch (err) {
       alert('Lỗi lưu bài viết: ' + (err.response?.data?.message || err.message));
     } finally {
@@ -145,7 +145,7 @@ export default function ArticleEditorPage() {
     <div className="article-editor-page">
       {/* ===== Top Bar ===== */}
       <div className="editor-topbar">
-        <button className="editor-back-btn" onClick={() => navigate('/articles')}>
+        <button className="editor-back-btn" onClick={() => navigate('/admin/articles')}>
           <ChevronLeft size={16} /> Quay lại danh sách
         </button>
         <div className="editor-breadcrumb">

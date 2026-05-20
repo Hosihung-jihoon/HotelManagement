@@ -1,77 +1,43 @@
-import { useState, useEffect } from 'react';
-import axiosClient from '../../../api/axiosClient';
+import { useEffect, useMemo, useState } from 'react';
+import { Award, CheckCircle, Crown, Gift, Shield, Star } from 'lucide-react';
+import { getMembershipTiers } from '../../api/clientApi';
+import { POINT_TO_VND_RATE, getMembershipVisual } from '../../utils/membershipUtils';
 import './MembershipPage.css';
-import { Award, Star, CheckCircle, Shield, ArrowRight } from 'lucide-react';
 
-function MembershipPage() {
-  const [memberships, setMemberships] = useState([]);
+function splitLines(value) {
+  return String(value || '')
+    .split(/\r?\n|,/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+export default function MembershipPage() {
+  const [tiers, setTiers] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Ideally we fetch from an API like /api/Memberships/tiers
-    // Since we might not have it yet, we'll mock some data
-    const fetchTiers = async () => {
-      try {
-        setLoading(true);
-        const res = await axiosClient.get('/Memberships');
-        const apiData = res.data?.items || res.data || [];
-        
-        const mappedData = apiData.map(tier => {
-          let color = '#94a3b8'; // Default silver
-          
-          if (tier.tierName.toLowerCase().includes('gold')) {
-            color = '#eab308';
-          } else if (tier.tierName.toLowerCase().includes('platinum')) {
-            color = '#0f172a';
-          }
-          
-          let benefits = [];
-          if (tier.amenities) {
-            benefits.push(...tier.amenities.split(',').map(s => s.trim()).filter(s => s));
-          }
-          if (tier.services) {
-            benefits.push(...tier.services.split(',').map(s => s.trim()).filter(s => s));
-          }
-          
-          if (benefits.length === 0) {
-             benefits = ['Giảm giá phòng', 'Ưu tiên hỗ trợ'];
-          }
-
-          return {
-            id: tier.id,
-            tierName: tier.tierName,
-            minPoints: tier.minPoints || 0,
-            discountPercent: tier.discountPercent || 0,
-            benefits: benefits,
-            color: color
-          };
-        });
-
-        // Sort by minPoints
-        mappedData.sort((a, b) => a.minPoints - b.minPoints);
-        
-        setMemberships(mappedData);
-      } catch (err) {
-        console.error("Failed to load membership tiers", err);
-        // Fallback mock
-        setMemberships([
-          { id: 1, tierName: 'Silver', minPoints: 0, discountPercent: 5, benefits: ['Giảm 5% giá phòng', 'Ưu tiên check-in', 'Miễn phí đồ uống chào mừng'], color: '#94a3b8' },
-          { id: 2, tierName: 'Gold', minPoints: 1000, discountPercent: 10, benefits: ['Giảm 10% giá phòng', 'Nâng cấp phòng miễn phí (nếu còn)', 'Trả phòng trễ đến 14:00', 'Tích lũy điểm x1.5'], color: '#eab308' },
-          { id: 3, tierName: 'Platinum', minPoints: 5000, discountPercent: 15, benefits: ['Giảm 15% giá phòng', 'Dịch vụ đưa đón sân bay miễn phí', 'Bữa sáng miễn phí hàng ngày', 'Trả phòng trễ đến 16:00', 'Tích lũy điểm x2'], color: '#0f172a' }
-        ]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchTiers();
+    document.title = 'Membership - Hotel Management';
+    getMembershipTiers()
+      .then((res) => setTiers(res.data || []))
+      .catch(() => setTiers([]))
+      .finally(() => setLoading(false));
   }, []);
+
+  const tierCards = useMemo(
+    () => tiers.map((tier) => ({
+      ...tier,
+      benefitsList: Array.isArray(tier.benefits) ? tier.benefits : splitLines(tier.benefits),
+      redeemList: Array.isArray(tier.redeemOptions) ? tier.redeemOptions : splitLines(tier.redeemOptions),
+      visual: getMembershipVisual(tier.tierName)
+    })),
+    [tiers]
+  );
 
   if (loading) {
     return (
       <div className="membership-loading">
-        <div className="spinner"></div>
-        <p>Đang tải thông tin hạng thành viên...</p>
+        <div className="spinner" />
+        <p>Dang tai thong tin hang thanh vien...</p>
       </div>
     );
   }
@@ -80,77 +46,78 @@ function MembershipPage() {
     <div className="membership-page">
       <div className="membership-hero">
         <div className="membership-hero-content">
-          <h1>Chương Trình Khách Hàng Thân Thiết</h1>
-          <p>Tham gia chương trình thẻ thành viên của chúng tôi để nhận những đặc quyền dành riêng cho bạn và tận hưởng kỳ nghỉ trọn vẹn hơn bao giờ hết.</p>
+          <h1>Chuong trinh thanh vien 4 hang</h1>
+          <p>Tich diem tu moi hoa don hop le, nang hang tu dong va doi diem thanh uu dai gia tri cho ky nghi tiep theo.</p>
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 20 }}>
+            <span className="badge badge-available">1 diem = {POINT_TO_VND_RATE.toLocaleString('vi-VN')}d</span>
+            <span className="badge badge-silver">Chi tinh diem tren hoa don Paid</span>
+          </div>
         </div>
       </div>
 
       <div className="membership-benefits-section">
-        <h2>Vì sao nên trở thành thành viên?</h2>
+        <h2>Cach tich va doi diem</h2>
         <div className="benefits-grid">
           <div className="benefit-card">
             <Star className="benefit-icon" />
-            <h3>Tích Điểm Dễ Dàng</h3>
-            <p>Nhận điểm thưởng cho mỗi đêm lưu trú và các dịch vụ sử dụng tại khách sạn.</p>
+            <h3>Tich diem ro rang</h3>
+            <p>Moi {POINT_TO_VND_RATE.toLocaleString('vi-VN')}d chi tieu hop le nhan 1 diem co ban, sau do nhan them theo he so cua hang thanh vien.</p>
           </div>
           <div className="benefit-card">
             <Shield className="benefit-icon" />
-            <h3>Đặc Quyền Riêng Biệt</h3>
-            <p>Trải nghiệm dịch vụ cá nhân hóa và các ưu đãi không công khai.</p>
+            <h3>Len hang tu dong</h3>
+            <p>Hang se tu dong cap nhat khi tong diem tich luy dat moc cua Dong, Bac, Vang va Kim cuong.</p>
           </div>
           <div className="benefit-card">
-            <CheckCircle className="benefit-icon" />
-            <h3>Linh Hoạt Quy Đổi</h3>
-            <p>Dùng điểm thưởng để đổi đêm nghỉ miễn phí, nâng cấp phòng hoặc dịch vụ spa.</p>
+            <Gift className="benefit-icon" />
+            <h3>Doi diem linh hoat</h3>
+            <p>Doi voucher, bua sang, airport transfer hoac room upgrade tuy theo so diem hien co.</p>
           </div>
         </div>
       </div>
 
       <div className="membership-tiers-section">
-        <h2>Các Hạng Thành Viên</h2>
+        <h2>Cac hang thanh vien</h2>
         <div className="tiers-container">
-          {memberships.map((tier, index) => (
-            <div className={`tier-card ${tier.tierName.toLowerCase()}`} key={tier.id}>
-              <div className="tier-header" style={{ borderColor: tier.color }}>
-                <Award className="tier-icon" style={{ color: tier.color }} size={48} />
-                <h3 style={{ color: tier.color }}>{tier.tierName}</h3>
-                <div className="tier-points">{tier.minPoints.toLocaleString()} Điểm</div>
+          {tierCards.map((tier) => (
+            <div className="tier-card" key={tier.id || tier.tierName}>
+              <div className="tier-header" style={{ borderColor: tier.visual.color }}>
+                <Award className="tier-icon" style={{ color: tier.visual.color }} size={48} />
+                <h3 style={{ color: tier.visual.color }}>{tier.tierName}</h3>
+                <div className="tier-points">{Number(tier.minPoints || 0).toLocaleString('vi-VN')} diem</div>
+                <div style={{ marginTop: 8, color: '#64748b', fontSize: '0.9rem' }}>
+                  He so tich diem x{Number(tier.pointMultiplier || 1).toFixed(2)}
+                </div>
               </div>
               <div className="tier-discount">
-                <span className="discount-value">{tier.discountPercent}%</span>
-                <span className="discount-label">Giảm giá đặt phòng</span>
+                <span className="discount-value">{Number(tier.discountPercent || 0)}%</span>
+                <span className="discount-label">uu dai dat phong</span>
               </div>
               <ul className="tier-features">
-                {tier.benefits.map((benefit, i) => (
-                  <li key={i}>
+                {tier.benefitsList.map((benefit) => (
+                  <li key={benefit}>
                     <CheckCircle size={16} className="check-icon" />
                     <span>{benefit}</span>
                   </li>
                 ))}
               </ul>
-              <button className="btn-join-tier" style={{ backgroundColor: tier.color }}>
-                Đăng Ký Ngay <ArrowRight size={16} />
-              </button>
+              {tier.redeemList.length > 0 && (
+                <div style={{ marginTop: 18 }}>
+                  <h4 style={{ marginBottom: 10 }}>Quy doi diem</h4>
+                  <ul className="tier-features">
+                    {tier.redeemList.map((item) => (
+                      <li key={item}>
+                        <Crown size={16} className="check-icon" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           ))}
-        </div>
-      </div>
-
-      <div className="membership-faq">
-        <h2>Câu Hỏi Thường Gặp</h2>
-        <div className="faq-list">
-          <div className="faq-item">
-            <h4>Làm thế nào để tôi có thể nâng hạng?</h4>
-            <p>Hạng của bạn sẽ tự động nâng cấp ngay khi bạn tích lũy đủ số điểm yêu cầu cho hạng tiếp theo trong vòng 12 tháng.</p>
-          </div>
-          <div className="faq-item">
-            <h4>Điểm thưởng có hết hạn không?</h4>
-            <p>Điểm thưởng có giá trị trong vòng 24 tháng kể từ ngày tích lũy cuối cùng của bạn.</p>
-          </div>
         </div>
       </div>
     </div>
   );
 }
-
-export default MembershipPage;

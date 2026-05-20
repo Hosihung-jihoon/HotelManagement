@@ -27,7 +27,17 @@ public class VouchersController : ControllerBase
     {
         var result = await _service.GetByIdAsync(id);
         if (result == null)
-            return NotFound(new { message = $"Không tìm thấy voucher với ID = {id}" });
+            return NotFound(new { message = $"Khong tim thay voucher voi ID = {id}" });
+
+        return Ok(result);
+    }
+
+    [HttpPost("validate")]
+    public async Task<ActionResult<ValidatedVoucherDto>> Validate([FromBody] ValidateVoucherRequestDto dto)
+    {
+        var result = await _service.ValidateAsync(dto.Code);
+        if (result == null)
+            return BadRequest(new { message = "Voucher khong hop le hoac da het han." });
 
         return Ok(result);
     }
@@ -37,7 +47,7 @@ public class VouchersController : ControllerBase
     {
         var result = await _service.CreateAsync(dto);
         if (result == null)
-            return BadRequest(new { message = $"Voucher code '{dto.Code}' đã tồn tại" });
+            return BadRequest(new { message = $"Voucher code '{dto.Code}' da ton tai" });
 
         return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
@@ -47,7 +57,7 @@ public class VouchersController : ControllerBase
     {
         var success = await _service.UpdateAsync(id, dto);
         if (!success)
-            return NotFound(new { message = $"Không tìm thấy voucher với ID = {id}" });
+            return NotFound(new { message = $"Khong tim thay voucher voi ID = {id}" });
 
         return NoContent();
     }
@@ -57,9 +67,9 @@ public class VouchersController : ControllerBase
     {
         var success = await _service.ToggleActiveAsync(id);
         if (!success)
-            return NotFound(new { message = $"Không tìm thấy voucher với ID = {id}" });
+            return NotFound(new { message = $"Khong tim thay voucher voi ID = {id}" });
 
-        return Ok(new { message = "Đã thay đổi trạng thái voucher" });
+        return Ok(new { message = "Da thay doi trang thai voucher" });
     }
 
     [HttpDelete("{id}")]
@@ -67,7 +77,7 @@ public class VouchersController : ControllerBase
     {
         var success = await _service.DeleteAsync(id);
         if (!success)
-            return NotFound(new { message = $"Không tìm thấy voucher với ID = {id}" });
+            return NotFound(new { message = $"Khong tim thay voucher voi ID = {id}" });
 
         return NoContent();
     }

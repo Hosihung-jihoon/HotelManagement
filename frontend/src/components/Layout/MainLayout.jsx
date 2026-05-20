@@ -96,7 +96,7 @@ function MainLayout() {
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate('/client-login');
   };
 
   // Front-desk sub-items

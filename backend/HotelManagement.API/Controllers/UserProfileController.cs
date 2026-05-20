@@ -35,6 +35,18 @@ public class UserProfileController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("membership")]
+    public async Task<ActionResult<UserMembershipDto>> GetMembership()
+    {
+        var userId = GetCurrentUserId();
+        var result = await _userService.GetMembershipAsync(userId);
+
+        if (result == null)
+            return NotFound(new { message = "Khong tim thay user." });
+
+        return Ok(result);
+    }
+
     /// <summary>
     /// Cập nhật profile (tên, sdt)
     /// </summary>

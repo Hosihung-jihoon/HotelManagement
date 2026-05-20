@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Plus, X, ChevronRight, ChevronLeft, Upload, Search, RotateCcw, RefreshCw, Pencil, Layers, AlertCircle, Trash2, Eye, BedDouble, Box, Wrench, AlertTriangle, CheckCircle } from 'lucide-react';
-import { uploadToCloudinary, createLocalPreview } from '../../utils/cloudinaryUpload';
+import { createLocalPreview } from '../../utils/cloudinaryUpload';
 import axiosClient from '../../api/axiosClient';
 import CustomSelect from '../../components/Common/CustomSelect';
 import './RoomsPage.css';
@@ -23,6 +23,40 @@ const STATUS_BADGE = {
 };
 
 const ALL_STATUSES = Object.keys(STATUS_LABEL);
+const BUSINESS_STATUSES = ALL_STATUSES.filter(status => status !== 'Cleaning');
+const CLEAN_STATUS_LABEL = {
+  clean: 'Sạch sẽ',
+  dirty: 'Cần dọn',
+  cleaning: 'Đang dọn',
+  inspecting: 'Chờ kiểm tra',
+};
+const ALL_CLEAN_STATUSES = Object.keys(CLEAN_STATUS_LABEL);
+
+function normalizeCleanStatus(status) {
+  const value = String(status || 'clean').toLowerCase();
+  return value === 'loss' ? 'inspecting' : value;
+}
+
+function isReadyForSale(room) {
+  return room?.status === 'Available' && normalizeCleanStatus(room?.cleanStatus) === 'clean';
+}
+
+function canEditCleanStatus(room) {
+  return room?.status !== 'Occupied' && room?.status !== 'Maintenance';
+}
+
+function getReadinessMeta(room) {
+  if (room?.status === 'Occupied') {
+    return { label: 'Dang co khach', className: 'readiness-occupied' };
+  }
+  if (room?.status === 'Maintenance' || room?.status === 'Locked') {
+    return { label: 'Ngung khai thac', className: 'readiness-out' };
+  }
+  if (isReadyForSale(room)) {
+    return { label: 'San sang khai thac', className: 'readiness-ready' };
+  }
+  return { label: 'Cho housekeeping', className: 'readiness-waiting' };
+}
 function LossReportModal({ room, inventories, onClose, onSaved }) {
   const [form, setForm] = useState({
     roomInventoryId: '',
@@ -71,6 +105,86 @@ function LossReportModal({ room, inventories, onClose, onSaved }) {
       alert('Lỗi tạo báo cáo thất thoát: ' + (err.response?.data?.message || err.message));
     } finally {
       setSaving(false);
+    }
+  };
+
+  const syncCleanStatus = async (roomId, value) => {
+    const room = rooms.find(r => r.id === roomId);
+    if (!room) return;
+    if (!canEditCleanStatus(room)) {
+      alert(room.status === 'Occupied'
+        ? 'Khong the doi trang thai ve sinh khi phong dang co khach.'
+        : 'Khong the doi trang thai ve sinh khi phong dang bao tri.');
+      return;
+    }
+
+    try {
+      await axiosClient.patch('/Rooms/patch-clean-status', { roomId, cleanStatus: value });
+      setRooms(prev => prev.map(r =>
+        r.id === roomId ? { ...r, cleanStatus: value } : r
+      ));
+    } catch (err) {
+      alert('Lá»—i cáº­p nháº­t tráº¡ng thÃ¡i vá»‡ sinh: ' + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const requestHousekeepingForAll = async () => {
+    const eligibleRooms = rooms.filter(r => r.status !== 'Occupied' && r.status !== 'Maintenance');
+    if (eligibleRooms.length === 0) {
+      alert('KhÃ´ng cÃ³ phÃ²ng nÃ o cÃ³ thá»ƒ yÃªu cáº§u dá»n (táº¥t cáº£ Ä‘ang cÃ³ khÃ¡ch hoáº·c báº£o trÃ¬).');
+      return;
+    }
+    if (!window.confirm(
+      `YÃªu cáº§u dá»n toÃ n bá»™ ${eligibleRooms.length} phÃ²ng?\n` +
+      `(Bá» qua phÃ²ng Ä‘ang cÃ³ khÃ¡ch hoáº·c báº£o trÃ¬)\n\n` +
+      `Táº¥t cáº£ phÃ²ng Ä‘á»§ Ä‘iá»u kiá»‡n sáº½ Ä‘Æ°á»£c Ä‘áº·t vá»:\n` +
+      `â€¢ Vá»‡ sinh: Äang dá»n\nâ€¢ Kinh doanh: Giá»¯ nguyÃªn`
+    )) return;
+
+    try {
+      await Promise.all(
+        eligibleRooms.map(room =>
+          axiosClient.patch('/Rooms/patch-clean-status', { roomId: room.id, cleanStatus: 'cleaning' })
+        )
+      );
+      setRooms(prev =>
+        prev.map(r =>
+          eligibleRooms.find(e => e.id === r.id)
+            ? { ...r, cleanStatus: 'cleaning' }
+            : r
+        )
+      );
+    } catch (err) {
+      alert('Lá»—i yÃªu cáº§u dá»n phÃ²ng: ' + (err.response?.data?.message || err.message));
+      fetchAll();
+    }
+  };
+
+  const markRoomInspecting = async (roomId) => {
+    try {
+      await axiosClient.patch('/Rooms/patch-clean-status', { roomId, cleanStatus: 'inspecting' });
+      setRooms(prev => prev.map(r => r.id === roomId ? { ...r, cleanStatus: 'inspecting' } : r));
+      setLossRoom(null);
+    } catch (err) {
+      alert('L?i c?p nh?t tr?ng th?i v? sinh: ' + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const updateBusinessStatus = async (room, newStatus) => {
+    try {
+      await axiosClient.put(`/Rooms/${room.id}`, {
+        roomNumber: room.roomNumber,
+        floor: room.floor,
+        roomTypeId: room.roomTypeId,
+        status: newStatus,
+        cleanStatus: normalizeCleanStatus(room.cleanStatus),
+      });
+      setRooms(prev => prev.map(r => r.id === room.id ? { ...r, status: newStatus } : r));
+      if (newStatus === 'Available' && normalizeCleanStatus(room.cleanStatus) !== 'clean') {
+        alert('Phong da mo van hanh nhung chua san sang giao khach. Can cleanStatus = clean de co the ban/check-in.');
+      }
+    } catch (err) {
+      alert('Lá»—i cáº­p nháº­t tráº¡ng thÃ¡i: ' + (err.response?.data?.message || err.message));
     }
   };
 
@@ -155,6 +269,7 @@ function RoomModal({ onClose, onSaved, roomTypes, editRoom, rooms }) {
     imageUrl: '',
   });
   const [imagePreview, setImagePreview] = useState(null);
+  const [selectedImageFile, setSelectedImageFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving]       = useState(false);
 
@@ -223,15 +338,49 @@ function RoomModal({ onClose, onSaved, roomTypes, editRoom, rooms }) {
 
   const handleChange = (k, v) => setForm(prev => ({ ...prev, [k]: v }));
 
-  const handleImageChange = async (e) => {
-    const file = e.target.files[0]; if (!file) return;
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setSelectedImageFile(file);
     setImagePreview(createLocalPreview(file));
+    setForm(prev => ({ ...prev, imageUrl: file.name }));
+  };
+
+  const selectedType = roomTypes.find(rt => rt.id === Number(form.roomTypeId));
+  const currentRoomTypeImage = selectedType?.primaryImageUrl || editRoom?.thumbnailUrl || null;
+
+  useEffect(() => {
+    if (!selectedImageFile) {
+      setImagePreview(currentRoomTypeImage);
+    }
+  }, [currentRoomTypeImage, selectedImageFile]);
+
+  const uploadRoomTypeImage = async (roomTypeId) => {
+    if (!selectedImageFile || !roomTypeId) return;
+
     setUploading(true);
     try {
-      const { url } = await uploadToCloudinary(file, 'hotel/rooms');
-      setForm(prev => ({ ...prev, imageUrl: url }));
-    } catch { alert('❌ Upload thất bại.'); }
-    finally { setUploading(false); }
+      const formData = new FormData();
+      formData.append('roomTypeId', String(roomTypeId));
+      formData.append('replaceExisting', 'true');
+      formData.append('Images', selectedImageFile);
+
+      const uploadRes = await axiosClient.post('/RoomTypes/post-images', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      const uploadedImages = Array.isArray(uploadRes.data) ? uploadRes.data : [];
+      const newPrimaryImage = uploadedImages[uploadedImages.length - 1];
+
+      if (newPrimaryImage?.id) {
+        await axiosClient.patch('/RoomTypes/set-primary', {
+          roomTypeId: Number(roomTypeId),
+          imageId: newPrimaryImage.id,
+        });
+      }
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleNext = () => {
@@ -244,10 +393,11 @@ function RoomModal({ onClose, onSaved, roomTypes, editRoom, rooms }) {
   const handleSave = async () => {
     setSaving(true);
     try {
+      const roomTypeId = Number(form.roomTypeId);
       const payload = {
         roomNumber: form.roomNumber,
         floor: Number(form.floor),
-        roomTypeId: Number(form.roomTypeId),
+        roomTypeId,
         status: editRoom ? form.status : 'Available',
         cleanStatus: editRoom?.cleanStatus ?? 'clean',
       };
@@ -267,6 +417,7 @@ function RoomModal({ onClose, onSaved, roomTypes, editRoom, rooms }) {
           }
         }
       }
+      await uploadRoomTypeImage(roomTypeId);
       onSaved();
       onClose();
     } catch (err) {
@@ -275,8 +426,6 @@ function RoomModal({ onClose, onSaved, roomTypes, editRoom, rooms }) {
       setSaving(false);
     }
   };
-
-  const selectedType = roomTypes.find(rt => rt.id === Number(form.roomTypeId));
   const STEPS = editRoom ? ['Cập nhật thông tin'] : ['Thông tin chung', 'Xác nhận'];
 
   return (
@@ -348,7 +497,10 @@ function RoomModal({ onClose, onSaved, roomTypes, editRoom, rooms }) {
                   )}
                 </div>
                 <div className="form-group">
-                  <label>Hình ảnh (tùy chọn)</label>
+                  <label>Hình ảnh phòng</label>
+                  <div className="room-image-note">
+                    Ảnh đang được quản lý theo hạng phòng. Ảnh bạn chọn ở đây sẽ được đặt làm ảnh chính cho toàn bộ phòng cùng hạng.
+                  </div>
                   <div className="upload-area" onClick={() => fileRef.current.click()}>
                     {imagePreview ? (
                       <img src={imagePreview} alt="preview" className="upload-preview" />
@@ -360,8 +512,9 @@ function RoomModal({ onClose, onSaved, roomTypes, editRoom, rooms }) {
                     )}
                   </div>
                   <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleImageChange} />
-                  {uploading && <p className="upload-status">⏳ Đang tải lên Cloudinary...</p>}
-                  {form.imageUrl && !uploading && <p className="upload-success">✅ Ảnh đã được lưu</p>}
+                  {uploading && <p className="upload-status">Đang tải ảnh và cập nhật ảnh chính của hạng phòng...</p>}
+                  {currentRoomTypeImage && !selectedImageFile && !uploading && <p className="upload-success">Ảnh hiện tại đang hiển thị cho client site.</p>}
+                  {selectedImageFile && !uploading && <p className="upload-success">Ảnh mới đã sẵn sàng để lưu.</p>}
                 </div>
               </div>
 
@@ -375,7 +528,7 @@ function RoomModal({ onClose, onSaved, roomTypes, editRoom, rooms }) {
                   <div className="form-group">
                     <label>Trạng thái phòng</label>
                     <select className="form-input" value={form.status} onChange={e => handleChange('status', e.target.value)}>
-                      {ALL_STATUSES.map(s => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}
+                      {BUSINESS_STATUSES.map(s => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}
                     </select>
                   </div>
                 </div>
@@ -679,6 +832,74 @@ function RoomsPage() {
   const [lossRoom, setLossRoom]         = useState(null);
   const [editRoom, setEditRoom]         = useState(null);
 
+  const syncCleanStatus = async (roomId, value) => {
+    try {
+      await axiosClient.patch('/Rooms/patch-clean-status', { roomId, cleanStatus: value });
+      setRooms(prev => prev.map(r =>
+        r.id === roomId ? { ...r, cleanStatus: value } : r
+      ));
+    } catch (err) {
+      alert('Lỗi cập nhật trạng thái vệ sinh: ' + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const requestHousekeepingForAll = async () => {
+    const eligibleRooms = rooms.filter(r => r.status !== 'Occupied' && r.status !== 'Maintenance');
+    if (eligibleRooms.length === 0) {
+      alert('Không có phòng nào có thể yêu cầu dọn (tất cả đang có khách hoặc bảo trì).');
+      return;
+    }
+    if (!window.confirm(
+      `Yêu cầu dọn toàn bộ ${eligibleRooms.length} phòng?\n` +
+      `(Bỏ qua phòng đang có khách hoặc bảo trì)\n\n` +
+      `Tất cả phòng đủ điều kiện sẽ được đặt về:\n` +
+      `• Vệ sinh: Đang dọn\n• Kinh doanh: Giữ nguyên`
+    )) return;
+
+    try {
+      await Promise.all(
+        eligibleRooms.map(room =>
+          axiosClient.patch('/Rooms/patch-clean-status', { roomId: room.id, cleanStatus: 'cleaning' })
+        )
+      );
+      setRooms(prev =>
+        prev.map(r =>
+          eligibleRooms.find(e => e.id === r.id)
+            ? { ...r, cleanStatus: 'cleaning' }
+            : r
+        )
+      );
+    } catch (err) {
+      alert('Lỗi yêu cầu dọn phòng: ' + (err.response?.data?.message || err.message));
+      fetchAll();
+    }
+  };
+
+  const markRoomInspecting = async (roomId) => {
+    try {
+      await axiosClient.patch('/Rooms/patch-clean-status', { roomId, cleanStatus: 'inspecting' });
+      setRooms(prev => prev.map(r => r.id === roomId ? { ...r, cleanStatus: 'inspecting' } : r));
+      setLossRoom(null);
+    } catch (err) {
+      alert('Lỗi cập nhật trạng thái vệ sinh: ' + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const updateBusinessStatus = async (room, newStatus) => {
+    try {
+      await axiosClient.put(`/Rooms/${room.id}`, {
+        roomNumber: room.roomNumber,
+        floor: room.floor,
+        roomTypeId: room.roomTypeId,
+        status: newStatus,
+        cleanStatus: normalizeCleanStatus(room.cleanStatus),
+      });
+      setRooms(prev => prev.map(r => r.id === room.id ? { ...r, status: newStatus } : r));
+    } catch (err) {
+      alert('Lỗi cập nhật trạng thái: ' + (err.response?.data?.message || err.message));
+    }
+  };
+
   const fetchAll = useCallback(async () => {
     try {
       setLoading(true);
@@ -725,13 +946,6 @@ function RoomsPage() {
   };
 
   const handleCleanStatusChange = async (roomId, value) => {
-    if (value === 'loss') {
-      const room = rooms.find(r => r.id === roomId);
-      if (!room) return;
-      setLossRoom(room);
-      return;
-    }
-
     const room = rooms.find(r => r.id === roomId);
     if (!room) return;
 
@@ -859,7 +1073,7 @@ function RoomsPage() {
         <div>
           <h1 className="page-title">Quản lý phòng</h1>
           <p className="page-subtitle">
-            {rooms.length} phòng · {rooms.filter(r => r.status === 'Available').length} trống · {rooms.filter(r => r.status === 'Occupied').length} có khách
+            {rooms.length} phong � {rooms.filter(r => isReadyForSale(r)).length} san sang khai thac � {rooms.filter(r => r.status === 'Occupied').length} co khach
           </p>
         </div>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
@@ -869,13 +1083,13 @@ function RoomsPage() {
           </button>
           {/* Clean all rooms */}
           <button
-            onClick={handleCleanAll}
+            onClick={requestHousekeepingForAll}
             title="Đánh dấu toàn bộ phòng (trừ đang có khách / bảo trì) là sạch sẽ & sẵn sàng"
             style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 14px', border: '1px solid #16a34a', borderRadius: 8, background: '#f0fdf4', cursor: 'pointer', fontSize: '0.85rem', color: '#15803d', fontWeight: 600 }}>
             ✓ Dọn tất cả phòng
-            {rooms.filter(r => (r.cleanStatus || 'clean') === 'dirty').length > 0 && (
+            {rooms.filter(r => normalizeCleanStatus(r.cleanStatus) === 'dirty').length > 0 && (
               <span style={{ background: '#16a34a', color: '#fff', borderRadius: 12, padding: '1px 7px', fontSize: '0.75rem', fontWeight: 700 }}>
-                {rooms.filter(r => (r.cleanStatus || 'clean') === 'dirty').length}
+                {rooms.filter(r => normalizeCleanStatus(r.cleanStatus) === 'dirty').length}
               </span>
             )}
           </button>
@@ -934,7 +1148,7 @@ function RoomsPage() {
             placeholder="Tất cả trạng thái"
             options={[
               { value: '', label: 'Tất cả trạng thái' },
-              ...ALL_STATUSES.map(s => ({ value: s, label: STATUS_LABEL[s] }))
+              ...BUSINESS_STATUSES.map(s => ({ value: s, label: STATUS_LABEL[s] }))
             ]}
           />
         </div>
@@ -952,23 +1166,35 @@ function RoomsPage() {
           <table className="rooms-table">
             <thead>
               <tr>
+                <th>Ảnh</th>
                 <th>Số phòng</th>
                 <th>Tầng</th>
                 <th>Hạng phòng</th>
                 <th>Trạng thái</th>
                 <th>Vệ sinh</th>
+                <th>San sang</th>
                 <th style={{ textAlign: 'center' }}>Thao tác</th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
-                <tr><td colSpan={6} className="empty-row">
+                <tr><td colSpan={8} className="empty-row">
                   {rooms.length === 0 ? 'Chưa có phòng nào trong hệ thống' : 'Không tìm thấy phòng phù hợp'}
                 </td></tr>
               ) : filtered.map(room => {
-                const roomClean = room.cleanStatus || 'clean';
+                const roomClean = normalizeCleanStatus(room.cleanStatus);
+                const readiness = getReadinessMeta(room);
                 return (
                   <tr key={room.id} className={roomClean === 'dirty' ? 'row-needs-cleaning' : ''}>
+                    <td>
+                      <div className="room-thumb-cell">
+                        {room.thumbnailUrl ? (
+                          <img src={room.thumbnailUrl} alt={`Phòng ${room.roomNumber}`} className="room-thumb" />
+                        ) : (
+                          <div className="room-thumb-placeholder">Chưa có ảnh</div>
+                        )}
+                      </div>
+                    </td>
                     <td><span className="room-number-cell">P.{room.roomNumber}</span></td>
                     <td>Tầng {room.floor ?? '—'}</td>
                     <td>{room.roomTypeName ?? '—'}</td>
@@ -976,23 +1202,35 @@ function RoomsPage() {
                       <CustomSelect
                         className={`status-select ${STATUS_BADGE[room.status] ?? ''}`}
                         value={room.status}
-                        onChange={val => handleStatusChange(room, val)}
-                        options={ALL_STATUSES.map(s => ({ value: s, label: STATUS_LABEL[s] }))}
+                        onChange={val => updateBusinessStatus(room, val)}
+                        options={BUSINESS_STATUSES.map(s => ({ value: s, label: STATUS_LABEL[s] }))}
                       />
                     </td>
                     <td>
                       <CustomSelect
-                        className={`clean-select ${roomClean === 'dirty' ? 'clean-dirty' : roomClean === 'loss' ? 'clean-loss' : 'clean-ok'}`}
+                        className={`clean-select ${roomClean === 'dirty' ? 'clean-dirty' : roomClean === 'cleaning' ? 'clean-cleaning' : roomClean === 'inspecting' ? 'clean-inspecting' : 'clean-ok'}`}
                         value={roomClean}
-                        onChange={val => handleCleanStatusChange(room.id, val)}
-                        options={[
-                          { value: 'clean', label: 'Sạch sẽ' },
-                          { value: 'dirty', label: 'Cần dọn' },
-                          { value: 'loss', label: 'Thất thoát & đền bù' }
-                        ]}
+                        onChange={val => syncCleanStatus(room.id, val)}
+                        options={ALL_CLEAN_STATUSES.map(s => ({ value: s, label: CLEAN_STATUS_LABEL[s] }))}
+                        disabled={!canEditCleanStatus(room)}
                       />
                     </td>
+                    <td>
+                      <span className={`readiness-badge ${readiness.className}`}>{readiness.label}</span>
+                      {!canEditCleanStatus(room) && (
+                        <div className="readiness-note">
+                          {room.status === 'Occupied' ? 'Khoa khi dang co khach' : 'Khoa khi dang bao tri'}
+                        </div>
+                      )}
+                    </td>
                     <td style={{ textAlign: 'center' }}>
+                      <button
+                        className="btn-detail"
+                        onClick={() => setLossRoom(room)}
+                        style={{ marginRight: 8 }}
+                      >
+                        <AlertTriangle size={14} /> Báo cáo
+                      </button>
                       <button
                         className="btn-detail"
                         onClick={() => { setEditRoom(room); setShowModal(true); }}
@@ -1018,7 +1256,7 @@ function RoomsPage() {
               room={lossRoom}
               inventories={getRoomInventory(lossRoom.id)}
               onClose={() => setLossRoom(null)}
-              onSaved={() => handleLossSaved(lossRoom.id)}
+              onSaved={() => markRoomInspecting(lossRoom.id)}
             />
           )}
         </>
@@ -1028,3 +1266,6 @@ function RoomsPage() {
 }
 
 export default RoomsPage;
+
+
+

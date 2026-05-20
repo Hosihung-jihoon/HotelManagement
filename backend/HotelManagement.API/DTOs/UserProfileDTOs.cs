@@ -12,6 +12,16 @@ public class UserProfileDto
     public string? MembershipName { get; set; }
 }
 
+public class UserMembershipDto
+{
+    public int? MembershipId { get; set; }
+    public string Tier { get; set; } = "Dong";
+    public decimal TotalSpent { get; set; }
+    public int TotalPoints { get; set; }
+    public string? NextTierName { get; set; }
+    public int? RemainingPoints { get; set; }
+}
+
 // ========== Update Profile ==========
 public class UpdateProfileDto
 {

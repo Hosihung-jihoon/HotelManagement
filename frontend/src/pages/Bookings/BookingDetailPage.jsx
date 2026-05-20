@@ -3,7 +3,7 @@ import {
   ChevronLeft, User, Phone, Mail, Globe, Store,
   BedDouble, Calendar, DollarSign, Clock, CheckCircle,
   XCircle, CalendarCheck, RefreshCw, AlertCircle,
-  Activity, Tag, Hash, LogIn, LogOut, Zap,
+  Activity, Tag, Hash, LogIn, LogOut, Zap, Printer,
 } from 'lucide-react';
 import axiosClient from '../../api/axiosClient';
 import './BookingDetailPage.css';
@@ -213,6 +213,22 @@ export default function BookingDetailPage({ bookingId, onBack }) {
             Tạo lúc {fmtDateTime(detail.createdAt)}
             {detail.bookedByName && <> · Nhân viên: <strong>{detail.bookedByName}</strong></>}
           </p>
+        </div>
+        <div>
+          <button 
+            className="btn-print" 
+            onClick={() => window.print()}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 8,
+              padding: '8px 16px', background: '#f8fafc',
+              border: '1px solid #e2e8f0', borderRadius: 8,
+              color: '#334155', fontWeight: 600, fontSize: '0.9rem',
+              cursor: 'pointer', transition: 'all 0.2s',
+              boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+            }}
+          >
+            <Printer size={16} /> In hóa đơn
+          </button>
         </div>
       </div>
 
