@@ -5,17 +5,16 @@ import axiosClient from '../../api/axiosClient';
 import './FrontDeskPage.css';
 
 const STATUS_BADGE = {
-  'Pending':    { cls: 'badge-pending',   label: 'Chờ xác nhận', icon: <Clock size={12} /> },
-  'Confirmed':  { cls: 'badge-confirmed', label: 'Đã xác nhận',  icon: <CheckCircle size={12} /> },
-  'CheckedIn':  { cls: 'badge-occupied',  label: 'Đang ở',       icon: <CalendarCheck size={12} /> },
-  'CheckedOut': { cls: 'badge-checkout',  label: 'Đã trả phòng', icon: <CheckCircle size={12} /> },
-  'Cancelled':  { cls: 'badge-cancelled', label: 'Đã hủy',       icon: <XCircle size={12} /> },
+  Pending: { cls: 'badge-pending', label: 'Chờ xác nhận', icon: <Clock size={12} /> },
+  Confirmed: { cls: 'badge-confirmed', label: 'Đã xác nhận', icon: <CheckCircle size={12} /> },
+  CheckedIn: { cls: 'badge-occupied', label: 'Đang ở', icon: <CalendarCheck size={12} /> },
+  CheckedOut: { cls: 'badge-checkout', label: 'Đã trả phòng', icon: <CheckCircle size={12} /> },
+  Cancelled: { cls: 'badge-cancelled', label: 'Đã hủy', icon: <XCircle size={12} /> }
 };
 
 function TodayArrivalsPage() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
-
   const navigate = useNavigate();
 
   const todayStr = new Date().toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -29,16 +28,15 @@ function TodayArrivalsPage() {
       const tomorrow = new Date(today);
       tomorrow.setDate(tomorrow.getDate() + 1);
 
-      // Tìm bookings Confirmed mà có checkIn = hôm nay
       const all = Array.isArray(res.data) ? res.data : [];
-      const filtered = all.filter(b => {
-        if (b.status !== 'Confirmed') return false;
-        // bookingDetails có checkInDate
-        return true; // We'll check from detail or use booking created_at
+      const filtered = all.filter((b) => {
+        if (b.status !== 'Confirmed' || !b.checkInDate) return false;
+        const checkIn = new Date(b.checkInDate);
+        return checkIn >= today && checkIn < tomorrow;
       });
       setBookings(filtered);
     } catch (err) {
-      console.error('Lỗi tải dữ liệu:', err);
+      console.error('Loi tai du lieu:', err);
     } finally {
       setLoading(false);
     }
@@ -47,9 +45,9 @@ function TodayArrivalsPage() {
   const handleCheckin = async (id) => {
     try {
       await axiosClient.put(`/Bookings/${id}`, { status: 'CheckedIn' });
-      setBookings(prev => prev.map(b => b.id === id ? { ...b, status: 'CheckedIn' } : b));
+      setBookings((prev) => prev.map((b) => (b.id === id ? { ...b, status: 'CheckedIn' } : b)));
     } catch (err) {
-      alert('Lỗi check-in: ' + (err.response?.data?.message || err.message));
+      alert('Loi check-in: ' + (err.response?.data?.message || err.message));
     }
   };
 
@@ -76,10 +74,10 @@ function TodayArrivalsPage() {
         </div>
       ) : (
         <div className="fd-cards-grid">
-          {bookings.map(b => {
+          {bookings.map((b) => {
             const badge = STATUS_BADGE[b.status] ?? {};
             return (
-              <div key={b.id} className="fd-guest-card" onClick={() => navigate('/front-desk/bookings', { state: { bookingId: b.id } })} style={{ cursor: 'pointer' }}>
+              <div key={b.id} className="fd-guest-card" onClick={() => navigate('/admin/front-desk/bookings', { state: { bookingId: b.id } })} style={{ cursor: 'pointer' }}>
                 <div className="fd-card-top">
                   <div className="fd-avatar"><User size={22} /></div>
                   <div className="fd-guest-info">

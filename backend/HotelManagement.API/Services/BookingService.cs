@@ -3,6 +3,7 @@ using HotelManagement.API.Models;
 using HotelManagement.API.Repositories;
 
 using HotelManagement.API.Data;
+using HotelManagement.API.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace HotelManagement.API.Services;
@@ -31,8 +32,40 @@ public class BookingService : IBookingService
             BookingCode = b.BookingCode,
             VoucherId = b.VoucherId,
             Status = b.Status,
+            CreatedAt = b.CreatedAt,
+            CheckInDate = b.BookingDetails.OrderBy(d => d.CheckInDate).Select(d => (DateTime?)d.CheckInDate).FirstOrDefault(),
+            CheckOutDate = b.BookingDetails.OrderByDescending(d => d.CheckOutDate).Select(d => (DateTime?)d.CheckOutDate).FirstOrDefault(),
+            RoomId = b.BookingDetails.Select(d => d.RoomId).FirstOrDefault(),
+            RoomTypeName = b.BookingDetails.Select(d => d.Room?.RoomType?.Name ?? d.RoomType?.Name).FirstOrDefault(),
+            FinalTotal = b.Invoice?.FinalTotal,
             RoomNumbers = b.BookingDetails.Where(d => d.Room != null).Select(d => d.Room!.RoomNumber).ToList()
         });
+    }
+
+    public async Task<IEnumerable<BookingDto>> GetMyBookingsAsync(int userId)
+    {
+        var bookings = await _repository.GetAllWithRoomsAsync();
+        return bookings
+            .Where(b => b.UserId == userId)
+            .Select(b => new BookingDto
+            {
+                Id = b.Id,
+                UserId = b.UserId,
+                GuestName = b.GuestName,
+                GuestPhone = b.GuestPhone,
+                GuestEmail = b.GuestEmail,
+                BookingCode = b.BookingCode,
+                VoucherId = b.VoucherId,
+                Status = b.Status,
+                CreatedAt = b.CreatedAt,
+                CheckInDate = b.BookingDetails.OrderBy(d => d.CheckInDate).Select(d => (DateTime?)d.CheckInDate).FirstOrDefault(),
+                CheckOutDate = b.BookingDetails.OrderByDescending(d => d.CheckOutDate).Select(d => (DateTime?)d.CheckOutDate).FirstOrDefault(),
+                RoomId = b.BookingDetails.Select(d => d.RoomId).FirstOrDefault(),
+                RoomTypeName = b.BookingDetails.Select(d => d.Room?.RoomType?.Name ?? d.RoomType?.Name).FirstOrDefault(),
+                FinalTotal = b.Invoice?.FinalTotal,
+                RoomNumbers = b.BookingDetails.Where(d => d.Room != null).Select(d => d.Room!.RoomNumber).ToList()
+            })
+            .ToList();
     }
 
     public async Task<BookingDto?> GetByIdAsync(int id)
@@ -144,7 +177,11 @@ public class BookingService : IBookingService
             {
                 var roleGuest = await _context.Roles.FirstOrDefaultAsync(r => r.Name.ToLower() == "guest") 
                                 ?? await _context.Roles.FirstOrDefaultAsync();
-                var tierNew = await _context.Memberships.FirstOrDefaultAsync(m => m.TierName.Contains("Khách mới"));
+                var tierNew = await _context.Memberships
+                    .Where(m => !m.IsDeleted)
+                    .OrderBy(m => m.DisplayOrder)
+                    .ThenBy(m => m.MinPoints)
+                    .FirstOrDefaultAsync();
                 
                 var newUser = new User
                 {
@@ -237,7 +274,13 @@ public class BookingService : IBookingService
                 {
                     if (detail.Room != null)
                     {
-                        detail.Room.Status = "Occupied";
+                        if (!RoomStateHelper.IsRoomReady(detail.Room.Status, detail.Room.CleanStatus))
+                        {
+                            var roomNumber = detail.Room.RoomNumber;
+                            throw new ArgumentException($"Khong the nhan phong {roomNumber}. Phong chi duoc check-in khi o trang thai Available va clean.");
+                        }
+
+                        detail.Room.Status = RoomStateHelper.StatusOccupied;
                     }
                 }
                 await _repository.UpdateAsync(entity); // Repository update will save rooms via context
@@ -249,12 +292,12 @@ public class BookingService : IBookingService
                 {
                     if (detail.Room != null)
                     {
-                        detail.Room.Status = "Cleaning";
-                        detail.Room.CleanStatus = "dirty";
+                        detail.Room.Status = RoomStateHelper.StatusAvailable;
+                        detail.Room.CleanStatus = RoomStateHelper.CleanDirty;
                     }
                 }
                 await _repository.UpdateAsync(entity);
-                await _repository.AddAuditLogAsync(id, "Tự động hóa", null, "Cập nhật các phòng sang 'Đang dọn' & 'Cần dọn'");
+                await _repository.AddAuditLogAsync(id, "Tự động hóa", null, "Cập nhật các phòng sang 'Sẵn sàng vận hành' & 'Cần dọn'");
             }
         }
 
@@ -267,6 +310,26 @@ public class BookingService : IBookingService
 
         await _repository.DeleteAsync(id);
         return true;
+    }
+
+    public async Task<(bool success, string? error)> CancelAsync(int id, int userId)
+    {
+        var booking = await _repository.GetFullDetailAsync(id);
+        if (booking == null) return (false, null);
+
+        if (booking.UserId != userId)
+            return (false, "Bạn không có quyền hủy booking này.");
+
+        if (booking.Status is "CheckedIn" or "CheckedOut")
+            return (false, "Không thể hủy booking đã nhận hoặc đã trả phòng.");
+
+        if (booking.Status == "Cancelled")
+            return (true, null);
+
+        booking.Status = "Cancelled";
+        await _repository.UpdateAsync(booking);
+        await _repository.AddAuditLogAsync(id, "Hủy booking", null, "Cancelled", userId);
+        return (true, null);
     }
 
     public async Task<IEnumerable<RoomAvailabilityResponseDto>> SearchAvailableRoomsAsync(BookingSearchRequestDto request)
@@ -308,7 +371,11 @@ public class BookingService : IBookingService
             {
                 var roleGuest = await _context.Roles.FirstOrDefaultAsync(r => r.Name.ToLower() == "guest") 
                                 ?? await _context.Roles.FirstOrDefaultAsync();
-                var tierNew = await _context.Memberships.FirstOrDefaultAsync(m => m.TierName.Contains("Khách mới"));
+                var tierNew = await _context.Memberships
+                    .Where(m => !m.IsDeleted)
+                    .OrderBy(m => m.DisplayOrder)
+                    .ThenBy(m => m.MinPoints)
+                    .FirstOrDefaultAsync();
                 
                 var newUser = new User
                 {
@@ -448,22 +515,16 @@ public class BookingService : IBookingService
                 // Additional new payment (since Context might not have flushed the current one to SumAsync yet)
                 lifeTimePaid += dto.Amount;
 
-                string newTierName = null;
-                if (lifeTimePaid >= 50_000_000m) newTierName = "Bạch kim";
-                else if (lifeTimePaid >= 20_000_000m) newTierName = "Vàng";
-                else if (lifeTimePaid >= 10_000_000m) newTierName = "Bạc";
-                else if (lifeTimePaid >= 5_000_000m) newTierName = "Đồng";
+                var totalPoints = (int)Math.Floor(lifeTimePaid / 10000m);
+                var newTier = await _context.Memberships
+                    .Where(m => !m.IsDeleted && m.MinPoints.HasValue && m.MinPoints.Value <= totalPoints)
+                    .OrderByDescending(m => m.MinPoints)
+                    .FirstOrDefaultAsync();
 
-                if (newTierName != null)
+                if (newTier != null && user.MembershipId != newTier.Id)
                 {
-                    var newTier = await _context.Memberships.FirstOrDefaultAsync(m => m.TierName.Contains(newTierName));
-                    if (newTier != null && user.MembershipId != newTier.Id)
-                    {
-                        // Check if new tier is higher. We assume IDs or logical names. 
-                        // To be simple, we just set the new tier if thresholds are met (upgrades only).
-                        user.MembershipId = newTier.Id;
-                        await _context.SaveChangesAsync();
-                    }
+                    user.MembershipId = newTier.Id;
+                    await _context.SaveChangesAsync();
                 }
             }
         }

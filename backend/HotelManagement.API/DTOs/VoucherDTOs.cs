@@ -18,6 +18,24 @@ public class VoucherDto
     public string? MembershipTier { get; set; }
 }
 
+public class ValidateVoucherRequestDto
+{
+    [Required]
+    [MaxLength(50)]
+    public string Code { get; set; } = string.Empty;
+}
+
+public class ValidatedVoucherDto
+{
+    public int Id { get; set; }
+    public string Code { get; set; } = string.Empty;
+    public string DiscountType { get; set; } = string.Empty;
+    public decimal DiscountValue { get; set; }
+    public decimal? MinBookingValue { get; set; }
+    public string VoucherType { get; set; } = "General";
+    public string? MembershipTier { get; set; }
+}
+
 public class CreateVoucherDto
 {
     [Required]

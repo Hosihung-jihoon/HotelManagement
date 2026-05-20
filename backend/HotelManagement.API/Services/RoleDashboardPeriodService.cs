@@ -269,8 +269,8 @@ public sealed class RoleDashboardPeriodService : IRoleDashboardPeriodService
         var availableRooms   = await _context.Rooms.CountAsync(x => x.Status == "Available", cancellationToken);
         var occupiedRooms    = await _context.Rooms.CountAsync(x => x.Status == "Occupied", cancellationToken);
         var maintenanceRooms = await _context.Rooms.CountAsync(x => x.Status == "Maintenance", cancellationToken);
-        var dirtyRooms       = await _context.Rooms.CountAsync(x => x.CleanStatus == "Dirty", cancellationToken);
-        var cleaningRooms    = await _context.Rooms.CountAsync(x => x.CleanStatus == "Cleaning", cancellationToken);
+        var dirtyRooms       = await _context.Rooms.CountAsync(x => (x.CleanStatus ?? "clean").ToLower() == "dirty", cancellationToken);
+        var cleaningRooms    = await _context.Rooms.CountAsync(x => (x.CleanStatus ?? "clean").ToLower() == "cleaning", cancellationToken);
         var occupancyRate    = totalRooms == 0 ? 0m : Math.Round((decimal)occupiedRooms / totalRooms * 100m, 2);
 
         // Damage

@@ -45,6 +45,7 @@ import ContactPage         from './client/pages/Contact/ContactPage';
 import SearchPage          from './client/pages/Search/SearchPage';
 import ClientLoginPage     from './client/pages/Auth/ClientLoginPage';
 import ClientRegisterPage  from './client/pages/Auth/ClientRegisterPage';
+import ClientForgotPasswordPage from './client/pages/Auth/ClientForgotPasswordPage';
 import ClientMembershipPage from './client/pages/Membership/MembershipPage';
 
 /**
@@ -75,6 +76,7 @@ function App() {
               <Route path="/contact"         element={<ContactPage />} />
               <Route path="/search"          element={<SearchPage />} />
               <Route path="/client-login"    element={<ClientLoginPage />} />
+              <Route path="/forgot-password" element={<ClientForgotPasswordPage />} />
               <Route path="/register"        element={<ClientRegisterPage />} />
               <Route path="/membership"      element={<ClientMembershipPage />} />
             </Route>

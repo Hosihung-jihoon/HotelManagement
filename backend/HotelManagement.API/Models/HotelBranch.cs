@@ -22,6 +22,22 @@ public class HotelBranch
     [MaxLength(500)]
     public string? Address { get; set; }
 
+    [Column("google_maps_url")]
+    [MaxLength(2000)]
+    public string? GoogleMapsUrl { get; set; }
+
+    [Column("map_embed_link")]
+    [MaxLength(2000)]
+    public string? MapEmbedLink { get; set; }
+
+    [Column("map_preview_image_url")]
+    [MaxLength(2000)]
+    public string? MapPreviewImageUrl { get; set; }
+
+    [Column("google_place_id")]
+    [MaxLength(255)]
+    public string? GooglePlaceId { get; set; }
+
     [Column("latitude", TypeName = "decimal(10,8)")]
     public decimal? Latitude { get; set; }
 

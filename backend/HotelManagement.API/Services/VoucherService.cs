@@ -25,6 +25,28 @@ public class VoucherService : IVoucherService
         return voucher == null ? null : MapToDto(voucher);
     }
 
+    public async Task<ValidatedVoucherDto?> ValidateAsync(string code)
+    {
+        var voucher = await _repository.GetByCodeAsync(code.Trim());
+        if (voucher == null || !voucher.IsActive)
+            return null;
+
+        var now = DateTime.UtcNow;
+        if (voucher.ValidFrom.HasValue && voucher.ValidFrom.Value > now) return null;
+        if (voucher.ValidTo.HasValue && voucher.ValidTo.Value < now) return null;
+
+        return new ValidatedVoucherDto
+        {
+            Id = voucher.Id,
+            Code = voucher.Code,
+            DiscountType = voucher.DiscountType,
+            DiscountValue = voucher.DiscountValue,
+            MinBookingValue = voucher.MinBookingValue,
+            VoucherType = voucher.VoucherType,
+            MembershipTier = voucher.MembershipTier
+        };
+    }
+
     public async Task<VoucherDto?> CreateAsync(CreateVoucherDto dto)
     {
         var existingVoucher = await _repository.GetByCodeAsync(dto.Code);

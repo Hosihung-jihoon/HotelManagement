@@ -1,12 +1,13 @@
 import { Link } from 'react-router-dom';
 import { useLang } from '../../../i18n/LangContext';
 import { Calendar, User, Clock, ArrowRight } from 'lucide-react';
-import { MOCK_ARTICLES } from '../../../api/clientApi';
 import './BlogPreviewSection.css';
+
+const FALLBACK_THUMBNAIL = 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&q=80';
 
 function BlogPreviewSection({ articles }) {
   const { t, lang } = useLang();
-  const items = (articles && articles.length > 0) ? articles.slice(0, 3) : MOCK_ARTICLES;
+  const items = (articles && articles.length > 0) ? articles.slice(0, 3) : [];
 
   return (
     <section className="section c-blog-preview" aria-labelledby="blog-title">
@@ -18,11 +19,11 @@ function BlogPreviewSection({ articles }) {
         </div>
 
         <div className="c-blog-preview__grid">
-          {items.map((article, i) => (
-            <article key={article.id} className={`c-blog-card card ${i === 0 ? 'c-blog-card--featured' : ''}`} id={`blog-card-${article.id}`}>
+          {items.length > 0 ? items.map((article, i) => (
+            <Link to={`/blog/${article.slug || article.id}`} key={article.id} className={`c-blog-card card ${i === 0 ? 'c-blog-card--featured' : ''}`} id={`blog-card-${article.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
               <div className="c-blog-card__img-wrap">
                 <img
-                  src={article.thumbnail || article.thumbnailUrl}
+                  src={article.thumbnailUrl || article.thumbnail || FALLBACK_THUMBNAIL}
                   alt={lang === 'vi' ? (article.titleVi || article.title) : article.title}
                   className="c-blog-card__img"
                   loading="lazy"
@@ -33,7 +34,7 @@ function BlogPreviewSection({ articles }) {
               </div>
               <div className="c-blog-card__body">
                 <div className="c-blog-card__meta">
-                  <span><Calendar size={12} strokeWidth={1.5} /> {new Date(article.publishedAt).toLocaleDateString(lang === 'vi' ? 'vi-VN' : 'en-US', { day:'2-digit', month:'short', year:'numeric' })}</span>
+                  <span><Calendar size={12} strokeWidth={1.5} /> {new Date(article.publishedAt).toLocaleDateString(lang === 'vi' ? 'vi-VN' : 'en-US', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
                   {article.authorName && <span><User size={12} strokeWidth={1.5} /> {article.authorName}</span>}
                   {article.readTime && <span><Clock size={12} strokeWidth={1.5} /> {article.readTime} min</span>}
                 </div>
@@ -43,16 +44,19 @@ function BlogPreviewSection({ articles }) {
                 <p className="c-blog-card__excerpt body-lg text-muted">
                   {lang === 'vi' ? (article.excerptVi || article.excerpt) : article.excerpt}
                 </p>
-                <Link
-                  to={`/blog/${article.slug || article.id}`}
+                <span
                   className="c-blog-card__read-more btn btn-ghost btn-sm"
                   id={`blog-read-${article.id}`}
                 >
                   {t('blog.readMore')} <ArrowRight size={14} />
-                </Link>
+                </span>
               </div>
-            </article>
-          ))}
+            </Link>
+          )) : (
+            <div className="c-empty-state" style={{ gridColumn: '1 / -1' }}>
+              <p className="body-lg text-muted">Chua co bai viet de hien thi.</p>
+            </div>
+          )}
         </div>
 
         <div style={{ textAlign: 'center', marginTop: 'var(--sp-40)' }}>

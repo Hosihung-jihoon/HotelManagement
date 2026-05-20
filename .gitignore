@@ -57,3 +57,4 @@ desktop.ini
 *.db
 export_to_sqlite.py
 assets/
+docs/
