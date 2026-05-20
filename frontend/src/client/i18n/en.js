@@ -1,5 +1,15 @@
 // i18n — English
 const en = {
+  home: {
+    roomsEyebrow: 'PREMIUM ACCOMMODATIONS',
+    roomsTitle: 'Featured Rooms & Suites',
+    attractionsEyebrow: 'EXPLORE MORE',
+    blogEyebrow: 'OUR STORIES',
+    testimonialsEyebrow: 'GUEST STORIES',
+    testimonialsTitle: 'What Our Guests Say',
+    noAttractions: 'No attractions to display.',
+    noBlogs: 'No articles to display.',
+  },
   nav: {
     home: 'Home',
     rooms: 'Rooms',

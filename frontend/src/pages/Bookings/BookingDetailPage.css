@@ -660,3 +660,31 @@
   to { opacity: 1; transform: scale(1) translateY(0); } 
 }
 
+@media print {
+  .sidebar, .top-header, .btn-back-link, .action-buttons, .quick-info-grid, .btn-print, .detail-page-header button {
+    display: none !important;
+  }
+  .main-content {
+    margin-left: 0 !important;
+  }
+  .page-content {
+    padding: 0 !important;
+  }
+  .detail-card {
+    box-shadow: none !important;
+    border: 1px solid #ccc !important;
+    break-inside: avoid;
+    margin-bottom: 20px;
+  }
+  .booking-detail-page {
+    gap: 10px;
+    background: white !important;
+  }
+  body, html {
+    background: white !important;
+  }
+  /* Ẩn các card hành động và lịch sử */
+  .detail-card:nth-child(3), .detail-card:nth-child(4) {
+    display: none !important;
+  }
+}

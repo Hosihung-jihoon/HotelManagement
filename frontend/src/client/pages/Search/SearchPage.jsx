@@ -3,6 +3,7 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { useLang } from '../../i18n/LangContext';
 import { getRooms } from '../../api/clientApi';
 import { Search } from 'lucide-react';
+import { formatPrice } from '../../utils/formatPrice';
 
 export default function SearchPage() {
   const { lang, t } = useLang();
@@ -45,7 +46,7 @@ export default function SearchPage() {
                     <img src={r.thumbnailUrl || 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=400&q=75'} alt={r.name} style={{ width:'100%', height:180, objectFit:'cover' }} />
                     <div style={{ padding:'var(--sp-16) var(--sp-20)' }}>
                       <h3 className="title-lg" style={{ color:'var(--c-on-surface)', marginBottom:'var(--sp-4)' }}>{r.name}</h3>
-                      <p className="text-primary-color" style={{ fontWeight:700, fontFamily:'var(--font-sans)' }}>{new Intl.NumberFormat('vi-VN').format(r.pricePerNight)}₫/đêm</p>
+                      <p className="text-primary-color" style={{ fontWeight:700, fontFamily:'var(--font-sans)' }}>{formatPrice(r.pricePerNight)}/{t('common.night')}</p>
                     </div>
                   </div>
                 </Link>

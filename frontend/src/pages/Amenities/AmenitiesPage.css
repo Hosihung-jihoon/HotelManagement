@@ -1,53 +1,43 @@
-﻿.amenities-page {
+.amenities-page {
   padding: 24px;
 }
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
+
+.amenity-form-card {
+  margin-bottom: 16px;
 }
-.page-header h1 {
-  font-size: 24px;
-  font-weight: 600;
-  color: #1f2937;
-}
-.btn-primary {
-  background: #2563eb;
-  color: white;
-  padding: 8px 16px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  font-weight: 500;
-}
-.btn-primary:hover {
-  background: #1d4ed8;
-}
-.table-card {
-  background: white;
+
+.amenity-preview-box {
+  min-height: 88px;
+  border: 1px dashed #cbd5e1;
   border-radius: 12px;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-  overflow: hidden;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
 }
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
+
+.amenity-preview-empty {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #64748b;
+  font-size: 0.9rem;
 }
-.data-table th, .data-table td {
-  padding: 16px;
-  text-align: left;
-  border-bottom: 1px solid #e5e7eb;
+
+.amenity-preview-image,
+.amenity-table-image {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
 }
-.data-table th {
-  background: #f9fafb;
-  font-weight: 600;
-  color: #6b7280;
-  text-transform: capitalize;
-}
-.loading, .error-banner, .empty-state {
-  padding: 32px;
-  text-align: center;
-  color: #6b7280;
-  font-size: 16px;
+
+.amenity-preview-text,
+.amenity-link-text {
+  color: #475569;
+  font-size: 0.875rem;
+  word-break: break-word;
 }

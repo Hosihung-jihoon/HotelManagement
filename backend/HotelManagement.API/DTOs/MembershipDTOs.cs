@@ -11,8 +11,13 @@ public class MembershipDto
     public string TierName { get; set; } = string.Empty;
     public int? MinPoints { get; set; }
     public decimal? DiscountPercent { get; set; }
+    public int DisplayOrder { get; set; }
+    public decimal? PointMultiplier { get; set; }
+    public int PointToVndRate { get; set; }
     public string? Amenities { get; set; }
     public string? Services { get; set; }
+    public string? Benefits { get; set; }
+    public string? RedeemOptions { get; set; }
 }
 
 // ========== Request DTOs ==========
@@ -25,8 +30,12 @@ public class CreateMembershipDto
     public string TierName { get; set; } = string.Empty;
     public int? MinPoints { get; set; }
     public decimal? DiscountPercent { get; set; }
+    public int DisplayOrder { get; set; }
+    public decimal? PointMultiplier { get; set; }
     public string? Amenities { get; set; }
     public string? Services { get; set; }
+    public string? Benefits { get; set; }
+    public string? RedeemOptions { get; set; }
 }
 
 /// <summary>
@@ -37,6 +46,10 @@ public class UpdateMembershipDto
     public string TierName { get; set; } = string.Empty;
     public int? MinPoints { get; set; }
     public decimal? DiscountPercent { get; set; }
+    public int DisplayOrder { get; set; }
+    public decimal? PointMultiplier { get; set; }
     public string? Amenities { get; set; }
     public string? Services { get; set; }
+    public string? Benefits { get; set; }
+    public string? RedeemOptions { get; set; }
 }

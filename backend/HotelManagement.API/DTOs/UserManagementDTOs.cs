@@ -25,7 +25,8 @@ public class UserListDto
     public string? RoleName { get; set; }
     public string? MembershipName { get; set; }
     public decimal TotalSpent { get; set; } = 0;
-    public decimal? RemainingToNextTier { get; set; }
+    public int TotalPoints { get; set; }
+    public int? RemainingToNextTier { get; set; }
     public string? NextTierName { get; set; }
 }
 

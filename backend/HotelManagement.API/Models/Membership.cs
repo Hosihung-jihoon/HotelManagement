@@ -32,6 +32,20 @@ public class Membership
     [MaxLength(1000)]
     public string? Services { get; set; }
 
+    [Column("display_order")]
+    public int DisplayOrder { get; set; } = 0;
+
+    [Column("point_multiplier", TypeName = "decimal(6,2)")]
+    public decimal? PointMultiplier { get; set; } = 1;
+
+    [Column("benefits")]
+    [MaxLength(4000)]
+    public string? Benefits { get; set; }
+
+    [Column("redeem_options")]
+    [MaxLength(4000)]
+    public string? RedeemOptions { get; set; }
+
     // Navigation
     public ICollection<User> Users { get; set; } = new List<User>();
 }

@@ -13,6 +13,11 @@ public class BookingDto
     public int? VoucherId { get; set; }
     public string? Status { get; set; }
     public DateTime CreatedAt { get; set; }
+    public DateTime? CheckInDate { get; set; }
+    public DateTime? CheckOutDate { get; set; }
+    public int? RoomId { get; set; }
+    public string? RoomTypeName { get; set; }
+    public decimal? FinalTotal { get; set; }
     public List<string> RoomNumbers { get; set; } = new();
 }
 

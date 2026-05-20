@@ -13,6 +13,8 @@ public class ServiceDto
     public string Name { get; set; } = string.Empty;
     public decimal Price { get; set; }
     public string? Unit { get; set; }
+    public string? Description { get; set; }
+    public string? ImageUrl { get; set; }
 }
 
 /// <summary>
@@ -26,6 +28,8 @@ public class ServiceDetailDto
     public string Name { get; set; } = string.Empty;
     public decimal Price { get; set; }
     public string? Unit { get; set; }
+    public string? Description { get; set; }
+    public string? ImageUrl { get; set; }
 }
 
 // ========== Request DTOs ==========

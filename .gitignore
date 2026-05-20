@@ -60,3 +60,4 @@ desktop.ini
 *.db-journal
 export_to_sqlite.py
 assets/
+docs/

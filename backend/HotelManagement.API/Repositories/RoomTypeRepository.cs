@@ -22,6 +22,9 @@ public class RoomTypeRepository : GenericRepository<RoomType>, IRoomTypeReposito
             .Include(rt => rt.RoomImages)
             .Include(rt => rt.RoomTypeAmenities)
                 .ThenInclude(rta => rta.Amenity)
+            .Include(rt => rt.RoomTypeServices)
+                .ThenInclude(rts => rts.Service)
+                    .ThenInclude(s => s.Category)
             .Include(rt => rt.Rooms)
             .FirstOrDefaultAsync(rt => rt.Id == id);
     }
@@ -56,6 +59,12 @@ public class RoomTypeRepository : GenericRepository<RoomType>, IRoomTypeReposito
     public async Task UpdateImageAsync(RoomImage image)
     {
         _context.Set<RoomImage>().Update(image);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task UpdateImagesAsync(IEnumerable<RoomImage> images)
+    {
+        _context.Set<RoomImage>().UpdateRange(images);
         await _context.SaveChangesAsync();
     }
 }

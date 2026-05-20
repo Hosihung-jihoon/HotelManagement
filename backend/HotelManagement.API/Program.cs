@@ -11,6 +11,10 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+
 // ========== DbContext ==========
 var dbProvider = builder.Configuration["DatabaseProvider"] ?? "SqlServer";
 
@@ -72,7 +76,10 @@ builder.Services.AddScoped<IPasswordResetService, PasswordResetService>();
 builder.Services.AddScoped<IEquipmentService, EquipmentService>();
 builder.Services.AddScoped<IAuditLogService, AuditLogService>();
 builder.Services.AddScoped<IMomoService, MomoService>();
+builder.Services.AddScoped<IReviewService, ReviewService>();
+builder.Services.AddScoped<IContactRequestService, ContactRequestService>();
 builder.Services.AddHttpClient();
+builder.Services.AddHttpClient<IGoogleMapsMetadataService, GoogleMapsMetadataService>();
 builder.Services.AddScoped<HotelBranchService>();
 builder.Services.AddScoped<DashboardSnapshotService>(); // legacy, giữ tương thích
 builder.Services.AddScoped<IRoleDashboardPeriodService, RoleDashboardPeriodService>(); // mới theo chuẩn giảng viên

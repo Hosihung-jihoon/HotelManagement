@@ -2,18 +2,15 @@ import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useLang } from '../../i18n/LangContext';
 import { CheckCircle, Copy, Check, Calendar, Home } from 'lucide-react';
+import { formatPrice } from '../../utils/formatPrice';
 import './BookingSuccessPage.css';
-
-function generateCode() {
-  return 'HM' + Math.random().toString(36).substring(2, 8).toUpperCase();
-}
 
 export default function BookingSuccessPage() {
   const { t, lang } = useLang();
   const location = useLocation();
   const state = location.state || {};
   const [copied, setCopied] = useState(false);
-  const [bookingCode] = useState(generateCode);
+  const [bookingCode] = useState(state.bookingCode || ('HM' + Math.random().toString(36).substring(2, 8).toUpperCase()));
 
   useEffect(() => {
     document.title = 'Booking Confirmed — Hotel Management';
@@ -90,7 +87,7 @@ export default function BookingSuccessPage() {
               {state.total && (
                 <div className="c-success__detail-row">
                   <span>{t('booking.total')}</span>
-                  <strong className="text-primary-color">{new Intl.NumberFormat('vi-VN').format(state.total)}₫</strong>
+                  <strong className="text-primary-color">{formatPrice(state.total)}</strong>
                 </div>
               )}
             </div>

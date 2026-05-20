@@ -165,13 +165,6 @@ function LossesPage() {
     try {
       await axiosClient.patch(`/LossAndDamages/${id}/toggle-status`);
 
-      const currentLoss = losses.find(l => l.id === id);
-      const nextIsPaid = !currentLoss?.isPaid;
-      const roomId = getRoomIdFromLoss({ ...currentLoss, isPaid: nextIsPaid });
-      if (nextIsPaid && roomId) {
-        await axiosClient.patch('/Rooms/patch-clean-status', { roomId, cleanStatus: 'clean' });
-      }
-
       setLosses(prev => prev.map(l => l.id === id ? { ...l, isPaid: !l.isPaid } : l));
     } catch (err) {
       alert('L???i c???p nh???t tr???ng th??i: ' + (err.response?.data?.message || err.message));

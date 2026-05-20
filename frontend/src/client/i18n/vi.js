@@ -1,5 +1,15 @@
 // i18n — Tiếng Việt
 const vi = {
+  home: {
+    roomsEyebrow: 'KHÔNG GIAN CAO CẤP',
+    roomsTitle: 'Phòng & Suite Nổi Bật',
+    attractionsEyebrow: 'KHÁM PHÁ XUNG QUANH',
+    blogEyebrow: 'TIN TỨC & TRẢI NGHIỆM',
+    testimonialsEyebrow: 'Ý KIẾN KHÁCH HÀNG',
+    testimonialsTitle: 'Khách Hàng Nói Gì Về Chúng Tôi',
+    noAttractions: 'Chưa có địa điểm tham quan để hiển thị.',
+    noBlogs: 'Chưa có bài viết để hiển thị.',
+  },
   nav: {
     home: 'Trang chủ',
     rooms: 'Phòng',

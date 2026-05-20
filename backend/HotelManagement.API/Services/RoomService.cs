@@ -1,11 +1,12 @@
 using HotelManagement.API.DTOs;
+using HotelManagement.API.Helpers;
 using HotelManagement.API.Models;
 using HotelManagement.API.Repositories;
 
 namespace HotelManagement.API.Services;
 
 /// <summary>
-/// Room Service - Chứa business logic + mapping Entity &lt;-&gt; DTO.
+/// Room service: room business rules and DTO mapping.
 /// </summary>
 public class RoomService : IRoomService
 {
@@ -25,10 +26,15 @@ public class RoomService : IRoomService
             Id = r.Id,
             RoomNumber = r.RoomNumber,
             Floor = r.Floor,
-            Status = r.Status,
-            CleanStatus = r.CleanStatus,
+            Status = RoomStateHelper.NormalizeBusinessStatus(r.Status),
+            CleanStatus = RoomStateHelper.NormalizeCleanStatus(r.CleanStatus),
             RoomTypeId = r.RoomTypeId,
-            RoomTypeName = r.RoomType?.Name
+            RoomTypeName = r.RoomType?.Name,
+            PricePerNight = r.RoomType?.BasePrice,
+            CapacityAdults = r.RoomType?.CapacityAdults,
+            CapacityChildren = r.RoomType?.CapacityChildren,
+            SizeSqm = r.RoomType?.SizeSqm,
+            ThumbnailUrl = r.RoomType?.RoomImages.FirstOrDefault(img => img.IsActive != false && img.IsPrimary == true)?.ImageUrl
         });
     }
 
@@ -42,29 +48,36 @@ public class RoomService : IRoomService
             Id = room.Id,
             RoomNumber = room.RoomNumber,
             Floor = room.Floor,
-            Status = room.Status,
-            CleanStatus = room.CleanStatus,
+            Status = RoomStateHelper.NormalizeBusinessStatus(room.Status),
+            CleanStatus = RoomStateHelper.NormalizeCleanStatus(room.CleanStatus),
             RoomTypeId = room.RoomTypeId,
             RoomTypeName = room.RoomType?.Name,
             BasePrice = room.RoomType?.BasePrice,
             CapacityAdults = room.RoomType?.CapacityAdults,
             CapacityChildren = room.RoomType?.CapacityChildren,
-            RoomTypeDescription = room.RoomType?.Description
+            SizeSqm = room.RoomType?.SizeSqm,
+            RoomTypeDescription = room.RoomType?.Description,
+            ThumbnailUrl = room.RoomType?.RoomImages.FirstOrDefault(img => img.IsActive != false && img.IsPrimary == true)?.ImageUrl
         };
     }
 
     public async Task<(RoomDto? result, string? error)> CreateAsync(CreateRoomDto dto)
     {
-        // Business validation: số phòng không được trùng
         if (await _repository.RoomNumberExistsAsync(dto.RoomNumber))
-            return (null, $"Số phòng '{dto.RoomNumber}' đã tồn tại.");
+            return (null, $"So phong '{dto.RoomNumber}' da ton tai.");
+
+        if (!RoomStateHelper.IsSupportedBusinessStatus(dto.Status))
+            return (null, "Trang thai kinh doanh khong hop le.");
+
+        if (!RoomStateHelper.TryNormalizeCleanStatus(dto.CleanStatus, out var normalizedCleanStatus))
+            return (null, "Trang thai ve sinh khong hop le.");
 
         var entity = new Room
         {
             RoomNumber = dto.RoomNumber,
             Floor = dto.Floor,
-            Status = dto.Status ?? "Available",
-            CleanStatus = dto.CleanStatus ?? "clean",
+            Status = RoomStateHelper.NormalizeBusinessStatus(dto.Status),
+            CleanStatus = normalizedCleanStatus,
             RoomTypeId = dto.RoomTypeId
         };
 
@@ -75,8 +88,8 @@ public class RoomService : IRoomService
             Id = created.Id,
             RoomNumber = created.RoomNumber,
             Floor = created.Floor,
-            Status = created.Status,
-            CleanStatus = created.CleanStatus,
+            Status = RoomStateHelper.NormalizeBusinessStatus(created.Status),
+            CleanStatus = RoomStateHelper.NormalizeCleanStatus(created.CleanStatus),
             RoomTypeId = created.RoomTypeId
         };
 
@@ -88,14 +101,19 @@ public class RoomService : IRoomService
         var entity = await _repository.GetByIdAsync(id);
         if (entity == null) return (false, null);
 
-        // Business validation: số phòng không được trùng với phòng khác
         if (await _repository.RoomNumberExistsAsync(dto.RoomNumber, excludeId: id))
-            return (false, $"Số phòng '{dto.RoomNumber}' đã được dùng bởi phòng khác.");
+            return (false, $"So phong '{dto.RoomNumber}' da duoc dung boi phong khac.");
+
+        if (!RoomStateHelper.IsSupportedBusinessStatus(dto.Status))
+            return (false, "Trang thai kinh doanh khong hop le.");
+
+        if (!RoomStateHelper.TryNormalizeCleanStatus(dto.CleanStatus, out var normalizedCleanStatus))
+            return (false, "Trang thai ve sinh khong hop le.");
 
         entity.RoomNumber = dto.RoomNumber;
         entity.Floor = dto.Floor;
-        entity.Status = dto.Status;
-        entity.CleanStatus = dto.CleanStatus ?? entity.CleanStatus ?? "clean";
+        entity.Status = RoomStateHelper.NormalizeBusinessStatus(dto.Status);
+        entity.CleanStatus = normalizedCleanStatus;
         entity.RoomTypeId = dto.RoomTypeId;
 
         await _repository.UpdateAsync(entity);
@@ -113,19 +131,17 @@ public class RoomService : IRoomService
     public async Task<(List<RoomDto> created, string? error)> BulkCreateAsync(BulkCreateRoomDto dto)
     {
         var createdRooms = new List<RoomDto>();
-        string prefix = string.IsNullOrEmpty(dto.Prefix) ? dto.Floor.ToString() : dto.Prefix;
-        int baseIndex = 1;
+        var prefix = string.IsNullOrEmpty(dto.Prefix) ? dto.Floor.ToString() : dto.Prefix;
+        var baseIndex = 1;
 
-        for (int i = 0; i < dto.NumberOfRooms; i++)
+        for (var i = 0; i < dto.NumberOfRooms; i++)
         {
-            string roomNumber = string.Empty;
+            string roomNumber;
             while (true)
             {
                 roomNumber = $"{prefix}{(baseIndex < 10 ? "0" : "")}{baseIndex}";
                 if (!await _repository.RoomNumberExistsAsync(roomNumber))
-                {
                     break;
-                }
                 baseIndex++;
             }
 
@@ -133,8 +149,8 @@ public class RoomService : IRoomService
             {
                 RoomNumber = roomNumber,
                 Floor = dto.Floor,
-                Status = "Available",
-                CleanStatus = "clean",
+                Status = RoomStateHelper.StatusAvailable,
+                CleanStatus = RoomStateHelper.CleanClean,
                 RoomTypeId = dto.RoomTypeId
             };
 
@@ -144,8 +160,8 @@ public class RoomService : IRoomService
                 Id = created.Id,
                 RoomNumber = created.RoomNumber,
                 Floor = created.Floor,
-                Status = created.Status,
-                CleanStatus = created.CleanStatus,
+                Status = RoomStateHelper.NormalizeBusinessStatus(created.Status),
+                CleanStatus = RoomStateHelper.NormalizeCleanStatus(created.CleanStatus),
                 RoomTypeId = created.RoomTypeId
             });
             baseIndex++;
@@ -159,7 +175,10 @@ public class RoomService : IRoomService
         var entity = await _repository.GetByIdAsync(dto.RoomId);
         if (entity == null) return (false, null);
 
-        entity.Status = dto.Status;
+        if (!RoomStateHelper.IsSupportedBusinessStatus(dto.Status))
+            return (false, "Trang thai kinh doanh khong hop le.");
+
+        entity.Status = RoomStateHelper.NormalizeBusinessStatus(dto.Status);
         await _repository.UpdateAsync(entity);
         return (true, null);
     }
@@ -169,15 +188,17 @@ public class RoomService : IRoomService
         var entity = await _repository.GetByIdAsync(dto.RoomId);
         if (entity == null) return (false, null);
 
-        entity.CleanStatus = dto.CleanStatus;
-        if (dto.CleanStatus == "clean" && entity.Status != "Occupied")
-        {
-            entity.Status = "Available";
-        }
-        else if (dto.CleanStatus == "dirty" && entity.Status != "Occupied")
-        {
-            entity.Status = "Cleaning";
-        }
+        var currentBusinessStatus = RoomStateHelper.NormalizeBusinessStatus(entity.Status);
+        if (currentBusinessStatus == RoomStateHelper.StatusOccupied)
+            return (false, "Khong the doi trang thai ve sinh khi phong dang co khach.");
+
+        if (currentBusinessStatus == RoomStateHelper.StatusMaintenance)
+            return (false, "Khong the doi trang thai ve sinh khi phong dang bao tri.");
+
+        if (!RoomStateHelper.TryNormalizeCleanStatus(dto.CleanStatus, out var normalizedCleanStatus))
+            return (false, "Trang thai ve sinh khong hop le.");
+
+        entity.CleanStatus = normalizedCleanStatus;
 
         await _repository.UpdateAsync(entity);
         return (true, null);
