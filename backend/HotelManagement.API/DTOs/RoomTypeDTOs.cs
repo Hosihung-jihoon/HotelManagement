@@ -12,6 +12,7 @@ public class RoomTypeDto
     public decimal BasePrice { get; set; }
     public int CapacityAdults { get; set; }
     public int CapacityChildren { get; set; }
+    public decimal? SizeSqm { get; set; }
     public string? Description { get; set; }
     public string? PrimaryImageUrl { get; set; }
 }
@@ -26,9 +27,13 @@ public class RoomTypeDetailDto
     public decimal BasePrice { get; set; }
     public int CapacityAdults { get; set; }
     public int CapacityChildren { get; set; }
+    public decimal? SizeSqm { get; set; }
     public string? Description { get; set; }
     public List<RoomImageDto> Images { get; set; } = new();
     public List<AmenityDto> Amenities { get; set; } = new();
+    public List<int> AmenityIds { get; set; } = new();
+    public List<ServiceDto> RecommendedServices { get; set; } = new();
+    public List<int> RecommendedServiceIds { get; set; } = new();
     public int TotalRooms { get; set; }
 }
 
@@ -50,7 +55,10 @@ public class CreateRoomTypeDto
     public decimal BasePrice { get; set; }
     public int CapacityAdults { get; set; }
     public int CapacityChildren { get; set; }
+    public decimal? SizeSqm { get; set; }
     public string? Description { get; set; }
+    public List<int> AmenityIds { get; set; } = new();
+    public List<int> RecommendedServiceIds { get; set; } = new();
 }
 
 public class UpdateRoomTypeDto
@@ -59,7 +67,10 @@ public class UpdateRoomTypeDto
     public decimal BasePrice { get; set; }
     public int CapacityAdults { get; set; }
     public int CapacityChildren { get; set; }
+    public decimal? SizeSqm { get; set; }
     public string? Description { get; set; }
+    public List<int> AmenityIds { get; set; } = new();
+    public List<int> RecommendedServiceIds { get; set; } = new();
 }
 
 /// <summary>
@@ -68,6 +79,7 @@ public class UpdateRoomTypeDto
 public class UploadRoomTypeImagesDto
 {
     public int RoomTypeId { get; set; }
+    public bool ReplaceExisting { get; set; }
     public List<Microsoft.AspNetCore.Http.IFormFile> Images { get; set; } = new();
 }
 

@@ -1,4 +1,5 @@
 using HotelManagement.API.Data;
+using HotelManagement.API.Helpers;
 using HotelManagement.API.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -68,15 +69,20 @@ public class BookingRepository : GenericRepository<Booking>, IBookingRepository
         // 2. Query available rooms
         var query = _context.Rooms
             .Include(r => r.RoomType)
-            .Where(r => r.Status == "Available" && !overlappingRoomIds.Contains(r.Id));
+            .Where(r =>
+                r.Status == RoomStateHelper.StatusAvailable &&
+                (r.CleanStatus == null || r.CleanStatus == RoomStateHelper.CleanClean) &&
+                !overlappingRoomIds.Contains(r.Id));
 
-        if (adults.HasValue)
+        if (adults.HasValue && children.HasValue)
         {
             query = query.Where(r => r.RoomType != null && r.RoomType.CapacityAdults >= adults.Value);
-        }
-        if (children.HasValue)
-        {
             query = query.Where(r => r.RoomType != null && r.RoomType.CapacityChildren >= children.Value);
+        }
+        else if (adults.HasValue)
+        {
+            // Client booking flow currently sends a single guest count, not a separate adult/child split.
+            query = query.Where(r => r.RoomType != null && (r.RoomType.CapacityAdults + r.RoomType.CapacityChildren) >= adults.Value);
         }
 
         return await query.ToListAsync();
@@ -142,6 +148,10 @@ public class BookingRepository : GenericRepository<Booking>, IBookingRepository
         return await _dbSet
             .Include(b => b.BookingDetails)
                 .ThenInclude(bd => bd.Room)
+                    .ThenInclude(r => r!.RoomType)
+            .Include(b => b.BookingDetails)
+                .ThenInclude(bd => bd.RoomType)
+            .Include(b => b.Invoice)
             .OrderByDescending(b => b.CreatedAt)
             .ToListAsync();
     }

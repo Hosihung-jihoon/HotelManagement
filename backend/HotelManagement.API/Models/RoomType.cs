@@ -56,6 +56,7 @@ public class RoomType
     public ICollection<Room> Rooms { get; set; } = new List<Room>();
     public ICollection<RoomImage> RoomImages { get; set; } = new List<RoomImage>();
     public ICollection<RoomTypeAmenity> RoomTypeAmenities { get; set; } = new List<RoomTypeAmenity>();
+    public ICollection<RoomTypeService> RoomTypeServices { get; set; } = new List<RoomTypeService>();
     public ICollection<Review> Reviews { get; set; } = new List<Review>();
     public ICollection<BookingDetail> BookingDetails { get; set; } = new List<BookingDetail>();
 }

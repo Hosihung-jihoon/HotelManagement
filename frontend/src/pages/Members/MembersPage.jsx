@@ -1,14 +1,66 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { Award, Gift, Star, Users } from 'lucide-react';
 import axiosClient from '../../api/axiosClient';
-import { Users, Award, Star } from 'lucide-react';
-import '../RoomTypes/RoomTypesPage.css'; // Reusing common styles
+import '../RoomTypes/RoomTypesPage.css';
+
+const GUEST_ROLE_NAMES = new Set(['guest', 'customer']);
+const POINT_TO_VND_RATE = 10000;
+
+function normalizeRoleName(roleName) {
+  return (roleName || '').trim().toLowerCase();
+}
+
+function isGuestRole(roleName) {
+  const normalized = normalizeRoleName(roleName);
+  return !normalized || GUEST_ROLE_NAMES.has(normalized);
+}
+
+function splitLines(value) {
+  return String(value || '')
+    .split(/\r?\n|,/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function formatPoints(value) {
+  return `${Number(value || 0).toLocaleString('vi-VN')} diem`;
+}
+
+function formatPercent(value) {
+  return `${Number(value || 0).toLocaleString('vi-VN')}%`;
+}
+
+function getTierColor(tierName) {
+  const value = (tierName || '').toLowerCase();
+  if (value.includes('dong')) return 'linear-gradient(135deg, #f0d0b8 0%, #a0674a 100%)';
+  if (value.includes('bac')) return 'linear-gradient(135deg, #e8edf2 0%, #8a9db5 100%)';
+  if (value.includes('vang')) return 'linear-gradient(135deg, #f6e27a 0%, #c9a84c 100%)';
+  if (value.includes('kim')) return 'linear-gradient(135deg, #dbeafe 0%, #1d4ed8 100%)';
+  return 'linear-gradient(135deg, #f8fafc 0%, #cbd5e1 100%)';
+}
+
+function canonicalTierRank(tierName) {
+  const value = normalizeRoleName(tierName)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/gi, 'd');
+  if (value === 'dong') return 1;
+  if (value === 'bac') return 2;
+  if (value === 'vang') return 3;
+  if (value === 'kim cuong') return 4;
+  return 99;
+}
 
 export default function MembersPage() {
   const [users, setUsers] = useState([]);
   const [stats, setStats] = useState([]);
+  const [tiers, setTiers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('guests');
+  const [editingTier, setEditingTier] = useState(null);
+  const [tierForm, setTierForm] = useState({ discountPercent: 0, pointMultiplier: 1, benefits: '', redeemOptions: '' });
+  const [savingTier, setSavingTier] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -17,223 +69,266 @@ export default function MembersPage() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      // Fetch stats and lists concurrently
-      const [statsRes, usersRes] = await Promise.all([
+      const [statsRes, usersRes, tiersRes] = await Promise.all([
         axiosClient.get('/user-management/membership-stats'),
-        axiosClient.get('/user-management')
+        axiosClient.get('/user-management'),
+        axiosClient.get('/Memberships')
       ]);
-      
-      // Define tier order for sorting
-      const tierOrder = {
-        'khách mới': 1,
-        'đồng': 2,
-        'bronze': 2,
-        'bạc': 3,
-        'silver': 3,
-        'vàng': 4,
-        'gold': 4,
-        'bạch kim': 5,
-        'platinum': 5
-      };
-
-      const sortedStats = (statsRes.data || []).sort((a, b) => {
-        const rankA = tierOrder[a.tierName?.toLowerCase()] || 99;
-        const rankB = tierOrder[b.tierName?.toLowerCase()] || 99;
-        return rankA - rankB;
-      });
-      
-      setStats(sortedStats);
-      
-      // Filter out only users who have a membership or are regular guests
-      const allUsers = usersRes.data || [];
-      // If we only want to show members, we can filter them here:
-      // setUsers(allUsers.filter(u => u.membershipName));
-      // For now, let's show all, but we can highlight members.
-      setUsers(allUsers);
-      
+      const tierList = Array.isArray(tiersRes.data) ? tiersRes.data : [];
+      setTiers(
+        tierList
+          .filter((tier) => canonicalTierRank(tier.tierName) < 99)
+          .sort((a, b) => canonicalTierRank(a.tierName) - canonicalTierRank(b.tierName))
+      );
+      setStats(Array.isArray(statsRes.data) ? statsRes.data : []);
+      setUsers(Array.isArray(usersRes.data) ? usersRes.data : []);
       setError(null);
     } catch (err) {
-      setError('Lỗi tải dữ liệu khách hàng. Đảm bảo bạn có quyền quản lý users.');
-      console.error(err);
+      setError('Khong the tai du lieu thanh vien.');
     } finally {
       setLoading(false);
     }
   };
 
-  const getTierColor = (tierName) => {
-    const name = tierName?.toLowerCase() || '';
-    if (name.includes('khách mới')) {
-      return 'linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)'; // Blue
-    }
-    if (name.includes('đồng') || name.includes('bronze')) {
-      return 'linear-gradient(135deg, #d97706 0%, #78350f 100%)'; // Bronze
-    }
-    if (name.includes('bạc') || name.includes('silver')) {
-      return 'linear-gradient(135deg, #e2e8f0 0%, #94a3b8 100%)'; // Lighter Silver
-    }
-    if (name.includes('vàng') || name.includes('gold')) {
-      return 'linear-gradient(135deg, #fbbf24 0%, #b45309 100%)'; // Gold
-    }
-    if (name.includes('bạch kim') || name.includes('platinum')) {
-      return 'linear-gradient(135deg, #1e293b 0%, #020617 100%)'; // Deep Premium Dark Platinum
-    }
-    return 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)'; // Default Blue
+  const displayedUsers = useMemo(
+    () => (activeTab === 'guests'
+      ? users.filter((user) => isGuestRole(user.roleName))
+      : users.filter((user) => !isGuestRole(user.roleName))),
+    [activeTab, users]
+  );
+
+  const statsMap = useMemo(() => {
+    const map = new Map();
+    stats.forEach((item) => map.set(item.membershipId, item.memberCount));
+    return map;
+  }, [stats]);
+
+  const openEditTier = (tier) => {
+    setEditingTier(tier);
+    setTierForm({
+      discountPercent: Number(tier.discountPercent || 0),
+      pointMultiplier: Number(tier.pointMultiplier || 1),
+      benefits: Array.isArray(tier.benefits) ? tier.benefits.join('\n') : (tier.benefits || ''),
+      redeemOptions: Array.isArray(tier.redeemOptions) ? tier.redeemOptions.join('\n') : (tier.redeemOptions || '')
+    });
   };
 
-  const getTierTextColor = (tierName) => {
-    const name = tierName?.toLowerCase() || '';
-    if (name.includes('khách mới')) return '#2563eb';
-    if (name.includes('đồng') || name.includes('bronze')) return '#92400e';
-    if (name.includes('bạc') || name.includes('silver')) return '#64748b';
-    if (name.includes('vàng') || name.includes('gold')) return '#b45309';
-    if (name.includes('bạch kim') || name.includes('platinum')) return '#0f172a';
-    return '#2563eb';
+  const saveTier = async () => {
+    if (!editingTier) return;
+    try {
+      setSavingTier(true);
+      await axiosClient.put(`/Memberships/${editingTier.id}`, {
+        tierName: editingTier.tierName,
+        minPoints: editingTier.minPoints,
+        discountPercent: Number(tierForm.discountPercent) || 0,
+        displayOrder: editingTier.displayOrder,
+        pointMultiplier: Number(tierForm.pointMultiplier) || 1,
+        benefits: tierForm.benefits,
+        redeemOptions: tierForm.redeemOptions,
+        amenities: editingTier.amenities || '',
+        services: editingTier.services || ''
+      });
+      setEditingTier(null);
+      await fetchData();
+    } catch (err) {
+      alert(`Khong the luu hang thanh vien: ${err.response?.data?.message || err.message}`);
+    } finally {
+      setSavingTier(false);
+    }
   };
 
-  if (loading) return <div className="loading">Đang tải dữ liệu...</div>;
+  if (loading) return <div className="loading">Dang tai du lieu...</div>;
 
   return (
-    <div className="room-types-page" style={{ padding: '20px' }}>
+    <div className="room-types-page" style={{ padding: 20 }}>
       <div className="page-header">
-        <h1><Users size={28} className="header-icon" /> Quản Lý Khách Hàng & Thành Viên</h1>
+        <div>
+          <h1><Users size={28} className="header-icon" /> Quan Ly Thanh Vien</h1>
+          <p style={{ marginTop: 6, color: '#64748b' }}>Quy dinh hien tai: 1 diem = {POINT_TO_VND_RATE.toLocaleString('vi-VN')}d chi tieu hop le.</p>
+        </div>
       </div>
 
       {error && <div className="error-banner">{error}</div>}
 
-      {/* Dashboard Stats */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        gap: '20px',
-        marginBottom: '30px'
-      }}>
-        {stats.length === 0 ? (
-          <div style={{ gridColumn: '1 / -1', padding: '20px', background: '#fff', borderRadius: '8px' }}>
-            Chưa có số liệu thống kê thành viên.
-          </div>
-        ) : (
-          stats.map((stat) => (
-            <div key={stat.membershipId} style={{
-              background: getTierColor(stat.tierName),
-              color: 'white',
-              padding: '24px',
-              borderRadius: '12px',
-              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 20, marginBottom: 30 }}>
+        {tiers.map((tier) => (
+          <div
+            key={tier.id}
+            style={{
+              background: getTierColor(tier.tierName),
+              color: '#0f172a',
+              padding: 24,
+              borderRadius: 12,
+              boxShadow: '0 6px 20px rgba(15, 23, 42, 0.08)',
               display: 'flex',
               flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              position: 'relative',
-              overflow: 'hidden'
-            }}>
-              <Award size={48} style={{position: 'absolute', right: '-10px', top: '-10px', opacity: 0.2, transform: 'rotate(15deg)'}} />
-              <h3 style={{ margin: '0 0 10px 0', fontSize: '18px', opacity: 0.9 }}>{stat.tierName}</h3>
-              <div style={{ fontSize: '36px', fontWeight: 'bold' }}>{stat.memberCount}</div>
-              <div style={{ fontSize: '14px', opacity: 0.8 }}>Thành viên</div>
+              gap: 14
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+              <div>
+                <h3 style={{ margin: 0 }}>{tier.tierName}</h3>
+                <div style={{ marginTop: 8, fontSize: '0.92rem' }}>{formatPoints(tier.minPoints)}</div>
+                <div style={{ marginTop: 4, fontSize: '0.92rem' }}>x{Number(tier.pointMultiplier || 1).toFixed(2)} diem</div>
+              </div>
+              <Award size={30} />
             </div>
-          ))
-        )}
+            <div style={{ marginTop: 16, fontSize: '1.8rem', fontWeight: 700 }}>{statsMap.get(tier.id) || 0}</div>
+            <div style={{ opacity: 0.8 }}>thanh vien</div>
+
+            <div style={{ display: 'grid', gap: 10, fontSize: '0.9rem' }}>
+              <div style={{ background: 'rgba(255,255,255,0.52)', borderRadius: 10, padding: 12 }}>
+                <div style={{ fontWeight: 700, marginBottom: 6 }}>Thong so hang</div>
+                <div>- Moc diem: {formatPoints(tier.minPoints)}</div>
+                <div>- Giam gia dat phong: {formatPercent(tier.discountPercent)}</div>
+                <div>- He so tich diem: x{Number(tier.pointMultiplier || 1).toFixed(2)}</div>
+                <div>- Quy doi diem: 1 diem = {POINT_TO_VND_RATE.toLocaleString('vi-VN')}d chi tieu hop le</div>
+              </div>
+
+              <div style={{ background: 'rgba(255,255,255,0.52)', borderRadius: 10, padding: 12 }}>
+                <div style={{ fontWeight: 700, marginBottom: 6 }}><Star size={14} style={{ display: 'inline', marginRight: 6 }} />Quyen loi</div>
+                {splitLines(tier.benefits).length === 0 ? (
+                  <div style={{ color: '#475569' }}>Chua cau hinh quyen loi.</div>
+                ) : (
+                  splitLines(tier.benefits).map((benefit) => <div key={benefit}>- {benefit}</div>)
+                )}
+              </div>
+
+              <div style={{ background: 'rgba(255,255,255,0.52)', borderRadius: 10, padding: 12 }}>
+                <div style={{ fontWeight: 700, marginBottom: 6 }}><Gift size={14} style={{ display: 'inline', marginRight: 6 }} />Quy doi mac dinh</div>
+                {splitLines(tier.redeemOptions).length === 0 ? (
+                  <div style={{ color: '#475569' }}>Chua cau hinh muc quy doi.</div>
+                ) : (
+                  splitLines(tier.redeemOptions).map((option) => <div key={option}>- {option}</div>)
+                )}
+              </div>
+            </div>
+
+            <button className="btn btn-secondary btn-sm" style={{ marginTop: 'auto', alignSelf: 'flex-start' }} onClick={() => openEditTier(tier)}>
+              Chinh sua hang
+            </button>
+          </div>
+        ))}
       </div>
 
-      {/* Tabs */}
-      <div style={{ display: 'flex', gap: '10px', marginTop: '30px', marginBottom: '-10px' }}>
-        <button 
+      <div style={{ display: 'flex', gap: 10, marginTop: 30, marginBottom: '-10px' }}>
+        <button
           onClick={() => setActiveTab('guests')}
           style={{
-            padding: '10px 20px', background: activeTab === 'guests' ? 'var(--primary-color, #2563eb)' : '#f1f5f9',
-            color: activeTab === 'guests' ? '#fff' : '#64748b', border: 'none', borderRadius: '8px 8px 0 0',
-            cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem'
-          }}>
-          Khách hàng
+            padding: '10px 20px',
+            background: activeTab === 'guests' ? 'var(--primary-color, #2563eb)' : '#f1f5f9',
+            color: activeTab === 'guests' ? '#fff' : '#64748b',
+            border: 'none',
+            borderRadius: '8px 8px 0 0',
+            cursor: 'pointer',
+            fontWeight: 600,
+            fontSize: '0.9rem'
+          }}
+        >
+          Khach hang
         </button>
-        <button 
+        <button
           onClick={() => setActiveTab('staff')}
           style={{
-            padding: '10px 20px', background: activeTab === 'staff' ? 'var(--primary-color, #2563eb)' : '#f1f5f9',
-            color: activeTab === 'staff' ? '#fff' : '#64748b', border: 'none', borderRadius: '8px 8px 0 0',
-            cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem'
-          }}>
-          Nhân viên
+            padding: '10px 20px',
+            background: activeTab === 'staff' ? 'var(--primary-color, #2563eb)' : '#f1f5f9',
+            color: activeTab === 'staff' ? '#fff' : '#64748b',
+            border: 'none',
+            borderRadius: '8px 8px 0 0',
+            cursor: 'pointer',
+            fontWeight: 600,
+            fontSize: '0.9rem'
+          }}
+        >
+          Nhan vien
         </button>
       </div>
 
-      {/* User Data Table */}
-      <div className="table-card" style={{ marginTop: '0', borderRadius: '0 8px 8px 8px' }}>
+      <div className="table-card" style={{ marginTop: 0, borderRadius: '0 8px 8px 8px' }}>
         <table className="data-table">
           <thead>
             <tr>
               <th>ID</th>
-              <th>Tên Khách Hàng</th>
+              <th>Ten</th>
               <th>Email</th>
-              <th>Số điện thoại</th>
-              <th>Phân Quyền</th>
-              <th>Tiền Đã Tiêu</th>
-              <th>Hạng Thành Viên</th>
+              <th>Vai tro</th>
+              <th>Da chi tieu</th>
+              <th>Diem</th>
+              <th>Thanh vien</th>
             </tr>
           </thead>
           <tbody>
-            {(() => {
-              const displayedUsers = activeTab === 'guests' 
-                ? users.filter(u => !u.roleName || u.roleName.toLowerCase() === 'guest')
-                : users.filter(u => u.roleName && u.roleName.toLowerCase() !== 'guest');
-              
-              if (displayedUsers.length === 0) {
-                 return <tr><td colSpan="6" className="empty-row">Không tìm thấy dữ liệu.</td></tr>;
-              }
-              
-              return displayedUsers.map(u => (
-                <tr key={u.id}>
-                  <td>{u.id}</td>
-                  <td><strong>{u.fullName}</strong></td>
-                  <td>{u.email}</td>
-                  <td>{u.phone || '—'}</td>
-                  <td>
-                    <span style={{
-                      padding: '4px 8px', borderRadius: '4px', fontSize: '12px',
-                      background: u.roleName === 'admin' ? '#fee2e2' : '#f3f4f6',
-                      color: u.roleName === 'admin' ? '#b91c1c' : '#374151'
-                    }}>
-                      {u.roleName || 'Guest'}
-                    </span>
-                  </td>
-                  <td>
-                    <strong>{u.totalSpent ? u.totalSpent.toLocaleString('vi-VN') : 0}đ</strong>
-                  </td>
-                  <td>
-                    {u.membershipName ? (
-                      <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <span style={{ 
-                          color: getTierTextColor(u.membershipName), 
-                          fontWeight: 'bold', 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          gap: '4px' 
-                        }}>
-                          <Star size={14} fill={getTierTextColor(u.membershipName)} /> {u.membershipName}
-                        </span>
-                        {u.nextTierName && (
-                          <small style={{ color: '#64748b', fontSize: '11px', marginTop: '2px' }}>
-                            Cần {u.remainingToNextTier?.toLocaleString('vi-VN')}đ lên {u.nextTierName}
-                          </small>
-                        )}
-                      </div>
-                    ) : (
-                      <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <span style={{ color: '#9ca3af' }}>Chưa có hạng</span>
-                        {u.nextTierName && (
-                          <small style={{ color: '#64748b', fontSize: '11px', marginTop: '2px' }}>
-                            Cần {u.remainingToNextTier?.toLocaleString('vi-VN')}đ lên {u.nextTierName}
-                          </small>
-                        )}
-                      </div>
+            {displayedUsers.length === 0 ? (
+              <tr><td colSpan="7" className="empty-row">Khong tim thay du lieu phu hop.</td></tr>
+            ) : displayedUsers.map((user) => (
+              <tr key={user.id}>
+                <td>{user.id}</td>
+                <td><strong>{user.fullName}</strong></td>
+                <td>{user.email}</td>
+                <td>{user.roleName || 'Guest'}</td>
+                <td>{Number(user.totalSpent || 0).toLocaleString('vi-VN')}d</td>
+                <td>{Number(user.totalPoints || 0).toLocaleString('vi-VN')} diem</td>
+                <td>
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span style={{ fontWeight: 700 }}>{user.membershipName || 'Chua xep hang'}</span>
+                    {user.nextTierName && (
+                      <small style={{ color: '#64748b' }}>
+                        Con {Number(user.remainingToNextTier || 0).toLocaleString('vi-VN')} diem de len {user.nextTierName}
+                      </small>
                     )}
-                  </td>
-                </tr>
-              ));
-            })()}
+                  </div>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
+
+      {editingTier && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ maxWidth: 720 }}>
+            <h2>Chinh sua hang {editingTier.tierName}</h2>
+            <p style={{ color: '#64748b', marginTop: 8 }}>
+              Moc diem va thu tu cua 4 hang chuan duoc giu co dinh. Modal nay chi sua uu dai, he so tich diem va cac muc quy doi.
+            </p>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14, marginTop: 16 }}>
+              <div className="form-group">
+                <label>Hang</label>
+                <input className="form-control" value={editingTier.tierName} disabled />
+              </div>
+              <div className="form-group">
+                <label>Moc diem</label>
+                <input className="form-control" value={Number(editingTier.minPoints || 0).toLocaleString('vi-VN')} disabled />
+              </div>
+              <div className="form-group">
+                <label>He so tich diem</label>
+                <input className="form-control" type="number" step="0.1" value={tierForm.pointMultiplier} onChange={(event) => setTierForm((prev) => ({ ...prev, pointMultiplier: event.target.value }))} />
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label>Giam gia dat phong (%)</label>
+              <input className="form-control" type="number" value={tierForm.discountPercent} onChange={(event) => setTierForm((prev) => ({ ...prev, discountPercent: event.target.value }))} />
+            </div>
+
+            <div className="form-group">
+              <label>Quyen loi (moi dong 1 muc)</label>
+              <textarea className="form-control" rows="5" value={tierForm.benefits} onChange={(event) => setTierForm((prev) => ({ ...prev, benefits: event.target.value }))} />
+            </div>
+
+            <div className="form-group">
+              <label>Quy doi diem (moi dong 1 muc)</label>
+              <textarea className="form-control" rows="5" value={tierForm.redeemOptions} onChange={(event) => setTierForm((prev) => ({ ...prev, redeemOptions: event.target.value }))} />
+            </div>
+
+            <div className="modal-actions" style={{ marginTop: 20, display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+              <button className="btn btn-outline" onClick={() => setEditingTier(null)}>Huy</button>
+              <button className="btn btn-primary" onClick={saveTier} disabled={savingTier}>{savingTier ? 'Dang luu...' : 'Luu thay doi'}</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

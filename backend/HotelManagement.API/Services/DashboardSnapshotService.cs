@@ -251,8 +251,9 @@ public class DashboardSnapshotService
         var start = period.PeriodStart.ToDateTime(TimeOnly.MinValue);
         var end   = period.PeriodEnd.ToDateTime(TimeOnly.MaxValue);
 
-        var roomsCleaning      = await _context.Rooms.CountAsync(r => r.Status == "Cleaning");
-        var roomsNeedCleaning  = await _context.Rooms.CountAsync(r => r.Status == "Maintenance");
+        var roomsCleaning      = await _context.Rooms.CountAsync(r => (r.CleanStatus ?? "clean").ToLower() == "cleaning");
+        var roomsNeedCleaning  = await _context.Rooms.CountAsync(r => (r.CleanStatus ?? "clean").ToLower() == "dirty");
+        var roomsInspecting    = await _context.Rooms.CountAsync(r => (r.CleanStatus ?? "clean").ToLower() == "inspecting");
         var damageReportCount  = await _context.LossAndDamages
             .CountAsync(l => l.CreatedAt.HasValue && l.CreatedAt >= start && l.CreatedAt <= end);
 
@@ -271,7 +272,7 @@ public class DashboardSnapshotService
 
         var dash = new
         {
-            summary = new { roomsCleaning, roomsNeedCleaning, damageReportCount },
+            summary = new { roomsCleaning, roomsNeedCleaning, roomsInspecting, damageReportCount },
             alerts
         };
 

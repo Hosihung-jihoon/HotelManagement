@@ -1,4 +1,5 @@
 using HotelManagement.API.DTOs;
+using HotelManagement.API.Helpers;
 using HotelManagement.API.Models;
 using HotelManagement.API.Repositories;
 
@@ -12,6 +13,7 @@ namespace HotelManagement.API.Services;
 public class MembershipService : IMembershipService
 {
     private readonly IMembershipRepository _repository;
+    private const int PointToVndRate = 10000;
 
     public MembershipService(IMembershipRepository repository)
     {
@@ -22,15 +24,11 @@ public class MembershipService : IMembershipService
     {
         var memberships = await _repository.GetAllAsync();
 
-        return memberships.Select(m => new MembershipDto
-        {
-            Id = m.Id,
-            TierName = m.TierName,
-            MinPoints = m.MinPoints,
-            DiscountPercent = m.DiscountPercent,
-            Amenities = m.Amenities,
-            Services = m.Services
-        });
+        return memberships
+            .Where(m => MembershipTierCatalog.IsCanonical(m.TierName))
+            .OrderBy(m => m.DisplayOrder)
+            .ThenBy(m => m.MinPoints)
+            .Select(ToDto);
     }
 
     public async Task<MembershipDto?> GetByIdAsync(int id)
@@ -38,39 +36,44 @@ public class MembershipService : IMembershipService
         var membership = await _repository.GetByIdAsync(id);
         if (membership == null) return null;
 
-        return new MembershipDto
+        if (!MembershipTierCatalog.IsCanonical(membership.TierName))
         {
-            Id = membership.Id,
-            TierName = membership.TierName,
-            MinPoints = membership.MinPoints,
-            DiscountPercent = membership.DiscountPercent,
-            Amenities = membership.Amenities,
-            Services = membership.Services
-        };
+            return null;
+        }
+
+        return ToDto(membership);
     }
 
     public async Task<MembershipDto> CreateAsync(CreateMembershipDto dto)
     {
+        var canonicalName = MembershipTierCatalog.MapToCanonicalName(dto.TierName);
+        if (canonicalName == null)
+        {
+            throw new ArgumentException("Chi ho tro 4 hang thanh vien chuan.");
+        }
+
+        dto.TierName = canonicalName;
+        var existing = await _repository.GetAllAsync();
+        if (existing.Any(m => string.Equals(m.TierName, canonicalName, StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new ArgumentException("Hang thanh vien nay da ton tai. Hay chinh sua cau hinh hien co.");
+        }
         var entity = new Membership
         {
             TierName = dto.TierName,
             MinPoints = dto.MinPoints,
             DiscountPercent = dto.DiscountPercent,
+            DisplayOrder = dto.DisplayOrder,
+            PointMultiplier = dto.PointMultiplier,
             Amenities = dto.Amenities,
-            Services = dto.Services
+            Services = dto.Services,
+            Benefits = dto.Benefits,
+            RedeemOptions = dto.RedeemOptions
         };
 
         var created = await _repository.CreateAsync(entity);
 
-        return new MembershipDto
-        {
-            Id = created.Id,
-            TierName = created.TierName,
-            MinPoints = created.MinPoints,
-            DiscountPercent = created.DiscountPercent,
-            Amenities = created.Amenities,
-            Services = created.Services
-        };
+        return ToDto(created);
     }
 
     public async Task<bool> UpdateAsync(int id, UpdateMembershipDto dto)
@@ -78,11 +81,21 @@ public class MembershipService : IMembershipService
         var entity = await _repository.GetByIdAsync(id);
         if (entity == null) return false;
 
-        entity.TierName = dto.TierName;
+        var canonicalName = MembershipTierCatalog.MapToCanonicalName(dto.TierName);
+        if (canonicalName == null)
+        {
+            throw new ArgumentException("Chi ho tro 4 hang thanh vien chuan.");
+        }
+
+        entity.TierName = canonicalName;
         entity.MinPoints = dto.MinPoints;
         entity.DiscountPercent = dto.DiscountPercent;
+        entity.DisplayOrder = dto.DisplayOrder;
+        entity.PointMultiplier = dto.PointMultiplier;
         entity.Amenities = dto.Amenities;
         entity.Services = dto.Services;
+        entity.Benefits = dto.Benefits;
+        entity.RedeemOptions = dto.RedeemOptions;
 
         await _repository.UpdateAsync(entity);
         return true;
@@ -95,4 +108,19 @@ public class MembershipService : IMembershipService
     {
         return await _repository.SoftDeleteAsync(id);
     }
+
+    private static MembershipDto ToDto(Membership membership) => new()
+    {
+        Id = membership.Id,
+        TierName = membership.TierName,
+        MinPoints = membership.MinPoints,
+        DiscountPercent = membership.DiscountPercent,
+        DisplayOrder = membership.DisplayOrder,
+        PointMultiplier = membership.PointMultiplier,
+        PointToVndRate = PointToVndRate,
+        Amenities = membership.Amenities,
+        Services = membership.Services,
+        Benefits = membership.Benefits,
+        RedeemOptions = membership.RedeemOptions
+    };
 }

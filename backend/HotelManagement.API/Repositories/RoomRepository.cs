@@ -19,6 +19,7 @@ public class RoomRepository : GenericRepository<Room>, IRoomRepository
     {
         return await _context.Rooms
             .Include(r => r.RoomType)
+                .ThenInclude(rt => rt!.RoomImages)
             .FirstOrDefaultAsync(r => r.Id == id);
     }
 
@@ -29,6 +30,7 @@ public class RoomRepository : GenericRepository<Room>, IRoomRepository
     {
         return await _context.Rooms
             .Include(r => r.RoomType)
+                .ThenInclude(rt => rt!.RoomImages)
             .OrderBy(r => r.Floor)
             .ThenBy(r => r.RoomNumber)
             .ToListAsync();

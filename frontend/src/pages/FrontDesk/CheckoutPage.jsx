@@ -66,7 +66,7 @@ function CheckoutPage() {
       ) : (
         <div className="fd-cards-grid">
           {bookings.map(b => (
-            <div key={b.id} className="fd-guest-card checkout-card" onClick={() => navigate('/front-desk/bookings', { state: { bookingId: b.id } })} style={{ cursor: 'pointer' }}>
+            <div key={b.id} className="fd-guest-card checkout-card" onClick={() => navigate('/admin/front-desk/bookings', { state: { bookingId: b.id } })} style={{ cursor: 'pointer' }}>
               <div className="fd-card-top">
                 <div className="fd-avatar checkout-avatar"><User size={22} /></div>
                 <div className="fd-guest-info">

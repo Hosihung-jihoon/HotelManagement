@@ -1,5 +1,6 @@
 using HotelManagement.API.DTOs;
 using HotelManagement.API.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HotelManagement.API.Controllers;
@@ -22,12 +23,20 @@ public class BookingsController : ControllerBase
         return Ok(result);
     }
 
+    [Authorize]
+    [HttpGet("my-bookings")]
+    public async Task<ActionResult<IEnumerable<BookingDto>>> GetMyBookings()
+    {
+        var result = await _service.GetMyBookingsAsync(GetCurrentUserId());
+        return Ok(result);
+    }
+
     [HttpGet("{id}")]
     public async Task<ActionResult<BookingDto>> GetById(int id)
     {
         var result = await _service.GetByIdAsync(id);
         if (result == null)
-            return NotFound(new { message = $"Không tìm thấy đơn đặt phòng với ID = {id}" });
+            return NotFound(new { message = $"Khong tim thay don dat phong voi ID = {id}" });
 
         return Ok(result);
     }
@@ -37,7 +46,7 @@ public class BookingsController : ControllerBase
     {
         var result = await _service.GetFullDetailAsync(id);
         if (result == null)
-            return NotFound(new { message = $"Không tìm thấy đơn đặt phòng với ID = {id}" });
+            return NotFound(new { message = $"Khong tim thay don dat phong voi ID = {id}" });
 
         return Ok(result);
     }
@@ -56,7 +65,7 @@ public class BookingsController : ControllerBase
         {
             var success = await _service.UpdateAsync(id, dto);
             if (!success)
-                return NotFound(new { message = $"Không tìm thấy đơn đặt phòng với ID = {id}" });
+                return NotFound(new { message = $"Khong tim thay don dat phong voi ID = {id}" });
 
             return NoContent();
         }
@@ -66,12 +75,25 @@ public class BookingsController : ControllerBase
         }
     }
 
+    [Authorize]
+    [HttpPut("{id}/cancel")]
+    public async Task<IActionResult> Cancel(int id)
+    {
+        var (success, error) = await _service.CancelAsync(id, GetCurrentUserId());
+        if (error != null)
+            return BadRequest(new { message = error });
+        if (!success)
+            return NotFound(new { message = $"Khong tim thay don dat phong voi ID = {id}" });
+
+        return Ok(new { message = "Huy booking thanh cong." });
+    }
+
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
         var success = await _service.DeleteAsync(id);
         if (!success)
-            return NotFound(new { message = $"Không tìm thấy đơn đặt phòng với ID = {id}" });
+            return NotFound(new { message = $"Khong tim thay don dat phong voi ID = {id}" });
 
         return NoContent();
     }
@@ -80,7 +102,7 @@ public class BookingsController : ControllerBase
     public async Task<ActionResult<IEnumerable<RoomAvailabilityResponseDto>>> SearchAvailableRooms([FromBody] BookingSearchRequestDto request)
     {
         if (request.CheckInDate >= request.CheckOutDate)
-            return BadRequest(new { message = "Ngay CheckOut phải lớn hơn CheckIn" });
+            return BadRequest(new { message = "Ngay CheckOut phai lon hon CheckIn" });
 
         var result = await _service.SearchAvailableRoomsAsync(request);
         return Ok(result);
@@ -105,8 +127,14 @@ public class BookingsController : ControllerBase
     {
         var success = await _service.AddPaymentAsync(id, dto);
         if (!success)
-            return NotFound(new { message = $"Không tìm thấy đơn đặt phòng với ID = {id}" });
+            return NotFound(new { message = $"Khong tim thay don dat phong voi ID = {id}" });
 
-        return Ok(new { message = "Ghi nhận thanh toán thành công" });
+        return Ok(new { message = "Ghi nhan thanh toan thanh cong" });
+    }
+
+    private int GetCurrentUserId()
+    {
+        var userIdClaim = User.FindFirst("userId")?.Value;
+        return int.Parse(userIdClaim!);
     }
 }

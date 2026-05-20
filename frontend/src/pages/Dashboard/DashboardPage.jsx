@@ -229,7 +229,7 @@ function HousekeepingDashboard({ dash, comp }) {
       ))}
       <div className="kpi-grid">
         <KpiCard color="kpi-amber" icon={<Sparkles size={22} />}   value={s.roomsCleaning ?? 0}     label="Phòng đang dọn"      sub="Đang xử lý" />
-        <KpiCard color="kpi-rose"  icon={<Wrench size={22} />}     value={s.roomsNeedCleaning ?? 0} label="Phòng bảo trì"        sub="Cần xử lý" />
+        <KpiCard color="kpi-rose"  icon={<Wrench size={22} />}     value={s.roomsNeedCleaning ?? 0} label="Phòng cần dọn"       sub="Chờ xử lý" />
         <KpiCard color="kpi-purple" icon={<ShieldAlert size={22} />}
           value={s.damageReportCount ?? 0} label="Báo cáo hỏng"
           sub="Trong kỳ" badge={dc && <TrendBadge {...dc} />} />

@@ -15,10 +15,12 @@ public class UserListDto
     public string Email { get; set; } = string.Empty;
     public string? Phone { get; set; }
     public bool? Status { get; set; }
+    public int? RoleId { get; set; }
     public string? RoleName { get; set; }
     public string? MembershipName { get; set; }
     public decimal TotalSpent { get; set; } = 0;
-    public decimal? RemainingToNextTier { get; set; }
+    public int TotalPoints { get; set; }
+    public int? RemainingToNextTier { get; set; }
     public string? NextTierName { get; set; }
 }
 

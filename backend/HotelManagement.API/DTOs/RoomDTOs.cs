@@ -14,6 +14,11 @@ public class RoomDto
     public string? CleanStatus { get; set; }
     public int? RoomTypeId { get; set; }
     public string? RoomTypeName { get; set; }
+    public decimal? PricePerNight { get; set; }
+    public int? CapacityAdults { get; set; }
+    public int? CapacityChildren { get; set; }
+    public decimal? SizeSqm { get; set; }
+    public string? ThumbnailUrl { get; set; }
 }
 
 /// <summary>
@@ -31,7 +36,9 @@ public class RoomDetailDto
     public decimal? BasePrice { get; set; }
     public int? CapacityAdults { get; set; }
     public int? CapacityChildren { get; set; }
+    public decimal? SizeSqm { get; set; }
     public string? RoomTypeDescription { get; set; }
+    public string? ThumbnailUrl { get; set; }
 }
 
 // ========== Request DTOs ==========

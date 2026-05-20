@@ -40,6 +40,44 @@ public class UserService : IUserService
         };
     }
 
+    public async Task<UserMembershipDto?> GetMembershipAsync(int userId)
+    {
+        var user = await _context.Users
+            .Include(u => u.Membership)
+            .Include(u => u.Bookings)
+                .ThenInclude(b => b.Invoice)
+            .FirstOrDefaultAsync(u => u.Id == userId);
+
+        if (user == null) return null;
+
+        var totalSpent = user.Bookings
+            .Where(b => b.Invoice != null && b.Invoice.Status == "Paid")
+            .Sum(b => b.Invoice!.FinalTotal ?? 0m);
+
+        var totalPoints = (int)Math.Floor(totalSpent / 10000m);
+
+        var memberships = await _context.Memberships
+            .IgnoreQueryFilters()
+            .Where(m => !m.IsDeleted)
+            .OrderBy(m => m.DisplayOrder)
+            .ThenBy(m => m.MinPoints)
+            .ToListAsync();
+
+        var nextTier = memberships.FirstOrDefault(m => m.MinPoints.HasValue && m.MinPoints.Value > totalPoints);
+
+        return new UserMembershipDto
+        {
+            MembershipId = user.MembershipId,
+            Tier = user.Membership?.TierName ?? "Dong",
+            TotalSpent = totalSpent,
+            TotalPoints = totalPoints,
+            NextTierName = nextTier?.TierName,
+            RemainingPoints = nextTier?.MinPoints != null
+                ? Math.Max(nextTier.MinPoints.Value - totalPoints, 0)
+                : null
+        };
+    }
+
     /// <summary>
     /// Cập nhật profile (tên, sdt)
     /// </summary>
@@ -89,7 +127,8 @@ public class UserService : IUserService
         var memberships = await _context.Memberships
             .IgnoreQueryFilters()
             .Where(m => !m.IsDeleted)
-            .OrderBy(m => m.MinPoints)
+            .OrderBy(m => m.DisplayOrder)
+            .ThenBy(m => m.MinPoints)
             .ToListAsync();
 
         var userDtos = new List<UserListDto>();
@@ -98,15 +137,15 @@ public class UserService : IUserService
         {
             var totalSpent = u.Bookings
                 .Where(b => b.Invoice != null && b.Invoice.Status == "Paid")
-                .Sum(b => b.Invoice.FinalTotal ?? 0);
+                .Sum(b => b.Invoice!.FinalTotal ?? 0);
 
-            // MinPoints stores VND threshold as int; cast to decimal for comparison
-            var nextTier = memberships.FirstOrDefault(m => m.MinPoints.HasValue && (decimal)m.MinPoints.Value > totalSpent);
-            decimal? remainingToNextTier = null;
+            var totalPoints = (int)Math.Floor(totalSpent / 10000m);
+            var nextTier = memberships.FirstOrDefault(m => m.MinPoints.HasValue && m.MinPoints.Value > totalPoints);
+            int? remainingToNextTier = null;
             string? nextTierName = null;
             if (nextTier != null && nextTier.MinPoints.HasValue)
             {
-                remainingToNextTier = (decimal)nextTier.MinPoints.Value - totalSpent;
+                remainingToNextTier = Math.Max(nextTier.MinPoints.Value - totalPoints, 0);
                 nextTierName = nextTier.TierName;
             }
 
@@ -117,9 +156,11 @@ public class UserService : IUserService
                 Email = u.Email,
                 Phone = u.Phone,
                 Status = u.Status,
+                RoleId = u.RoleId,
                 RoleName = u.Role != null ? u.Role.Name : null,
                 MembershipName = u.Membership != null ? u.Membership.TierName : null,
                 TotalSpent = totalSpent,
+                TotalPoints = totalPoints,
                 RemainingToNextTier = remainingToNextTier,
                 NextTierName = nextTierName
             });
@@ -151,13 +192,23 @@ public class UserService : IUserService
     /// </summary>
     public async Task<IEnumerable<MembershipStatDto>> GetMembershipStatsAsync()
     {
+        var guestRoleIds = await _context.Roles
+            .Where(r => r.Name.ToLower() == "guest" || r.Name.ToLower() == "customer")
+            .Select(r => r.Id)
+            .ToListAsync();
+
         return await _context.Users
-            .Where(u => u.MembershipId != null)
+            .Where(u =>
+                u.MembershipId != null &&
+                (
+                    !u.RoleId.HasValue ||
+                    guestRoleIds.Contains(u.RoleId.Value)
+                ))
             .GroupBy(u => new { u.MembershipId, u.Membership.TierName })
             .Select(g => new MembershipStatDto
             {
-                MembershipId = g.Key.MembershipId.Value,
-                TierName = g.Key.TierName,
+                MembershipId = g.Key.MembershipId ?? 0,
+                TierName = g.Key.TierName ?? "Unknown",
                 MemberCount = g.Count()
             })
             .ToListAsync();
