@@ -162,7 +162,7 @@ export const getMyReviews = () => axiosClient.get('/Reviews/my-reviews');
 export const getMembershipTiers = async () => {
   const res = await axiosClient.get('/Memberships');
   const items = Array.isArray(res.data?.items) ? res.data.items : (Array.isArray(res.data) ? res.data : []);
-  const normalized = items.map((item, index) => normalizeMembershipTier(item, index));
+  const normalized = items.map((item) => normalizeMembershipTier(item));
   return {
     ...res,
     data: normalized.length > 0 ? normalized : DEFAULT_MEMBERSHIP_TIERS

@@ -28,7 +28,7 @@ export default function BlogDetailPage() {
       .catch(() => {
         setArticle(null);
         setRelatedArticles([]);
-        setError('Khong the tai noi dung bai viet.');
+        setError(t('common.error'));
       })
       .finally(() => setLoading(false));
   }, [slug]);
@@ -59,7 +59,7 @@ export default function BlogDetailPage() {
         <div className="container" style={{ maxWidth: 'var(--max-w-prose)', padding: 'var(--sp-40) var(--sp-24)' }}>
           {error && <div className="error-banner">{error}</div>}
           <div className="c-empty-state">
-            <p className="body-lg text-muted">Khong tim thay bai viet.</p>
+            <p className="body-lg text-muted">{t('common.noData')}</p>
           </div>
         </div>
       </div>
@@ -82,7 +82,7 @@ export default function BlogDetailPage() {
 
         <div style={{ display: 'flex', gap: 'var(--sp-20)', marginBottom: 'var(--sp-32)', flexWrap: 'wrap' }}>
           {article.authorName && <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-6)', fontFamily: 'var(--font-sans)', fontSize: 'var(--text-label-md)', color: 'var(--c-on-surface-variant)' }}><User size={13} /> {article.authorName}</span>}
-          {article.publishedAt && <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-6)', fontFamily: 'var(--font-sans)', fontSize: 'var(--text-label-md)', color: 'var(--c-on-surface-variant)' }}><Calendar size={13} /> {new Date(article.publishedAt).toLocaleDateString()}</span>}
+          {article.publishedAt && <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-6)', fontFamily: 'var(--font-sans)', fontSize: 'var(--text-label-md)', color: 'var(--c-on-surface-variant)' }}><Calendar size={13} /> {new Date(article.publishedAt).toLocaleDateString(lang === 'vi' ? 'vi-VN' : 'en-US', { day: '2-digit', month: 'short', year: 'numeric' })}</span>}
           {article.readTime && <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-6)', fontFamily: 'var(--font-sans)', fontSize: 'var(--text-label-md)', color: 'var(--c-on-surface-variant)' }}><Clock size={13} /> {article.readTime} min</span>}
           {article.attractionName && <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-6)', fontFamily: 'var(--font-sans)', fontSize: 'var(--text-label-md)', color: 'var(--c-on-surface-variant)' }}><MapPin size={13} /> {article.attractionName}</span>}
         </div>
@@ -93,10 +93,10 @@ export default function BlogDetailPage() {
 
         <div className="body-lg" style={{ color: 'var(--c-on-surface-variant)', lineHeight: 1.9, fontFamily: 'var(--font-sans)' }}>
           {excerpt && <p style={{ marginBottom: 'var(--sp-24)' }}>{excerpt}</p>}
-          {article.content ? (
+            {article.content ? (
             <div dangerouslySetInnerHTML={{ __html: article.content }} />
           ) : (
-            <p>Article content is unavailable.</p>
+            <p>{t('common.noData')}</p>
           )}
         </div>
 

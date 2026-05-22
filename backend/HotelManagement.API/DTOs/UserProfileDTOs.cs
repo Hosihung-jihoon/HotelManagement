@@ -17,7 +17,7 @@ public class UserProfileDto
 public class UserMembershipDto
 {
     public int? MembershipId { get; set; }
-    public string Tier { get; set; } = "Dong";
+    public string Tier { get; set; } = "Đồng";
     public decimal TotalSpent { get; set; }
     public int TotalPoints { get; set; }
     public string? NextTierName { get; set; }

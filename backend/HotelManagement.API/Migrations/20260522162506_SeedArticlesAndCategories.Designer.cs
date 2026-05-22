@@ -3,6 +3,7 @@ using System;
 using HotelManagement.API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HotelManagement.API.Migrations
 {
     [DbContext(typeof(HotelDbContext))]
-    partial class HotelDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260522162506_SeedArticlesAndCategories")]
+    partial class SeedArticlesAndCategories
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.0");
@@ -66,11 +69,6 @@ namespace HotelManagement.API.Migrations
                         .HasColumnType("TEXT")
                         .HasColumnName("content");
 
-                    b.Property<string>("Excerpt")
-                        .HasMaxLength(500)
-                        .HasColumnType("TEXT")
-                        .HasColumnName("excerpt");
-
                     b.Property<bool?>("IsActive")
                         .HasColumnType("INTEGER")
                         .HasColumnName("is_active");
@@ -78,10 +76,6 @@ namespace HotelManagement.API.Migrations
                     b.Property<DateTime?>("PublishedAt")
                         .HasColumnType("TEXT")
                         .HasColumnName("published_at");
-
-                    b.Property<int?>("ReadTime")
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("read_time");
 
                     b.Property<string>("Slug")
                         .HasMaxLength(255)
@@ -289,10 +283,6 @@ namespace HotelManagement.API.Migrations
                         .HasColumnType("TEXT")
                         .HasColumnName("description");
 
-                    b.Property<string>("DescriptionVi")
-                        .HasColumnType("TEXT")
-                        .HasColumnName("description_vi");
-
                     b.Property<decimal?>("DistanceKm")
                         .HasColumnType("decimal(5,2)")
                         .HasColumnName("distance_km");
@@ -333,11 +323,6 @@ namespace HotelManagement.API.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("TEXT")
                         .HasColumnName("name");
-
-                    b.Property<string>("NameVi")
-                        .HasMaxLength(255)
-                        .HasColumnType("TEXT")
-                        .HasColumnName("name_vi");
 
                     b.HasKey("Id");
 

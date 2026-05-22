@@ -31,6 +31,13 @@ public class Article
     [Column("content")]
     public string? Content { get; set; }
 
+    [Column("excerpt")]
+    [MaxLength(500)]
+    public string? Excerpt { get; set; }
+
+    [Column("read_time")]
+    public int? ReadTime { get; set; }
+
     [Column("thumbnail_url")]
     public string? ThumbnailUrl { get; set; }
 

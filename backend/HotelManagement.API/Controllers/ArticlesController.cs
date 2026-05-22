@@ -18,9 +18,17 @@ public class ArticlesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<ArticleDto>>> GetAll()
+    public async Task<ActionResult<IEnumerable<ArticleDto>>> GetAll(
+        [FromQuery] int? pageSize = null,
+        [FromQuery] bool all = false)
     {
-        var result = await _service.GetAllAsync();
+        IEnumerable<ArticleDto> result;
+
+        if (all)
+            result = await _service.GetAllAsync();
+        else
+            result = await _service.GetActiveAsync(pageSize);
+
         return Ok(result);
     }
 

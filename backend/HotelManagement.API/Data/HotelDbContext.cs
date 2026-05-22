@@ -237,5 +237,136 @@ public class HotelDbContext : DbContext
                 Status = true 
             }
         );
+        // ===== Seed Data: Article Categories =====
+        modelBuilder.Entity<ArticleCategory>().HasData(
+            new ArticleCategory { Id = 1, Name = "Tin tức" },
+            new ArticleCategory { Id = 2, Name = "Du lịch" },
+            new ArticleCategory { Id = 3, Name = "Ẩm thực" },
+            new ArticleCategory { Id = 4, Name = "Khuyến mãi" }
+        );
+
+        // ===== Seed Data: Articles =====
+        modelBuilder.Entity<Article>().HasData(
+            new Article
+            {
+                Id = 1,
+                CategoryId = 1,
+                AuthorId = 1,
+                Title = "Grand Opening: Our New Luxury Suite Collection",
+                Slug = "grand-opening-luxury-suite-collection",
+                Content = "We are thrilled to announce the launch of our brand-new Luxury Suite Collection, featuring panoramic city views, private butler service, and state-of-the-art amenities.",
+                ThumbnailUrl = "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&q=80",
+                PublishedAt = new DateTime(2025, 5, 10),
+                IsActive = true
+            },
+            new Article
+            {
+                Id = 2,
+                CategoryId = 2,
+                AuthorId = 1,
+                Title = "Top 5 Hidden Gems in Ho Chi Minh City",
+                Slug = "top-5-hidden-gems-ho-chi-minh-city",
+                Content = "Beyond the famous landmarks, Saigon hides charming alleyways, rooftop bars and local markets that most tourists miss. Here are our top picks.",
+                ThumbnailUrl = "https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=800&q=80",
+                PublishedAt = new DateTime(2025, 5, 14),
+                IsActive = true
+            },
+            new Article
+            {
+                Id = 3,
+                CategoryId = 3,
+                AuthorId = 2,
+                Title = "A Culinary Journey: Signature Dishes at Our Restaurant",
+                Slug = "culinary-journey-signature-dishes",
+                Content = "Our executive chef presents a curated menu blending Vietnamese heritage with contemporary French technique. Discover the stories behind each signature dish.",
+                ThumbnailUrl = "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&q=80",
+                PublishedAt = new DateTime(2025, 5, 18),
+                IsActive = true
+            },
+            new Article
+            {
+                Id = 4,
+                CategoryId = 4,
+                AuthorId = 1,
+                Title = "Summer Special: 30% Off All Room Types",
+                Slug = "summer-special-30-off-all-rooms",
+                Content = "Book now and enjoy 30% discount on all room categories from June to August 2025. Includes complimentary breakfast and late check-out until 2 PM.",
+                ThumbnailUrl = "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800&q=80",
+                PublishedAt = new DateTime(2025, 5, 20),
+                IsActive = true
+            },
+            new Article
+            {
+                Id = 5,
+                CategoryId = 2,
+                AuthorId = 2,
+                Title = "Weekend Getaway: Day Trips from Saigon",
+                Slug = "weekend-getaway-day-trips-from-saigon",
+                Content = "Escape the city for a day and explore the Mekong Delta, Cu Chi Tunnels, or the beaches of Vung Tau — all within two hours from our hotel.",
+                ThumbnailUrl = "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=800&q=80",
+                PublishedAt = new DateTime(2025, 5, 22),
+                IsActive = true
+            },
+            new Article
+            {
+                Id = 6,
+                CategoryId = 1,
+                AuthorId = 1,
+                Title = "Sustainability Pledge: Our Green Hotel Initiative",
+                Slug = "sustainability-pledge-green-hotel-initiative",
+                Content = "We have committed to reducing our carbon footprint by 50% by 2030 through solar energy, zero-waste kitchens, and eco-friendly room amenities.",
+                ThumbnailUrl = "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800&q=80",
+                PublishedAt = new DateTime(2025, 6, 1),
+                IsActive = true
+            },
+            new Article
+            {
+                Id = 7,
+                CategoryId = 3,
+                AuthorId = 2,
+                Title = "Pho & Beyond: Vietnamese Breakfast Reinvented",
+                Slug = "pho-beyond-vietnamese-breakfast-reinvented",
+                Content = "Our morning buffet goes far beyond the usual. From hand-rolled bánh mì to steaming bowls of bún bò Huế, every morning is a new discovery.",
+                ThumbnailUrl = "https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?w=800&q=80",
+                PublishedAt = new DateTime(2025, 6, 5),
+                IsActive = true
+            },
+            new Article
+            {
+                Id = 8,
+                CategoryId = 4,
+                AuthorId = 1,
+                Title = "Loyalty Members: Double Points in June",
+                Slug = "loyalty-members-double-points-june",
+                Content = "Celebrate our anniversary month with double loyalty points on every booking made in June 2025. Redeem points for free nights, spa vouchers, and dining credits.",
+                ThumbnailUrl = "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=800&q=80",
+                PublishedAt = new DateTime(2025, 6, 8),
+                IsActive = true
+            },
+            new Article
+            {
+                Id = 9,
+                CategoryId = 2,
+                AuthorId = 2,
+                Title = "Exploring Ha Long Bay: A Cruise Guide",
+                Slug = "exploring-ha-long-bay-cruise-guide",
+                Content = "Planning a trip to Ha Long Bay? We have partnered with premium cruise operators to offer exclusive packages for our hotel guests at preferential rates.",
+                ThumbnailUrl = "https://images.unsplash.com/photo-1573843981267-be1999ff37cd?w=800&q=80",
+                PublishedAt = new DateTime(2025, 6, 12),
+                IsActive = true
+            },
+            new Article
+            {
+                Id = 10,
+                CategoryId = 1,
+                AuthorId = 1,
+                Title = "Award-Winning Spa: Now Open 24/7",
+                Slug = "award-winning-spa-open-24-7",
+                Content = "Following multiple industry awards, our rooftop spa now operates around the clock. Enjoy deep-tissue massages, aromatherapy, and hydrotherapy any time of day or night.",
+                ThumbnailUrl = "https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=800&q=80",
+                PublishedAt = new DateTime(2025, 6, 15),
+                IsActive = true
+            }
+        );
     }
 }

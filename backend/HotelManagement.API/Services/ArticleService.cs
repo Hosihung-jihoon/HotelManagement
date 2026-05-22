@@ -24,6 +24,31 @@ public class ArticleService : IArticleService
             AuthorId = e.AuthorId,
             Title = e.Title,
             Slug = e.Slug,
+            Excerpt = e.Excerpt,
+            ReadTime = e.ReadTime,
+            ThumbnailUrl = e.ThumbnailUrl,
+            PublishedAt = e.PublishedAt,
+            IsActive = e.IsActive,
+            AttractionId = e.AttractionId,
+            CategoryName = e.Category?.Name,
+            AuthorName = e.Author?.FullName,
+            AttractionName = e.Attraction?.Name
+        });
+    }
+
+    public async Task<IEnumerable<ArticleDto>> GetActiveAsync(int? pageSize = null)
+    {
+        var entities = await _repository.GetActiveWithDetailsAsync(pageSize);
+
+        return entities.Select(e => new ArticleDto
+        {
+            Id = e.Id,
+            CategoryId = e.CategoryId,
+            AuthorId = e.AuthorId,
+            Title = e.Title,
+            Slug = e.Slug,
+            Excerpt = e.Excerpt,
+            ReadTime = e.ReadTime,
             ThumbnailUrl = e.ThumbnailUrl,
             PublishedAt = e.PublishedAt,
             IsActive = e.IsActive,
@@ -47,6 +72,8 @@ public class ArticleService : IArticleService
             Title = entity.Title,
             Slug = entity.Slug,
             Content = entity.Content,
+            Excerpt = entity.Excerpt,
+            ReadTime = entity.ReadTime,
             ThumbnailUrl = entity.ThumbnailUrl,
             PublishedAt = entity.PublishedAt,
             IsActive = entity.IsActive,
@@ -70,6 +97,8 @@ public class ArticleService : IArticleService
             Title = entity.Title,
             Slug = entity.Slug,
             Content = entity.Content,
+            Excerpt = entity.Excerpt,
+            ReadTime = entity.ReadTime,
             ThumbnailUrl = entity.ThumbnailUrl,
             PublishedAt = entity.PublishedAt,
             IsActive = entity.IsActive,
@@ -89,6 +118,8 @@ public class ArticleService : IArticleService
             Title = dto.Title,
             Slug = dto.Slug,
             Content = dto.Content,
+            Excerpt = dto.Excerpt,
+            ReadTime = dto.ReadTime,
             ThumbnailUrl = dto.ThumbnailUrl,
             PublishedAt = dto.PublishedAt ?? DateTime.UtcNow,
             IsActive = dto.IsActive,
@@ -111,6 +142,8 @@ public class ArticleService : IArticleService
         entity.Title = dto.Title;
         entity.Slug = dto.Slug;
         entity.Content = dto.Content;
+        entity.Excerpt = dto.Excerpt;
+        entity.ReadTime = dto.ReadTime;
         entity.ThumbnailUrl = dto.ThumbnailUrl;
         entity.PublishedAt = dto.PublishedAt;
         entity.AttractionId = dto.AttractionId;
@@ -140,6 +173,8 @@ public class ArticleService : IArticleService
             AuthorId = fullEntity.AuthorId,
             Title = fullEntity.Title,
             Slug = fullEntity.Slug,
+            Excerpt = fullEntity.Excerpt,
+            ReadTime = fullEntity.ReadTime,
             ThumbnailUrl = fullEntity.ThumbnailUrl,
             PublishedAt = fullEntity.PublishedAt,
             IsActive = fullEntity.IsActive,
