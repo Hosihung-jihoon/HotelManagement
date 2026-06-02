@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLang } from '../../../i18n/LangContext';
 import { Star, ChevronLeft, ChevronRight, Quote } from 'lucide-react';
 import './TestimonialsSection.css';
 
@@ -32,21 +33,22 @@ function StarRating({ rating }) {
 }
 
 function TestimonialsSection() {
+  const { t: translate, lang } = useLang();
   const [current, setCurrent] = useState(0);
   const total = TESTIMONIALS.length;
 
   const prev = () => setCurrent(c => (c - 1 + total) % total);
   const next = () => setCurrent(c => (c + 1) % total);
 
-  const t = TESTIMONIALS[current];
+  const item = TESTIMONIALS[current];
 
   return (
     <section className="section c-testimonials" aria-labelledby="testimonials-title">
       <div className="container">
         <div className="c-section-header">
-          <p className="label-md text-muted c-section-eyebrow">Guest Stories</p>
+          <p className="label-md text-muted c-section-eyebrow">{translate('home.testimonialsEyebrow')}</p>
           <h2 className="display-md c-section-title" id="testimonials-title" style={{ color: 'var(--c-on-primary)' }}>
-            What Our Guests Say
+            {translate('home.testimonialsTitle')}
           </h2>
         </div>
 
@@ -57,20 +59,20 @@ function TestimonialsSection() {
 
           <div className="c-testimonials__card glass" key={current}>
             <Quote size={40} className="c-testimonials__quote-icon" />
-            <p className="c-testimonials__text body-lg">{t.text}</p>
+            <p className="c-testimonials__text body-lg">{lang === 'vi' ? (item.textVi || item.text) : item.text}</p>
             <div className="c-testimonials__footer">
               <div className="c-testimonials__avatar" aria-hidden="true">
-                {t.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                {item.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
               </div>
               <div>
-                <p className="c-testimonials__name title-lg">{t.name}</p>
+                <p className="c-testimonials__name title-lg">{item.name}</p>
                 <p className="c-testimonials__meta">
-                  {t.country} · {t.role}
+                  {item.country} · {lang === 'vi' ? (item.role === 'Travel Blogger' ? 'Travel Blogger' : item.role === 'Business Consultant' ? 'Cố vấn kinh doanh' : item.role === 'Graphic Designer' ? 'Thiết kế đồ họa' : item.role) : item.role}
                 </p>
-                <StarRating rating={t.rating} />
+                <StarRating rating={item.rating} />
               </div>
               <div className="c-testimonials__stayed">
-                <span className="badge badge-silver">{t.stayedAt}</span>
+                <span className="badge badge-silver">{lang === 'vi' ? (item.stayedAt === 'Suite Penthouse' ? 'Căn hộ Penthouse' : item.stayedAt === 'Premier Suite' ? 'Phòng Suite Thượng Hạng' : item.stayedAt === 'Honeymoon Suite' ? 'Phòng Trăng Mật' : item.stayedAt) : item.stayedAt}</span>
               </div>
             </div>
           </div>

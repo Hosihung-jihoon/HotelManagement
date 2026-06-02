@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { useLang } from '../../i18n/LangContext';
 import { useAuth } from '../../../context/AuthContext';
-import { getRoomById, getRoomAvailability, getAvailableVouchers, getMyMembership, createBooking } from '../../api/clientApi';
-import { Check, AlertCircle, ChevronRight, Banknote, Tag } from 'lucide-react';
+import { getRoomById, getRoomAvailability, getAvailableVouchers, getMyMembership, createBooking, validateVoucher } from '../../api/clientApi';
+import paymentService from '../../../api/paymentService';
+import { Check, AlertCircle, ChevronRight, CreditCard, Banknote, Smartphone, Tag } from 'lucide-react';
 import { formatPrice } from '../../utils/formatPrice';
 import './BookingPage.css';
 
@@ -187,11 +188,38 @@ export default function BookingPage() {
         voucherId: voucherApplied ? voucherApplied.id : null,
         paymentMethod,
         totalAmount: total,
-        pricePerNight: room?.pricePerNight || 0,
+        pricePerNight: price,
       });
-      navigate('/booking/success', { state: { room, checkIn, checkOut, total, guestEmail: guest.email, bookingCode: res.data?.bookingCode } });
-    } catch (submitError) {
-      setError(submitError.response?.data?.message || (lang === 'vi' ? 'Dat phong that bai. Vui long thu lai.' : 'Booking failed. Please try again.'));
+      const bookingId = res.data?.id;
+      const bookingCode = res.data?.bookingCode || `BK${bookingId}`;
+
+      if (paymentMethod === 'vietqr') {
+        try {
+          const qrRes = await paymentService.createVietQR(total, bookingCode);
+          navigate('/booking/success', { state: { room, checkIn, checkOut, total, guestEmail: guest.email, qrUrl: qrRes.data?.qrDataURL || `https://api.vietqr.io/image/970415-113366668888-JG63EEf.jpg?amount=${total}&addInfo=Thanh toan phong ${bookingCode}`, bookingCode } });
+          return;
+        } catch (qrErr) {
+          console.error('Error generating VietQR', qrErr);
+          // Fallback to static URL if API fails
+          const fallbackQr = `https://api.vietqr.io/image/970415-113366668888-JG63EEf.jpg?amount=${total}&addInfo=Thanh toan phong ${bookingCode}`;
+          navigate('/booking/success', { state: { room, checkIn, checkOut, total, guestEmail: guest.email, qrUrl: fallbackQr, bookingCode } });
+          return;
+        }
+      } else if (paymentMethod === 'momo' && bookingId) {
+        const momoRes = await paymentService.createMomoPayment(
+          total,
+          lang === 'vi' ? `Thanh toán phòng ${room?.name}` : `Room payment ${room?.name}`,
+          bookingId
+        );
+        if (momoRes.payUrl) {
+          window.location.href = momoRes.payUrl;
+          return;
+        }
+      }
+
+      navigate('/booking/success', { state: { room, checkIn, checkOut, total, guestEmail: guest.email, bookingCode } });
+    } catch (err) {
+      setError(err.response?.data?.message || (lang === 'vi' ? 'Đặt phòng thất bại. Vui lòng thử lại.' : 'Booking failed. Please try again.'));
     } finally {
       setSubmitting(false);
     }
@@ -201,7 +229,9 @@ export default function BookingPage() {
   if (!room) return <div style={{ paddingTop: '72px', height: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div className="c-empty-state"><p>Khong tim thay phong.</p></div></div>;
 
   const PAYMENT_OPTIONS = [
-    { key: 'cash', icon: <Banknote size={20} />, label: t('booking.paymentCash') },
+    { key: 'cash',    icon: <Banknote size={20} />,   label: t('booking.paymentCash') },
+    { key: 'vietqr',  icon: <CreditCard size={20} />, label: lang === 'vi' ? 'Chuyển khoản VietQR' : 'VietQR Transfer' },
+    { key: 'momo',    icon: <Smartphone size={20} />, label: lang === 'vi' ? 'Ví MoMo' : 'MoMo Wallet' },
   ];
 
   const STEP_LABELS = [t('booking.step1'), t('booking.step2'), t('booking.step3'), t('booking.step4')];
@@ -335,7 +365,7 @@ export default function BookingPage() {
                   {voucherApplied && (
                     <div className="c-voucher-success">
                       <Check size={16} />
-                      {lang === 'vi' ? `Da chon voucher ${voucherApplied.code}.` : `Selected voucher ${voucherApplied.code}.`}
+                      {lang === 'vi' ? 'Đã áp dụng mã giảm giá!' : 'Discount applied!'}
                       {voucherApplied.discountPercent && ` (-${voucherApplied.discountPercent}%)`}
                       {!voucherApplied.discountPercent && voucherApplied.discountAmount ? ` (-${formatPrice(voucherApplied.discountAmount)})` : ''}
                     </div>
@@ -344,7 +374,7 @@ export default function BookingPage() {
                     <div className="c-booking__error" style={{ marginTop: 'var(--sp-12)' }}>
                       <AlertCircle size={18} />
                       {lang === 'vi'
-                        ? `Voucher nay yeu cau don toi thieu ${formatPrice(voucherApplied.minBookingValue)}.`
+                        ? `Voucher này yêu cầu đơn tối thiểu ${formatPrice(voucherApplied.minBookingValue)}.`
                         : `This voucher requires a minimum booking value of ${formatPrice(voucherApplied.minBookingValue)}.`}
                     </div>
                   )}
@@ -373,10 +403,12 @@ export default function BookingPage() {
                   ))}
                 </div>
 
-                <div className="c-payment-unavailable">
-                  <AlertCircle size={20} />
-                  <p>{lang === 'vi' ? 'Hien tai client site chi ho tro dat phong va thanh toan tai khach san.' : 'The client site currently supports on-property payment only.'}</p>
-                </div>
+                {paymentMethod === 'transfer' && (
+                  <div className="c-payment-unavailable">
+                    <AlertCircle size={20} />
+                    <p>{t('booking.paymentUnavailable')}</p>
+                  </div>
+                )}
               </div>
             )}
 

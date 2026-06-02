@@ -97,11 +97,26 @@ public class BookingRepository : GenericRepository<Booking>, IBookingRepository
             if (!roomIdsToBook.Any())
                 throw new Exception("No rooms to book.");
 
-            // RACE CONDITION HANDLING: Lock these specific rooms using WITH (UPDLOCK)
-            // Note: Since we use FromSqlRaw, we must ensure we are materializing the entities here to hold the lock
-            var lockedRooms = await _context.Rooms
-                .FromSqlRaw($"SELECT * FROM Rooms WITH (UPDLOCK) WHERE id IN ({string.Join(",", roomIdsToBook)})")
-                .ToListAsync();
+            // RACE CONDITION HANDLING: 
+            // SQL Server: Lock these specific rooms using WITH (UPDLOCK)
+            // SQLite: Doesn't support row-level hints like UPDLOCK.
+            var dbProvider = _context.Database.ProviderName;
+            List<Room> lockedRooms;
+
+            if (dbProvider != null && dbProvider.Contains("SqlServer"))
+            {
+                var roomIdsString = string.Join(",", roomIdsToBook);
+                lockedRooms = await _context.Rooms
+                    .FromSqlRaw($"SELECT * FROM Rooms WITH (UPDLOCK) WHERE id IN ({roomIdsString})")
+                    .ToListAsync();
+            }
+            else
+            {
+                // SQLite or others: just select the rooms. SQLite locks the DB file during transaction anyway.
+                lockedRooms = await _context.Rooms
+                    .Where(r => roomIdsToBook.Contains(r.Id))
+                    .ToListAsync();
+            }
 
             if (lockedRooms.Count != roomIdsToBook.Count)
                 throw new Exception("One or more rooms are invalid or do not exist.");

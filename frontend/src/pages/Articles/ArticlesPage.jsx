@@ -17,7 +17,7 @@ export default function ArticlesPage() {
   const fetchArticles = async () => {
     try {
       setLoading(true);
-      const response = await axiosClient.get('/Articles');
+      const response = await axiosClient.get('/Articles?all=true');
       setArticles(Array.isArray(response.data) ? response.data : []);
       setError(null);
     } catch (err) {

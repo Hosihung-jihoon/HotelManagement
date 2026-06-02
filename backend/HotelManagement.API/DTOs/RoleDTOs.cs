@@ -30,3 +30,17 @@ public class RoleWithPermissionsDto
     public string? Description { get; set; }
     public List<PermissionDto> Permissions { get; set; } = new();
 }
+
+// ========== Create Role ==========
+public class CreateRoleDto
+{
+    public string Name { get; set; } = string.Empty;
+    public string? Description { get; set; }
+}
+
+// ========== Update Role ==========
+public class UpdateRoleDto
+{
+    public string Name { get; set; } = string.Empty;
+    public string? Description { get; set; }
+}

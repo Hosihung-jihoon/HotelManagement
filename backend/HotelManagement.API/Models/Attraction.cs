@@ -15,6 +15,13 @@ public class Attraction
     [MaxLength(255)]
     public string Name { get; set; } = string.Empty;
 
+    [Column("name_vi")]
+    [MaxLength(255)]
+    public string? NameVi { get; set; }
+
+    [Column("description_vi")]
+    public string? DescriptionVi { get; set; }
+
     [Column("distance_km", TypeName = "decimal(5,2)")]
     public decimal? DistanceKm { get; set; }
 

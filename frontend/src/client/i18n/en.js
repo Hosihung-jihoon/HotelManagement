@@ -1,5 +1,15 @@
 // i18n — English
 const en = {
+  home: {
+    roomsEyebrow: 'PREMIUM ACCOMMODATIONS',
+    roomsTitle: 'Featured Rooms & Suites',
+    attractionsEyebrow: 'EXPLORE MORE',
+    blogEyebrow: 'OUR STORIES',
+    testimonialsEyebrow: 'GUEST STORIES',
+    testimonialsTitle: 'What Our Guests Say',
+    noAttractions: 'No attractions to display.',
+    noBlogs: 'No articles to display.',
+  },
   nav: {
     home: 'Home',
     rooms: 'Rooms',
@@ -179,6 +189,22 @@ const en = {
     orLogin: 'or',
     loginError: 'Invalid email or password',
     registerError: 'Registration failed. Please try again.',
+  },
+  contact: {
+    pageTitle: 'Contact – Hotel Management',
+    heroTitle: 'Contact Us',
+    heroSubtitle: 'Send your callback request and we will respond as soon as possible.',
+    infoTitle: 'Contact Information',
+    formTitle: 'Send a Contact Request',
+    labelName: 'Full Name',
+    labelPhone: 'Phone',
+    labelSubject: 'Subject',
+    labelMessage: 'Message',
+    submitBtn: 'Send Request',
+    submitting: 'Sending...',
+    successMsg: 'Request submitted successfully!',
+    errorLoad: 'Could not load branch contact information.',
+    errorSubmit: 'Could not submit contact request. Please try again.',
   },
   footer: {
     tagline: 'Where luxury and comfort intertwine',

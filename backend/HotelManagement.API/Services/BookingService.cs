@@ -108,7 +108,16 @@ public class BookingService : IBookingService
                 var nights = (bd.CheckOutDate - bd.CheckInDate).Days;
                 return bd.PricePerNight * Math.Max(nights, 1);
             });
-            finalTotal = totalRoomAmount;
+            finalTotal = totalRoomAmount + totalServiceAmount;
+
+            if (booking.Voucher != null)
+            {
+                if (booking.Voucher.DiscountType == "Fixed")
+                    discountAmount = booking.Voucher.DiscountValue;
+                else if (booking.Voucher.DiscountType == "Percentage")
+                    discountAmount = Math.Round((totalRoomAmount + totalServiceAmount) * booking.Voucher.DiscountValue / 100);
+            }
+            finalTotal = Math.Max(0, finalTotal - discountAmount);
         }
 
         // Audit logs for this booking record
@@ -185,9 +194,9 @@ public class BookingService : IBookingService
                 
                 var newUser = new User
                 {
-                    FullName = dto.GuestName,
+                    FullName = dto.GuestName ?? "Khách hàng",
                     Email = string.IsNullOrEmpty(dto.GuestEmail) ? $"guest-{Guid.NewGuid():N}@hotel.com" : dto.GuestEmail,
-                    Phone = dto.GuestPhone,
+                    Phone = dto.GuestPhone ?? "",
                     PasswordHash = "DUMMY_AUTO_" + Guid.NewGuid().ToString(),
                     RoleId = roleGuest?.Id,
                     MembershipId = tierNew?.Id,
@@ -379,9 +388,9 @@ public class BookingService : IBookingService
                 
                 var newUser = new User
                 {
-                    FullName = dto.GuestName,
+                    FullName = dto.GuestName ?? "Khách hàng",
                     Email = string.IsNullOrEmpty(dto.GuestEmail) ? $"guest-{Guid.NewGuid():N}@hotel.com" : dto.GuestEmail,
-                    Phone = dto.GuestPhone,
+                    Phone = dto.GuestPhone ?? "",
                     PasswordHash = "DUMMY_AUTO_" + Guid.NewGuid().ToString(),
                     RoleId = roleGuest?.Id,
                     MembershipId = tierNew?.Id,
@@ -465,11 +474,19 @@ public class BookingService : IBookingService
                 return bd.PricePerNight * Math.Max(nights, 1);
             });
 
+            decimal discount = 0;
+            if (booking.Voucher != null)
+            {
+                if (booking.Voucher.DiscountType == "Fixed") discount = booking.Voucher.DiscountValue;
+                else if (booking.Voucher.DiscountType == "Percentage") discount = Math.Round(totalRoomAmount * booking.Voucher.DiscountValue / 100);
+            }
+
             invoice = new Invoice
             {
                 BookingId = bookingId,
                 TotalRoomAmount = totalRoomAmount,
-                FinalTotal = totalRoomAmount,
+                DiscountAmount = discount,
+                FinalTotal = Math.Max(0, totalRoomAmount - discount),
                 Status = "Unpaid",
                 CreatedAt = DateTime.UtcNow
             };

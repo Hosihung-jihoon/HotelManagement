@@ -1,3 +1,4 @@
+using System.IO;
 using System.Net;
 using System.Net.Mail;
 using HotelManagement.API.Data;
@@ -47,6 +48,20 @@ public class PasswordResetService : IPasswordResetService
 
         // Lưu vào memory (ghi đè nếu đã tồn tại)
         lock (_store) { _store[email] = (code, expiry); }
+
+        // Ghi mã vào file codemail.md để test nhanh (Theo yêu cầu)
+        try
+        {
+            var projectRoot = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "..", ".."));
+            var filePath = Path.Combine(projectRoot, "codemail.md");
+            var content = $"--- MÃ XÁC NHẬN MỚI ---\nEmail: {email}\nMã OTP: {code}\nThời gian: {DateTime.Now:HH:mm:ss dd/MM/yyyy}\n------------------------";
+            await File.WriteAllTextAsync(filePath, content, System.Text.Encoding.UTF8);
+        }
+        catch (Exception ex)
+        {
+            // Log error but don't stop the flow
+            Console.WriteLine($"Lỗi ghi file codemail.md: {ex.Message}");
+        }
 
         // Gửi email
         await SendEmailAsync(email, user.FullName, code);

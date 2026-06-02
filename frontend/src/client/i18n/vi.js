@@ -1,5 +1,15 @@
 // i18n — Tiếng Việt
 const vi = {
+  home: {
+    roomsEyebrow: 'KHÔNG GIAN CAO CẤP',
+    roomsTitle: 'Phòng & Suite Nổi Bật',
+    attractionsEyebrow: 'KHÁM PHÁ XUNG QUANH',
+    blogEyebrow: 'TIN TỨC & TRẢI NGHIỆM',
+    testimonialsEyebrow: 'Ý KIẾN KHÁCH HÀNG',
+    testimonialsTitle: 'Khách Hàng Nói Gì Về Chúng Tôi',
+    noAttractions: 'Chưa có địa điểm tham quan để hiển thị.',
+    noBlogs: 'Chưa có bài viết để hiển thị.',
+  },
   nav: {
     home: 'Trang chủ',
     rooms: 'Phòng',
@@ -179,6 +189,22 @@ const vi = {
     orLogin: 'hoặc',
     loginError: 'Email hoặc mật khẩu không đúng',
     registerError: 'Đăng ký thất bại. Vui lòng thử lại.',
+  },
+  contact: {
+    pageTitle: 'Liên hệ – Hotel Management',
+    heroTitle: 'Liên hệ chúng tôi',
+    heroSubtitle: 'Gửi yêu cầu hoặc thông tin cần hỗ trợ, chúng tôi sẽ phản hồi sớm nhất.',
+    infoTitle: 'Thông tin liên lạc',
+    formTitle: 'Gửi yêu cầu liên hệ',
+    labelName: 'Họ tên',
+    labelPhone: 'Số điện thoại',
+    labelSubject: 'Tiêu đề',
+    labelMessage: 'Nội dung',
+    submitBtn: 'Gửi yêu cầu',
+    submitting: 'Đang gửi...',
+    successMsg: 'Yêu cầu đã được gửi thành công!',
+    errorLoad: 'Không thể tải thông tin liên hệ chi nhánh.',
+    errorSubmit: 'Không thể gửi yêu cầu liên hệ. Vui lòng thử lại.',
   },
   footer: {
     tagline: 'Nơi xa hoa và thoải mái hòa quyện',

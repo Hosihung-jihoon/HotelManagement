@@ -11,4 +11,5 @@ public interface IInvoiceRepository : IGenericRepository<Invoice>
 {
     Task<Invoice?> GetByIdWithPaymentsAsync(int id);
     Task<IEnumerable<Invoice>> GetAllWithBookingAsync();
+    Task<Invoice?> GetByBookingIdAsync(int bookingId);
 }

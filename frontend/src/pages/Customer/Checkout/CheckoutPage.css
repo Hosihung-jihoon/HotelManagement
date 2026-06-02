@@ -1,0 +1,111 @@
+/* ========== Checkout Page ========== */
+.checkout-page {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.checkout-header { margin-bottom: 30px; text-align: center; }
+.checkout-header h1 { font-size: 2rem; color: #1e293b; margin-bottom: 8px; }
+.checkout-header p { color: #64748b; font-size: 1.05rem; }
+
+.checkout-container {
+  display: grid; grid-template-columns: 1fr 380px; gap: 30px; align-items: start;
+}
+
+/* Left Form */
+.checkout-left {
+  background: #fff; border-radius: 16px; padding: 28px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.04); border: 1px solid #f1f5f9;
+}
+
+.section-title { font-size: 1.15rem; font-weight: 700; color: #0f172a; margin-bottom: 20px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; }
+
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group.full-width { grid-column: 1 / -1; }
+.form-group label { font-size: 0.85rem; font-weight: 600; color: #475569; }
+.form-group input, .form-group textarea { padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; font-family: inherit; transition: border-color 0.2s; }
+.form-group input:focus, .form-group textarea:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+
+.payment-options { display: flex; flex-direction: column; gap: 12px; }
+.payment-option {
+  display: flex; align-items: flex-start; gap: 14px; padding: 18px; border: 2px solid #e2e8f0; border-radius: 16px; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative; overflow: hidden;
+}
+.payment-option:hover { border-color: #cbd5e1; background: #f8fafc; transform: translateY(-2px); }
+.payment-option.selected { border-color: #3b82f6; background: #eff6ff; box-shadow: 0 8px 20px rgba(59,130,246,0.1); }
+
+/* Brand specific selected states */
+.payment-option.momo.selected { border-color: #a50064; background: #fff1f8; }
+.payment-option.momo.selected .payment-name { color: #a50064; }
+.payment-option.momo input[type="radio"]:checked { accent-color: #a50064; }
+
+.payment-option.vietqr.selected { border-color: #005baa; background: #f0f7ff; }
+.payment-option.vietqr.selected .payment-name { color: #005baa; }
+.payment-option.vietqr input[type="radio"]:checked { accent-color: #005baa; }
+
+.payment-option input[type="radio"] { margin-top: 4px; transform: scale(1.3); }
+
+.payment-info { display: flex; align-items: center; gap: 16px; flex: 1; }
+.payment-logo { height: 32px; width: 32px; object-fit: contain; border-radius: 6px; }
+.payment-icon { font-size: 1.8rem; line-height: 1; min-width: 32px; text-align: center; }
+.payment-name { display: block; font-weight: 700; color: #1e293b; margin-bottom: 2px; font-size: 1rem; transition: color 0.2s; }
+.payment-desc { display: block; font-size: 0.8rem; color: #64748b; line-height: 1.4; }
+
+/* Right Summary */
+.checkout-right { position: sticky; top: 90px; }
+.summary-card {
+  background: #fff; border-radius: 16px; padding: 24px; box-shadow: 0 8px 20px rgba(0,0,0,0.06); border: 1px solid #f1f5f9;
+}
+
+.room-summary h4 { font-size: 1.25rem; color: #0f172a; margin: 0 0 4px; }
+.room-type { color: #64748b; font-size: 0.9rem; margin: 0 0 20px; }
+
+.booking-dates { display: flex; align-items: center; justify-content: space-between; background: #f8fafc; padding: 16px; border-radius: 12px; margin-bottom: 20px; }
+.date-box { display: flex; flex-direction: column; align-items: center; }
+.date-label { font-size: 0.75rem; color: #64748b; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 4px; }
+.date-val { font-size: 1.1rem; font-weight: 800; color: #1e293b; }
+.time-val { font-size: 0.8rem; color: #94a3b8; margin-top: 2px; }
+.date-divider { color: #cbd5e1; font-weight: 300; font-size: 1.5rem; }
+
+.stay-duration { font-size: 0.9rem; color: #475569; text-align: center; margin-bottom: 0; }
+.summary-divider { border: none; border-top: 1px dashed #cbd5e1; margin: 20px 0; }
+
+.price-breakdown { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+.price-row { display: flex; justify-content: space-between; font-size: 0.95rem; color: #475569; }
+.price-row.vat { color: #64748b; font-size: 0.85rem; }
+.price-row.total { border-top: 1px solid #e2e8f0; padding-top: 16px; margin-top: 4px; font-size: 1.1rem; font-weight: 700; color: #0f172a; }
+.total-amount { color: #ea580c; font-size: 1.4rem; font-weight: 800; }
+
+.btn-confirm-booking {
+  width: 100%; appearance: none;
+  background: linear-gradient(135deg, #10b981, #059669); color: #fff; border: none; padding: 16px; border-radius: 12px;
+  font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(16,185,129,0.3);
+}
+.btn-confirm-booking:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(16,185,129,0.4); }
+.btn-confirm-booking:disabled { background: #94a3b8; cursor: not-allowed; transform: none; box-shadow: none; }
+.policy-text { font-size: 0.75rem; color: #94a3b8; text-align: center; margin-top: 16px; line-height: 1.4; }
+
+/* VietQR Modal Styles */
+.vietqr-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(5px); }
+.vietqr-modal { background: #fff; width: 400px; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.2); animation: modalFadeIn 0.3s ease-out; }
+@keyframes modalFadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+.vietqr-header { padding: 20px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; background: #f8fafc; }
+.vietqr-header h3 { margin: 0; font-size: 1.2rem; color: #1e293b; }
+.btn-close-modal { background: none; border: none; font-size: 1.8rem; color: #94a3b8; cursor: pointer; line-height: 1; }
+
+.vietqr-body { padding: 24px; text-align: center; }
+.qr-guide { color: #64748b; font-size: 0.9rem; margin-bottom: 20px; }
+.qr-container { background: #fff; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; display: inline-block; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+.qr-image { width: 220px; height: 220px; display: block; }
+
+.payment-details { background: #f8fafc; border-radius: 12px; padding: 16px; margin-bottom: 24px; text-align: left; }
+.detail-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.95rem; color: #475569; }
+.detail-row:last-child { margin-bottom: 0; }
+.detail-row .amount { color: #ef4444; font-weight: 800; font-size: 1.1rem; }
+
+.btn-done { width: 100%; background: #3b82f6; color: #fff; border: none; padding: 14px; border-radius: 10px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+.btn-done:hover { background: #2563eb; }
+
+@media (max-width: 900px) { .checkout-container { grid-template-columns: 1fr; } .checkout-right { position: relative; top: 0; } }

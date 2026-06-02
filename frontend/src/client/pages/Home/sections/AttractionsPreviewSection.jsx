@@ -11,7 +11,7 @@ function AttractionsPreviewSection({ locations }) {
     <section className="section c-attractions-preview" aria-labelledby="attractions-title">
       <div className="container">
         <div className="c-section-header">
-          <p className="label-md text-muted c-section-eyebrow">Explore More</p>
+          <p className="label-md text-muted c-section-eyebrow">{t('home.attractionsEyebrow')}</p>
           <h2 className="display-md c-section-title" id="attractions-title">
             {t('attractions.title')}
           </h2>
@@ -49,7 +49,7 @@ function AttractionsPreviewSection({ locations }) {
             </article>
           )) : (
             <div className="c-empty-state" style={{ gridColumn: '1 / -1' }}>
-              <p className="body-lg text-muted">Chua co dia diem tham quan de hien thi.</p>
+              <p className="body-lg text-muted">{t('home.noAttractions')}</p>
             </div>
           )}
         </div>

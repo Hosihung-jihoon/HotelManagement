@@ -29,8 +29,10 @@ public class AttractionService : IAttractionService
         {
             Id = e.Id,
             Name = e.Name,
+            NameVi = e.NameVi,
             DistanceKm = e.DistanceKm,
             Description = e.Description,
+            DescriptionVi = e.DescriptionVi,
             GoogleMapsUrl = e.GoogleMapsUrl,
             MapEmbedLink = e.MapEmbedLink,
             MapPreviewImageUrl = e.MapPreviewImageUrl,
@@ -51,8 +53,10 @@ public class AttractionService : IAttractionService
         {
             Id = e.Id,
             Name = e.Name,
+            NameVi = e.NameVi,
             DistanceKm = e.DistanceKm,
             Description = e.Description,
+            DescriptionVi = e.DescriptionVi,
             GoogleMapsUrl = e.GoogleMapsUrl,
             MapEmbedLink = e.MapEmbedLink,
             MapPreviewImageUrl = e.MapPreviewImageUrl,
@@ -70,8 +74,10 @@ public class AttractionService : IAttractionService
         var entity = new Attraction
         {
             Name = dto.Name,
+            NameVi = dto.NameVi,
             DistanceKm = dto.DistanceKm,
             Description = dto.Description,
+            DescriptionVi = dto.DescriptionVi,
             GoogleMapsUrl = metadata.GoogleMapsUrl ?? dto.GoogleMapsUrl,
             MapEmbedLink = metadata.MapEmbedLink ?? dto.MapEmbedLink,
             MapPreviewImageUrl = metadata.MapPreviewImageUrl,
@@ -90,8 +96,10 @@ public class AttractionService : IAttractionService
         {
             Id = created.Id,
             Name = created.Name,
+            NameVi = created.NameVi,
             DistanceKm = created.DistanceKm,
             Description = created.Description,
+            DescriptionVi = created.DescriptionVi,
             GoogleMapsUrl = created.GoogleMapsUrl,
             MapEmbedLink = created.MapEmbedLink,
             MapPreviewImageUrl = created.MapPreviewImageUrl,
@@ -110,7 +118,9 @@ public class AttractionService : IAttractionService
 
         var metadata = await _googleMapsMetadataService.ResolveAsync(dto.GoogleMapsUrl, dto.MapEmbedLink, dto.Name);
         entity.Name = dto.Name;
+        entity.NameVi = dto.NameVi;
         entity.Description = dto.Description;
+        entity.DescriptionVi = dto.DescriptionVi;
         entity.GoogleMapsUrl = metadata.GoogleMapsUrl ?? dto.GoogleMapsUrl;
         entity.MapEmbedLink = metadata.MapEmbedLink ?? dto.MapEmbedLink;
         entity.MapPreviewImageUrl = metadata.MapPreviewImageUrl;

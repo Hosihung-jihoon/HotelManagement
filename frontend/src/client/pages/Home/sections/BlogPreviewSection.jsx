@@ -13,7 +13,7 @@ function BlogPreviewSection({ articles }) {
     <section className="section c-blog-preview" aria-labelledby="blog-title">
       <div className="container">
         <div className="c-section-header">
-          <p className="label-md text-muted c-section-eyebrow">Our Stories</p>
+          <p className="label-md text-muted c-section-eyebrow">{t('home.blogEyebrow')}</p>
           <h2 className="display-md c-section-title" id="blog-title">{t('blog.title')}</h2>
           <p className="body-lg text-muted c-section-subtitle">{t('blog.subtitle')}</p>
         </div>
@@ -54,7 +54,7 @@ function BlogPreviewSection({ articles }) {
             </Link>
           )) : (
             <div className="c-empty-state" style={{ gridColumn: '1 / -1' }}>
-              <p className="body-lg text-muted">Chua co bai viet de hien thi.</p>
+              <p className="body-lg text-muted">{t('home.noBlogs')}</p>
             </div>
           )}
         </div>

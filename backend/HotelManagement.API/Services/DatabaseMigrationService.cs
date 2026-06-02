@@ -19,6 +19,11 @@ public class DatabaseMigrationService
     public async Task RunAsync()
     {
         _logger.LogInformation("DatabaseMigrationService: Checking for missing schema...");
+        if (_context.Database.IsSqlite())
+        {
+            _logger.LogInformation("DatabaseMigrationService: Running on SQLite. Skipping SQL Server specific schema checks.");
+            return;
+        }
         try
         {
             await AddMembershipColumnsIfMissing();

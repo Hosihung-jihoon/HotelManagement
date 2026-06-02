@@ -5,6 +5,7 @@ namespace HotelManagement.API.Services;
 public interface IArticleService
 {
     Task<IEnumerable<ArticleDto>> GetAllAsync();
+    Task<IEnumerable<ArticleDto>> GetActiveAsync(int? pageSize = null);
     Task<ArticleDetailDto?> GetByIdAsync(int id);
     Task<ArticleDetailDto?> GetBySlugAsync(string slug);
     Task<ArticleDto> CreateAsync(CreateArticleDto dto);

@@ -75,8 +75,10 @@ builder.Services.AddScoped<ILossAndDamageService, LossAndDamageService>();
 builder.Services.AddScoped<IPasswordResetService, PasswordResetService>();
 builder.Services.AddScoped<IEquipmentService, EquipmentService>();
 builder.Services.AddScoped<IAuditLogService, AuditLogService>();
+builder.Services.AddScoped<IMomoService, MomoService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<IContactRequestService, ContactRequestService>();
+builder.Services.AddHttpClient();
 builder.Services.AddHttpClient<IGoogleMapsMetadataService, GoogleMapsMetadataService>();
 builder.Services.AddScoped<HotelBranchService>();
 builder.Services.AddScoped<DashboardSnapshotService>(); // legacy, giữ tương thích
@@ -164,6 +166,9 @@ builder.Services.AddCors(options =>
               .AllowCredentials();
     });
 });
+
+// ========== QuestPDF License ==========
+QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 
 var app = builder.Build();
 

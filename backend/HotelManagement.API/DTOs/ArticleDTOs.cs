@@ -11,6 +11,8 @@ public class ArticleDto
     public int? AuthorId { get; set; }
     public string Title { get; set; } = string.Empty;
     public string? Slug { get; set; }
+    public string? Excerpt { get; set; }
+    public int? ReadTime { get; set; }
     public string? ThumbnailUrl { get; set; }
     public DateTime? PublishedAt { get; set; }
     public bool? IsActive { get; set; }
@@ -30,6 +32,8 @@ public class ArticleDetailDto
     public string Title { get; set; } = string.Empty;
     public string? Slug { get; set; }
     public string? Content { get; set; }
+    public string? Excerpt { get; set; }
+    public int? ReadTime { get; set; }
     public string? ThumbnailUrl { get; set; }
     public DateTime? PublishedAt { get; set; }
     public bool? IsActive { get; set; }
@@ -50,6 +54,8 @@ public class CreateArticleDto
     public string Title { get; set; } = string.Empty;
     public string? Slug { get; set; }
     public string? Content { get; set; }
+    public string? Excerpt { get; set; }
+    public int? ReadTime { get; set; }
     public string? ThumbnailUrl { get; set; }
     public DateTime? PublishedAt { get; set; }
     public bool? IsActive { get; set; } = true;
@@ -63,6 +69,8 @@ public class UpdateArticleDto
     public string Title { get; set; } = string.Empty;
     public string? Slug { get; set; }
     public string? Content { get; set; }
+    public string? Excerpt { get; set; }
+    public int? ReadTime { get; set; }
     public string? ThumbnailUrl { get; set; }
     public DateTime? PublishedAt { get; set; }
     public bool? IsActive { get; set; }

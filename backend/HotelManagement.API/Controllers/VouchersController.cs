@@ -81,4 +81,22 @@ public class VouchersController : ControllerBase
 
         return NoContent();
     }
+
+    [HttpPost("validate")]
+    public async Task<IActionResult> Validate([FromBody] ValidateVoucherRequest req)
+    {
+        if (string.IsNullOrWhiteSpace(req.Code))
+            return BadRequest(new { message = "Mã voucher không được để trống." });
+
+        var result = await _service.ValidateVoucherAsync(req.Code);
+        if (result == null)
+            return BadRequest(new { message = "Mã voucher không hợp lệ hoặc đã hết hạn." });
+
+        return Ok(result);
+    }
+}
+
+public class ValidateVoucherRequest
+{
+    public string Code { get; set; } = string.Empty;
 }

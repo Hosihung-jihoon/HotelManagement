@@ -1,16 +1,21 @@
 import { useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { useLang } from '../../i18n/LangContext';
-import { CheckCircle, Copy, Check, Calendar, Home } from 'lucide-react';
+import { CheckCircle, XCircle, Copy, Check, Calendar, Home } from 'lucide-react';
 import { formatPrice } from '../../utils/formatPrice';
 import './BookingSuccessPage.css';
 
 export default function BookingSuccessPage() {
   const { t, lang } = useLang();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const state = location.state || {};
   const [copied, setCopied] = useState(false);
-  const [bookingCode] = useState(state.bookingCode || ('HM' + Math.random().toString(36).substring(2, 8).toUpperCase()));
+  const [bookingCode] = useState(state.bookingCode || searchParams.get('orderId') || ('HM' + Math.random().toString(36).substring(2, 8).toUpperCase()));
+
+  const resultCode = searchParams.get('resultCode');
+  const isMomoCallback = resultCode !== null;
+  const isPaymentSuccess = resultCode === '0';
 
   useEffect(() => {
     document.title = 'Booking Confirmed — Hotel Management';
@@ -27,14 +32,35 @@ export default function BookingSuccessPage() {
     <div className="c-success" style={{ paddingTop:'72px' }}>
       <div className="container">
         <div className="c-success__card card">
-          {/* Animated check */}
-          <div className="c-success__icon-wrap" aria-hidden="true">
-            <div className="c-success__icon-ring" />
-            <CheckCircle size={64} strokeWidth={1.5} className="c-success__icon" />
+          {/* Animated icon */}
+          <div className="c-success__icon-wrap" aria-hidden="true" style={{ color: (isMomoCallback && !isPaymentSuccess) ? 'var(--c-error)' : undefined }}>
+            <div className="c-success__icon-ring" style={{ borderTopColor: (isMomoCallback && !isPaymentSuccess) ? 'var(--c-error)' : undefined }} />
+            {(isMomoCallback && !isPaymentSuccess) ? (
+              <XCircle size={64} strokeWidth={1.5} className="c-success__icon" style={{ color: 'var(--c-error)' }} />
+            ) : (
+              <CheckCircle size={64} strokeWidth={1.5} className="c-success__icon" />
+            )}
           </div>
 
-          <h1 className="display-md c-success__title">{t('booking.successTitle')}</h1>
-          <p className="body-lg text-muted c-success__subtitle">{t('booking.successMsg')}</p>
+          {isMomoCallback ? (
+            <>
+              <h1 className="display-md c-success__title" style={{ color: !isPaymentSuccess ? 'var(--c-error)' : undefined }}>
+                {isPaymentSuccess 
+                  ? (lang === 'vi' ? 'Thanh toán thành công!' : 'Payment Successful!') 
+                  : (lang === 'vi' ? 'Thanh toán thất bại!' : 'Payment Failed!')}
+              </h1>
+              <p className="body-lg text-muted c-success__subtitle">
+                {isPaymentSuccess 
+                  ? (lang === 'vi' ? 'Đơn đặt phòng của bạn đã được thanh toán qua MoMo.' : 'Your booking has been paid via MoMo.') 
+                  : (lang === 'vi' ? 'Đã có lỗi xảy ra hoặc bạn đã hủy giao dịch.' : 'An error occurred or the transaction was cancelled.')}
+              </p>
+            </>
+          ) : (
+            <>
+              <h1 className="display-md c-success__title">{t('booking.successTitle')}</h1>
+              <p className="body-lg text-muted c-success__subtitle">{t('booking.successMsg')}</p>
+            </>
+          )}
 
           {/* Booking code */}
           <div className="c-success__code-box">
@@ -51,6 +77,19 @@ export default function BookingSuccessPage() {
               </button>
             </div>
           </div>
+
+          {/* VietQR Display */}
+          {state.qrUrl && (
+            <div className="c-success__qr-box" style={{ textAlign: 'center', marginTop: 'var(--sp-24)', marginBottom: 'var(--sp-24)', background: 'rgba(255,255,255,0.05)', padding: 'var(--sp-16)', borderRadius: 'var(--r-lg)' }}>
+              <h3 className="title-md" style={{ marginBottom: 'var(--sp-12)' }}>
+                {lang === 'vi' ? 'Quét mã để thanh toán' : 'Scan QR to pay'}
+              </h3>
+              <img src={state.qrUrl} alt="VietQR" style={{ maxWidth: '100%', height: 'auto', borderRadius: 'var(--r-md)', maxHeight: '350px' }} />
+              <p className="text-muted" style={{ marginTop: 'var(--sp-12)' }}>
+                {lang === 'vi' ? 'Vui lòng sử dụng App ngân hàng để quét mã này.' : 'Please use your banking app to scan this code.'}
+              </p>
+            </div>
+          )}
 
           {/* Booking details */}
           {state.room && (

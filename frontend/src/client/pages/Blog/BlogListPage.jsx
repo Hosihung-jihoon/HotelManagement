@@ -22,7 +22,7 @@ export default function BlogListPage() {
       })
       .catch(() => {
         setArticles([]);
-        setError('Khong the tai danh sach bai viet luc nay.');
+        setError(t('common.error'));
       })
       .finally(() => setLoading(false));
   }, []);
@@ -42,7 +42,7 @@ export default function BlogListPage() {
     <div className="c-blog-list" style={{ paddingTop: '72px' }}>
       <div className="c-blog-list__hero">
         <div className="container">
-          <p className="label-md" style={{ color: 'var(--c-primary-fixed-dim)', marginBottom: 'var(--sp-12)' }}>Our Stories</p>
+          <p className="label-md" style={{ color: 'var(--c-primary-fixed-dim)', marginBottom: 'var(--sp-12)' }}>{t('home.blogEyebrow')}</p>
           <h1 className="display-md" style={{ color: 'var(--c-on-primary)', marginBottom: 'var(--sp-16)' }}>{t('blog.title')}</h1>
           <p className="body-lg" style={{ color: 'rgba(255,255,255,0.82)', marginBottom: 'var(--sp-32)', maxWidth: 500 }}>{t('blog.subtitle')}</p>
           <div className="c-blog-list__search">
@@ -71,7 +71,7 @@ export default function BlogListPage() {
                   className={`c-filter-chip ${activeCategory === category ? 'active' : ''}`}
                   onClick={() => setActiveCategory(category)}
                 >
-                  {category === 'all' ? 'Tat ca' : category}
+                  {category === 'all' ? t('blog.allCategories') : category}
                 </button>
               ))}
             </div>
@@ -111,7 +111,7 @@ export default function BlogListPage() {
                   </div>
                   <div className="c-blog-card__body">
                     <div className="c-blog-card__meta">
-                      <span><Calendar size={12} /> {new Date(article.publishedAt).toLocaleDateString()}</span>
+                      <span><Calendar size={12} /> {new Date(article.publishedAt).toLocaleDateString(lang === 'vi' ? 'vi-VN' : 'en-US', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
                       {article.authorName && <span><User size={12} /> {article.authorName}</span>}
                       {article.readTime && <span><Clock size={12} /> {article.readTime} min</span>}
                     </div>
@@ -126,7 +126,7 @@ export default function BlogListPage() {
             </div>
           ) : (
             <div className="c-empty-state">
-              <p className="body-lg text-muted">Khong co bai viet phu hop.</p>
+              <p className="body-lg text-muted">{t('home.noBlogs')}</p>
             </div>
           )}
         </div>

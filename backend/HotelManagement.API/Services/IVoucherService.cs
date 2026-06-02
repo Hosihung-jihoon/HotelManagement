@@ -11,4 +11,5 @@ public interface IVoucherService
     Task<bool> UpdateAsync(int id, UpdateVoucherDto dto);
     Task<bool> DeleteAsync(int id);
     Task<bool> ToggleActiveAsync(int id);
+    Task<object?> ValidateVoucherAsync(string code);
 }
